@@ -5,28 +5,29 @@
 
 [sub_resource type="Theme" id="Theme_tyee0"]
 
-[node name="MainWindow" type="Control"]
-layout_mode = 3
+[node name="MainWindow" type="ColorRect"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -1152.0
-offset_bottom = -648.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.347817, 0.347817, 0.347817, 1)
 metadata/_edit_vertical_guides_ = [-416.0]
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
-layout_mode = 0
-offset_right = 436.0
-offset_bottom = 340.0
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="HSplitContainer" type="HSplitContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer"]
+layout_mode = 2
+split_offset = 1152
 
-[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
+clip_contents = true
 layout_mode = 2
 theme = SubResource("Theme_tyee0")
 theme_override_constants/margin_left = 10
@@ -34,24 +35,28 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="BoxContainer" type="BoxContainer" parent="HSplitContainer/MarginContainer"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="MarginContainer/HSplitContainer/MarginContainer"]
+clip_contents = true
 layout_mode = 2
+stretch = true
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="HSplitContainer/MarginContainer/BoxContainer"]
-layout_mode = 2
-
-[node name="SubViewport" type="SubViewport" parent="HSplitContainer/MarginContainer/BoxContainer/SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer"]
 handle_input_locally = false
+size = Vector2i(1132, 1060)
+size_2d_override = Vector2i(1, 1)
 render_target_update_mode = 4
 
-[node name="Camera2D" type="Camera2D" parent="HSplitContainer/MarginContainer/BoxContainer/SubViewportContainer/SubViewport"]
+[node name="Camera2D" type="Camera2D" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport"]
 script = ExtResource("2_sq7ho")
 
-[node name="TextureRect" type="Sprite2D" parent="HSplitContainer/MarginContainer/BoxContainer/SubViewportContainer/SubViewport"]
+[node name="MarkerController" type="Node" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport"]
+
+[node name="Map" type="Sprite2D" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport"]
 position = Vector2(13, 21)
+scale = Vector2(2, 2)
 texture = ExtResource("2_tyee0")
 
-[node name="MarginContainer2" type="MarginContainer" parent="HSplitContainer"]
+[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 layout_mode = 2
 theme = SubResource("Theme_tyee0")
 theme_override_constants/margin_left = 10
@@ -59,19 +64,22 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="BoxContainer" type="BoxContainer" parent="HSplitContainer/MarginContainer2"]
+[node name="VSplitContainer" type="VSplitContainer" parent="MarginContainer/HSplitContainer/MarginContainer2"]
 layout_mode = 2
+split_offset = 221
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="HSplitContainer/MarginContainer2/BoxContainer"]
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer"]
 layout_mode = 2
+ratio = 1.5109
 
-[node name="SubViewport" type="SubViewport" parent="HSplitContainer/MarginContainer2/BoxContainer/SubViewportContainer"]
-handle_input_locally = false
-render_target_update_mode = 4
+[node name="ColorRect2" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/AspectRatioContainer"]
+layout_mode = 2
+color = Color(1, 0.305882, 1, 1)
 
-[node name="Camera2D" type="Camera2D" parent="HSplitContainer/MarginContainer2/BoxContainer/SubViewportContainer/SubViewport"]
-script = ExtResource("2_sq7ho")
+[node name="AspectRatioContainer2" type="AspectRatioContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer"]
+layout_mode = 2
+ratio = 1.5109
 
-[node name="TextureRect" type="Sprite2D" parent="HSplitContainer/MarginContainer2/BoxContainer/SubViewportContainer/SubViewport"]
-position = Vector2(13, 21)
-texture = ExtResource("2_tyee0")
+[node name="ColorRect2" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/AspectRatioContainer2"]
+layout_mode = 2
+color = Color(0.782068, 0.639253, 0.380019, 1)

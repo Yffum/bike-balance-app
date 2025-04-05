@@ -22,6 +22,7 @@ func handle_zoom(delta: float):
 		zoom_target *= 1 - zoom_factor
 	zoom = zoom.lerp(zoom_target, zoom_speed * delta)
 
+
 func handle_pan():
 	if not is_dragging and Input.is_action_just_pressed('camera_pan'):
 		drag_start_mouse_pos = get_viewport().get_mouse_position()

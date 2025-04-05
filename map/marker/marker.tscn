@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqpoqjxm1ij56"]
+
+[ext_resource type="Texture2D" uid="uid://c8cqv4bj8pq3a" path="res://map/marker/map-marker.svg" id="1_y68rr"]
+
+[node name="Marker" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -60)
+texture = ExtResource("1_y68rr")

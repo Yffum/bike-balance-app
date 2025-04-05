@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=6 format=3 uid="uid://f0rqb58dpr2d"]
 
-[ext_resource type="Script" uid="uid://cffeq12ib7552" path="res://camera.gd" id="2_sq7ho"]
-[ext_resource type="Texture2D" uid="uid://dmq7fwrn2rgnn" path="res://InteractiveMap/mapMedium1.svg" id="2_tyee0"]
-[ext_resource type="Texture2D" uid="uid://c8pyjgdss71hq" path="res://InteractiveMap/Marker/map-marker_outline.svg" id="3_sq7ho"]
+[ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
+[ext_resource type="Script" uid="uid://cffeq12ib7552" path="res://map/camera.gd" id="2_sq7ho"]
+[ext_resource type="Texture2D" uid="uid://dmq7fwrn2rgnn" path="res://map/mapMedium1.svg" id="2_tyee0"]
+[ext_resource type="PackedScene" uid="uid://bqpoqjxm1ij56" path="res://map/marker/marker.tscn" id="4_bfu0d"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
 
@@ -48,20 +49,21 @@ size_2d_override = Vector2i(1, 1)
 render_target_update_mode = 4
 
 [node name="Camera2D" type="Camera2D" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport"]
+position = Vector2(578, 523)
 script = ExtResource("2_sq7ho")
 
 [node name="MapController" type="Node" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport"]
+script = ExtResource("2_l06f4")
 
 [node name="Map" type="Sprite2D" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport/MapController"]
-position = Vector2(13, 21)
+position = Vector2(578, 520)
 scale = Vector2(2, 2)
 texture = ExtResource("2_tyee0")
 
 [node name="Markers" type="Node" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport/MapController"]
 
-[node name="Marker" type="Sprite2D" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport/MapController/Markers"]
-position = Vector2(542, 384)
-texture = ExtResource("3_sq7ho")
+[node name="Marker" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport/MapController/Markers" instance=ExtResource("4_bfu0d")]
+position = Vector2(408.76, 384)
 
 [node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 layout_mode = 2

@@ -1,0 +1,77 @@
+[gd_scene load_steps=4 format=3 uid="uid://f0rqb58dpr2d"]
+
+[ext_resource type="Script" uid="uid://cffeq12ib7552" path="res://camera.gd" id="2_sq7ho"]
+[ext_resource type="Texture2D" uid="uid://dmq7fwrn2rgnn" path="res://map/mapMedium1.svg" id="2_tyee0"]
+
+[sub_resource type="Theme" id="Theme_tyee0"]
+
+[node name="MainWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1152.0
+offset_bottom = -648.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_vertical_guides_ = [-416.0]
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 0
+offset_right = 436.0
+offset_bottom = 340.0
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer"]
+layout_mode = 2
+theme = SubResource("Theme_tyee0")
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="BoxContainer" type="BoxContainer" parent="HSplitContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HSplitContainer/MarginContainer/BoxContainer"]
+layout_mode = 2
+
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/MarginContainer/BoxContainer/SubViewportContainer"]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="Camera2D" type="Camera2D" parent="HSplitContainer/MarginContainer/BoxContainer/SubViewportContainer/SubViewport"]
+script = ExtResource("2_sq7ho")
+
+[node name="TextureRect" type="Sprite2D" parent="HSplitContainer/MarginContainer/BoxContainer/SubViewportContainer/SubViewport"]
+position = Vector2(13, 21)
+texture = ExtResource("2_tyee0")
+
+[node name="MarginContainer2" type="MarginContainer" parent="HSplitContainer"]
+layout_mode = 2
+theme = SubResource("Theme_tyee0")
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="BoxContainer" type="BoxContainer" parent="HSplitContainer/MarginContainer2"]
+layout_mode = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HSplitContainer/MarginContainer2/BoxContainer"]
+layout_mode = 2
+
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/MarginContainer2/BoxContainer/SubViewportContainer"]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="Camera2D" type="Camera2D" parent="HSplitContainer/MarginContainer2/BoxContainer/SubViewportContainer/SubViewport"]
+script = ExtResource("2_sq7ho")
+
+[node name="TextureRect" type="Sprite2D" parent="HSplitContainer/MarginContainer2/BoxContainer/SubViewportContainer/SubViewport"]
+position = Vector2(13, 21)
+texture = ExtResource("2_tyee0")

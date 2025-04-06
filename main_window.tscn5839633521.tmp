@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
 [ext_resource type="Script" uid="uid://cffeq12ib7552" path="res://map/camera.gd" id="2_sq7ho"]
 [ext_resource type="Texture2D" uid="uid://dmq7fwrn2rgnn" path="res://map/mapMedium1.svg" id="2_tyee0"]
-[ext_resource type="Script" uid="uid://dn50ac575shwp" path="res://tools.gd" id="5_bfu0d"]
+[ext_resource type="PackedScene" uid="uid://bqpoqjxm1ij56" path="res://map/marker/marker.tscn" id="4_bfu0d"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
 
@@ -60,6 +60,9 @@ texture = ExtResource("2_tyee0")
 
 [node name="Markers" type="Node" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport/MapController"]
 
+[node name="Marker" parent="MarginContainer/HSplitContainer/MarginContainer/SubViewportContainer/SubViewport/MapController/Markers" instance=ExtResource("4_bfu0d")]
+position = Vector2(408.76, 384)
+
 [node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 layout_mode = 2
 theme = SubResource("Theme_tyee0")
@@ -87,6 +90,3 @@ ratio = 1.5109
 [node name="ColorRect2" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/AspectRatioContainer2"]
 layout_mode = 2
 color = Color(0.782068, 0.639253, 0.380019, 1)
-
-[node name="Tools" type="Node" parent="."]
-script = ExtResource("5_bfu0d")

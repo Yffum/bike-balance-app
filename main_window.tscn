@@ -72,13 +72,35 @@ theme_override_constants/margin_bottom = 10
 layout_mode = 2
 split_offset = 221
 
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer"]
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer"]
 layout_mode = 2
-ratio = 1.5109
+current_tab = 0
 
-[node name="ColorRect2" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/AspectRatioContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/TabContainer"]
 layout_mode = 2
-color = Color(1, 0.305882, 1, 1)
+metadata/_tab_index = 0
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/TabContainer/VBoxContainer"]
+layout_mode = 2
+text = "Excurion Time"
+placeholder_text = "excurion time"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/TabContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/TabContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Excursion Time"
+horizontal_alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/TabContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+step = 0.1
+suffix = "hrs"
+custom_arrow_step = 1.0
 
 [node name="AspectRatioContainer2" type="AspectRatioContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer"]
 layout_mode = 2

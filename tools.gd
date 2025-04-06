@@ -49,7 +49,7 @@ func save_json(path: String, data: Variant) -> void:
 	# Convert the data to a JSON string 
 	var json_string: String
 	if data is Dictionary or data is Array:
-		json_string = JSON.print(data)
+		json_string = JSON.stringify(data)
 	else:
 		push_error("Unsupported data type: %s" % data)
 		return

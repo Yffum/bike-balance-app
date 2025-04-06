@@ -39,7 +39,7 @@ func _link_labels():
 	full_bias = sim_container.get_node('FullBias/SpinBox')
 	warmup_time = sim_container.get_node('WarmupTime/SpinBox')
 
-## Loads parameters from files
+## Loads parameters from file
 func _load_params():
 	var params = Tools.load_json_dict(PARAMS_FILEPATH)
 	print(params)

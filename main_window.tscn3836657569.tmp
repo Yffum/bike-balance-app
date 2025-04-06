@@ -1,11 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=8 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
 [ext_resource type="Script" uid="uid://cffeq12ib7552" path="res://map/camera.gd" id="2_sq7ho"]
 [ext_resource type="Texture2D" uid="uid://dmq7fwrn2rgnn" path="res://map/mapMedium1.svg" id="2_tyee0"]
-[ext_resource type="Texture2D" uid="uid://bvvvd121pksjn" path="res://UI/RandomNumberGenerator.svg" id="4_bfu0d"]
-[ext_resource type="Script" uid="uid://bmxku2nhawlfc" path="res://param_controller.gd" id="4_guodr"]
-[ext_resource type="Script" uid="uid://bb0snknvsciph" path="res://seed_controller.gd" id="4_iwhwg"]
+[ext_resource type="Script" uid="uid://btjggr8h6olx7" path="res://button.gd" id="4_bfu0d"]
 [ext_resource type="Script" uid="uid://dn50ac575shwp" path="res://tools.gd" id="5_bfu0d"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
@@ -82,15 +80,14 @@ split_offset = 581
 layout_mode = 2
 current_tab = 1
 drag_to_rearrange_enabled = true
-script = ExtResource("4_guodr")
 
-[node name="Agent" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer"]
+[node name="Agent Settings" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer"]
 visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
 metadata/_tab_index = 0
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -99,69 +96,66 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer"]
 layout_mode = 2
 
-[node name="StartStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer"]
+[node name="StartStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/StartStation"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Start Station (index)"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/StartStation"]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 125.0
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="EndStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer"]
+[node name="EndStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/EndStation"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "End Station (index)"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/EndStation"]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 125.0
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="ExcursionTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer"]
+[node name="ExcursionTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/ExcursionTime"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/ExcursionTime"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Excursion Time"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/ExcursionTime"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/ExcursionTime"]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 8.0
 step = 0.1
 suffix = "hrs"
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="AgentMode" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer"]
+[node name="AgentMode" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/AgentMode"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/AgentMode"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Agent Mode"
 
-[node name="OptionButton" type="OptionButton" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/AgentMode"]
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Agent Settings/MarginContainer/VBoxContainer/AgentMode"]
 layout_mode = 2
 size_flags_horizontal = 3
 selected = 1
@@ -171,12 +165,12 @@ popup/item_0/id = 0
 popup/item_1/text = "Smart"
 popup/item_1/id = 1
 
-[node name="Simulation" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer"]
+[node name="Simulation Settings" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer"]
 layout_mode = 2
 horizontal_scroll_mode = 0
 metadata/_tab_index = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -185,116 +179,86 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer"]
 layout_mode = 2
 
-[node name="SeedController" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
-layout_mode = 2
-script = ExtResource("4_iwhwg")
-
-[node name="ToggleSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController"]
+[node name="Seed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/Seed"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Use static seed"
+text = "Seed"
 
-[node name="CheckBox" type="CheckBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/Seed"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="SetSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController"]
-visible = false
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Static Seed:"
-
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Button" type="Button" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Randomize"
-icon = ExtResource("4_bfu0d")
-
-[node name="BatchSize" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchSize"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Batch Size"
-
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchSize"]
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 1.0
-max_value = 5000.0
-value = 1.0
-suffix = "run(s)"
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="EmptyBias" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+[node name="EndStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/EmptyBias"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/EndStation"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Empty Station Bias"
+text = "End Station (index)"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/EmptyBias"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/EndStation"]
 layout_mode = 2
 size_flags_horizontal = 3
-step = 0.1
-suffix = "%"
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="FullBias" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+[node name="ExcursionTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/FullBias"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/ExcursionTime"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Full Station Bias"
+text = "Excursion Time"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/FullBias"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/ExcursionTime"]
 layout_mode = 2
 size_flags_horizontal = 3
-step = 0.1
-suffix = "%"
-custom_arrow_step = 1.0
-select_all_on_focus = true
-
-[node name="WarmupTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Warmup Time"
-
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime"]
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 5.0
 step = 0.1
 suffix = "hrs"
 custom_arrow_step = 1.0
 select_all_on_focus = true
+
+[node name="UseStaticSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/UseStaticSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Use static seed"
+
+[node name="CheckBox" type="CheckBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/UseStaticSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="UseStaticSeed2" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/UseStaticSeed2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Use static seed"
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/UseStaticSeed2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button" type="Button" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation Settings/MarginContainer/VBoxContainer/UseStaticSeed2"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("4_bfu0d")
 
 [node name="StationTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer"]
 layout_mode = 2
@@ -406,6 +370,3 @@ autowrap_mode = 2
 
 [node name="Tools" type="Node" parent="."]
 script = ExtResource("5_bfu0d")
-
-[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed/CheckBox" to="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController" method="_on_check_box_pressed"]
-[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController" method="_on_button_pressed"]

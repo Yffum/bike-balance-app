@@ -1,6 +1,7 @@
 extends TabContainer
 
 const PARAMS_FILEPATH = 'res://data/user_params.json'
+const DEFAULT_PARAMS_FILEPATH = 'res://data/default_user_params.json'
 
 # Use labels as parameters
 var start_station
@@ -13,11 +14,22 @@ var empty_bias
 var full_bias
 var warmup_time
 
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		save_params()
+		print('Parameters saved to ' + PARAMS_FILEPATH)
+		get_tree().quit() # default behavior
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_link_labels()
-	_load_params()
+	var params = Tools.load_json_dict(PARAMS_FILEPATH)
+	if params.is_empty():
+		print("Warning: %s is corrupted. Loading default parameters." % PARAMS_FILEPATH)
+		reset_params()
+		save_params()
+	else:
+		_load_params(params)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -39,10 +51,8 @@ func _link_labels():
 	full_bias = sim_container.get_node('FullBias/SpinBox')
 	warmup_time = sim_container.get_node('WarmupTime/SpinBox')
 
-## Loads parameters from file
-func _load_params():
-	var params = Tools.load_json_dict(PARAMS_FILEPATH)
-	print(params)
+## Loads parameters to interface
+func _load_params(params : Dictionary):
 	start_station.value = params['start_station']
 	end_station.value = params['end_station']
 	excursion_time.value = params['excursion_time']
@@ -65,3 +75,32 @@ func _load_params():
 	empty_bias.value = params['empty_bias']
 	full_bias.value = params['full_bias']
 	warmup_time.value = params['warmup_time']
+
+## Sets parameters to default values
+func reset_params():
+	var params = Tools.load_json_dict(DEFAULT_PARAMS_FILEPATH)
+	_load_params(params)
+
+## Saves parameters to file
+func save_params():
+	var params : Dictionary
+	params['start_station'] = start_station.value
+	params['end_station'] = end_station.value
+	params['excursion_time'] = excursion_time.value
+	# Set agent intelligence
+	if agent_mode.selected == 0:
+		params['agent_mode'] = "basic"
+	elif agent_mode.selected == 1:
+		params['agent_mode'] = "smart"
+	# Check for static seed
+	var checkbox = $Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed/CheckBox
+	if checkbox.button_pressed == true:  # Static seed set
+		params['seed'] = int(seed_text.text)
+	else:
+		params['seed'] = null
+	params['batch_size'] = batch_size.value
+	params['empty_bias'] = empty_bias.value
+	params['full_bias'] = full_bias.value
+	params['warmup_time'] = warmup_time.value
+	# Save to file
+	Tools.save_json(PARAMS_FILEPATH, params)

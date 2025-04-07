@@ -199,7 +199,7 @@ alignment = 1
 [node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Use static seed"
+text = "Use Static Seed"
 
 [node name="CheckBox" type="CheckBox" parent="MarginContainer/HSplitContainer/MarginContainer2/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed"]
 layout_mode = 2

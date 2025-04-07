@@ -1,11 +1,1 @@
-{
-    "start_station": 10,
-    "end_station": 5,
-    "excursion_time": 2.3,
-    "agent_mode": "basic",
-    "seed": null,
-    "batch_size": 2,
-    "empty_bias": 0.1,
-    "full_bias": 0.2,
-    "warmup_time": 0.3
-}
+{"agent_mode":"smart","batch_size":1.0,"empty_bias":0.0,"end_station":6.0,"excursion_time":2.3,"full_bias":0.0,"seed":null,"start_station":5.0,"warmup_time":0.0}

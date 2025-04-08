@@ -1,1 +1,1 @@
-{"agent_mode":"basic","batch_size":1.0,"empty_bias":0.0,"end_station":7.0,"excursion_time":4.9,"full_bias":0.0,"seed":3935784348,"start_station":0.0,"warmup_time":2.0}
+{"agent_mode":"basic","batch_size":4.0,"empty_bias":0.0,"end_station":7.0,"excursion_time":4.9,"full_bias":0.0,"seed":215736603,"start_station":0.0,"warmup_time":2.0}

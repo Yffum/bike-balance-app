@@ -15,8 +15,10 @@ func _ready():
 	
 	
 func _process(delta):
-	if input_enabled or is_dragging:
+	if input_enabled:
 		handle_zoom(delta)
+		handle_pan()
+	elif is_dragging:
 		handle_pan()
 	
 	

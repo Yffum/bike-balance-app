@@ -1,12 +1,13 @@
 extends Camera2D
 
 const MIN_ZOOM = 0.25
+const MAX_ZOOM = 5
 const INITIAL_ZOOM = 0.387431
 const INITIAL_POSITION = Vector2(-1775.0, -1316.514)
 
 @export var zoom_speed : float = 10
 @export var zoom_factor : float = 0.1
-@export var map_sprite : Sprite2D # Drag your map Sprite2D node here in the editor
+@export var map_sprite : Sprite2D
 
 var zoom_target : Vector2
 var drag_start_mouse_pos = Vector2.ZERO
@@ -14,7 +15,8 @@ var drag_start_camera_pos = Vector2.ZERO
 var is_dragging = false
 var input_enabled = false
 
-var map_size = Vector2.ZERO
+var map_size : Vector2
+
 
 func _ready():
 	zoom = Vector2(INITIAL_ZOOM, INITIAL_ZOOM)
@@ -32,8 +34,6 @@ func _process(delta):
 		handle_pan()
 	clamp_camera_position()
 	
-	print(zoom)
-	print(position)
 
 func handle_zoom(delta: float):
 	if Input.is_action_just_pressed('camera_zoom_in'):
@@ -41,8 +41,17 @@ func handle_zoom(delta: float):
 	elif Input.is_action_just_pressed('camera_zoom_out'):
 		zoom_target *= 1 - zoom_factor
 	zoom_target.x = max(MIN_ZOOM, zoom_target.x)
+	zoom_target.x = min(MAX_ZOOM, zoom_target.x)
 	zoom_target.y = zoom_target.x
-	zoom = zoom.lerp(zoom_target, zoom_speed * delta)
+	var new_zoom = zoom.lerp(zoom_target, zoom_speed * delta)
+	
+	# Get ratio from lerp to determine position adjustment
+	var zoom_ratio = (new_zoom.x / zoom.x) - 1
+	zoom = new_zoom
+	
+	# Zoom at mouse position
+	position += zoom_ratio * get_viewport().get_mouse_position() / zoom
+
 
 func handle_pan():
 	if not is_dragging and Input.is_action_just_pressed('camera_pan'):
@@ -54,6 +63,7 @@ func handle_pan():
 	if is_dragging:
 		var move_vector = get_viewport().get_mouse_position() - drag_start_mouse_pos
 		position = position.lerp(drag_start_camera_pos - move_vector / zoom.x, 1)
+
 
 func clamp_camera_position():
 	var viewport_size = Vector2(get_parent().size)
@@ -78,8 +88,10 @@ func clamp_camera_position():
 	else:
 		position = new_pos
 
+
 func _on_map_container_mouse_entered():
 	input_enabled = true
+
 
 func _on_map_container_mouse_exited():
 	input_enabled = false

@@ -13,12 +13,12 @@ var input_enabled = false  # Track whether mouse is over map
 func _ready():
 	zoom_target = zoom
 	
+	
 func _process(delta):
-	if input_enabled:
+	if input_enabled or is_dragging:
 		handle_zoom(delta)
 		handle_pan()
-	else:
-		is_dragging = false
+	
 	
 func handle_zoom(delta: float):
 	if Input.is_action_just_pressed('camera_zoom_in'):

@@ -39,6 +39,14 @@ func load_json_dict(path: String) -> Dictionary:
 	else:
 		push_error("JSON data is not a Dictionary.")
 		return {}
+		
+func load_json(path: String) -> Variant:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_error('Failed to open JSON file: %s' % path)
+		return null
+	var content := file.get_as_text()
+	return JSON.parse_string(content)
 
 func save_json(path: String, data: Variant) -> void:
 	# Open the file for writing

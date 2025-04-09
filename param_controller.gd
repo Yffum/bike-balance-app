@@ -72,8 +72,8 @@ func _load_params(params : Dictionary):
 		seed_setter.visible = true
 		
 	batch_size.value = params['batch_size']
-	empty_bias.value = params['empty_bias']
-	full_bias.value = params['full_bias']
+	empty_bias.value = params['empty_bias'] * 100
+	full_bias.value = params['full_bias'] * 100
 	warmup_time.value = params['warmup_time']
 
 ## Sets parameters to default values
@@ -84,8 +84,8 @@ func reset_params():
 ## Saves parameters to file
 func save_params():
 	var params : Dictionary
-	params['start_station'] = start_station.value
-	params['end_station'] = end_station.value
+	params['start_station'] = int(start_station.value)
+	params['end_station'] = int(end_station.value)
 	params['excursion_time'] = excursion_time.value
 	# Set agent intelligence
 	if agent_mode.selected == 0:
@@ -98,9 +98,9 @@ func save_params():
 		params['seed'] = int(seed_text.text)
 	else:
 		params['seed'] = null
-	params['batch_size'] = batch_size.value
-	params['empty_bias'] = empty_bias.value
-	params['full_bias'] = full_bias.value
+	params['batch_size'] = int(batch_size.value)
+	params['empty_bias'] = empty_bias.value / 100
+	params['full_bias'] = full_bias.value / 100
 	params['warmup_time'] = warmup_time.value
 	# Save to file
 	Tools.save_json(PARAMS_FILEPATH, params)

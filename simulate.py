@@ -159,6 +159,7 @@ def generate_log_filepath(seed, log_dir='logs'):
     return os.path.join(log_dir, filename)
 
 LOG_FILEPATH = generate_log_filepath(SEED)
+print(LOG_FILEPATH, end='')
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -243,7 +244,7 @@ class Agent:
             if return_time > self.end_time:
                 # End trip if root node is overtime
                 if node.prev == None:
-                    print(f'eta: {format_time(return_time)}, node time: {format_time(node.time)}')
+                    logger.error(f'eta: {format_time(return_time)}, node time: {format_time(node.time)}')
                     return END_TRIP
                 # Otherwise evaluate previous node
                 if is_best(node.prev):
@@ -447,9 +448,9 @@ def simulate_batch(batch_size: int) -> dict:
         # Add run data to dict
         for key in run_data.keys():
             batch_data[key].append(run_data[key])
-        print(f'\rRunning simulation batch: {i+1}/{batch_size} complete', end='')
+        logger.error(f'\rRunning simulation batch: {i+1}/{batch_size} complete', end='')
     # Analyze batch data
-    print(f'\n------- Batch Complete ({batch_size} runs) --------')
+    logger.error(f'\n------- Batch Complete ({batch_size} runs) --------')
     for key in batch_data:
         logger.error(f'{key}:')
         logger.error(f'\tMean: {np.mean(batch_data[key]):.2f}')
@@ -702,7 +703,7 @@ def estimate_fail_count_stochastic(station: int, bike_count: int, bike_offset: i
     # impossible scenario if bike count is out of bounds
     initial_bike_count = bike_count + bike_offset
     if initial_bike_count < 0 or initial_bike_count > capacity:
-        #print(f'>>>{station:3d} | bike_count:{bike_count}, init_bike_count:{initial_bike_count}, capacity:{capacity}')
+        #logger.error(f'>>>{station:3d} | bike_count:{bike_count}, init_bike_count:{initial_bike_count}, capacity:{capacity}')
         return LARGE_INT
     # Get probability that an arrival is a rental
     p_rent = RENT_RATES[station]/agg_rate
@@ -866,6 +867,9 @@ def main():
     # Otherwise run batch (limits logging)
     else:
         simulate_batch(BATCH_SIZE)
+    
+    file_handler.close()
+    logging.shutdown()
     
 
 if __name__ == "__main__":

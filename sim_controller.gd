@@ -2,8 +2,13 @@ extends Node
 
 @export var param_ctrl : Node
 @export var log_label : RichTextLabel
+@export var run_button : Button
+@export var spinner : Spinner
+@export var log_tab : Node
 
 var python_command_str = 'python3'
+
+var thread : Thread
 
 signal sim_complete
 
@@ -13,12 +18,12 @@ func _notification(what):
 		# Save parameters
 		param_ctrl.save_params()
 		# Prune logs
-		delete_oldest_logs()
+		_delete_oldest_logs()
 		# Quit
 		get_tree().quit()  # default behavior
 
 func _ready():
-	pass
+	thread = Thread.new()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -30,11 +35,12 @@ func run_simulation() -> String:
 	var output := []
 	var error := []
 	var exit_code := OS.execute(python_command_str, [python_script_path], output)
-	Settings.log_count += 1
+
 	#print('Exit code:', exit_code)
 	#print('Output:\n', '\n'.join(output))
 	return output[0]
 
+## Returns the content of the given log as a String
 func get_log(path : String) -> String:
 	#print(DirAccess.get_files_at('res://logs'))
 	path = ProjectSettings.globalize_path(path)
@@ -46,7 +52,7 @@ func get_log(path : String) -> String:
 	return content
 
 ## Keeps only `Tools.MAX_LOG_COUNT` most recent logs in the logs folder
-func delete_oldest_logs():
+func _delete_oldest_logs():
 	# Open log directory
 	var dir = DirAccess.open(Tools.LOGS_PATH)
 	if dir == null:
@@ -97,11 +103,32 @@ func delete_oldest_logs():
 		else:
 			print("File not found:", full_path)
 
+func _process_simulation():
+	var log_path = run_simulation() # Replace with function body.
+	call_deferred('_handle_sim_end', log_path)
+
+func _handle_sim_end(log_path : String):
+	log_path = 'res://' + log_path.replace('\\', '/')
+	# Write log text to panel
+	log_label.text = get_log(log_path)
+	thread.wait_to_finish()
+	# Enable run button, set spinner
+	run_button.disabled = false
+	run_button.text = 'Run Simulation'
+	spinner.status = 3  # Success
+	# Open log tab
+	log_tab.visible = true
 
 func _on_run_button_pressed():
+	# Save parameters to file
 	param_ctrl.save_params()
-	var log_path = run_simulation() # Replace with function body.
-	sim_complete.emit()
-	log_path = 'res://' + log_path.replace('\\', '/')
-	#await get_tree().create_timer(5.0).timeout
-	log_label.text = get_log(log_path)
+	# Disable run button, start spinner
+	run_button.disabled = true
+	run_button.text = 'Running...'
+	spinner.visible = true
+	spinner.status = 1  # Spinning
+	# Run simulation in thread
+	thread.start(_process_simulation)
+
+func _exit_tree():
+	thread.wait_to_finish()	

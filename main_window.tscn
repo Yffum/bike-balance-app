@@ -125,7 +125,7 @@ texture_repeat = 0
 material = null
 use_parent_material = false
 clip_contents = true
-custom_minimum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(45, 45)
 layout_direction = 0
 layout_mode = 2
 size_flags_horizontal = 3
@@ -155,6 +155,7 @@ rounded = false
 allow_greater = false
 allow_lesser = false
 script = ExtResource("5_fc6ls")
+spin_revolution_per_second = 1.0
 metadata/_custom_type_script = "uid://q5g8pul385u7"
 
 [node name="MarginRightPanel" type="MarginContainer" parent="MarginContainer/HSplitContainer"]

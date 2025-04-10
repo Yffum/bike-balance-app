@@ -66,9 +66,16 @@ ERROR = '\U0001F534 '
 #------------------- USER PARAMETERS -------------------
 if not OVERRIDE_USER_PARAMS:
     USER_PARAMS_FILEPATH = 'data/user_params.json'
+    ALT_USER_PARAMS_FILEPATH = 'external/data/user_params.json'
 
-    with open(USER_PARAMS_FILEPATH, 'r') as file:
-        user_params = json.load(file)
+    try:
+        with open(USER_PARAMS_FILEPATH, 'r') as file:
+            user_params = json.load(file)
+            USE_EXTERNAL_DIR = False
+    except:
+        with open(ALT_USER_PARAMS_FILEPATH, 'r') as file:
+            user_params = json.load(file)
+            USE_EXTERNAL_DIR = True
 
     SEED = user_params['seed']  # Unsigned 32 bit int (if None, one will be generated)
     BATCH_SIZE = user_params['batch_size']  # Number of simulation replications
@@ -81,11 +88,17 @@ if not OVERRIDE_USER_PARAMS:
     FULL_BIAS = user_params['full_bias']  # Bias towards filling stations (0-1)
 
 #--------------- BIKE SYSTEM PARAMETERS ----------------
+
 BIKE_SYSTEM_PARAMS_FILEPATH = 'data/sim_params.json'
+ALT_BIKE_SYSTEM_PARAMS_FILEPATH = 'external/data/sim_params.json'
 
 # Load bike system parameters for unpacking
-with open(BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
-    params = json.load(file)
+try:
+    with open(BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
+        params = json.load(file)
+except:
+    with open(ALT_BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
+        params = json.load(file)
 
 # Number of stations
 N = len(params['capacities'])
@@ -133,8 +146,13 @@ DEBUG_END_TIME = 18 + 28/60
 
 WRITE_LOG_FILE = True
 
-def generate_log_filepath(seed, log_dir='logs'):
+def generate_log_filepath(seed):
     """ Generates a log filepath in the format data/YYMMDD_HHMM_s<seed>.log """
+    if USE_EXTERNAL_DIR:
+        log_dir = os.path.join('external', 'logs')
+    else:
+        log_dir = 'logs'
+    
     # Ensure the directory exists
     os.makedirs(log_dir, exist_ok=True)
 

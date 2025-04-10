@@ -1,8 +1,5 @@
 extends TabContainer
 
-const PARAMS_FILEPATH = 'res://data/user_params.json'
-const DEFAULT_PARAMS_FILEPATH = 'res://data/default_user_params.json'
-
 # Use labels as parameters
 var start_station
 var end_station
@@ -14,21 +11,19 @@ var empty_bias
 var full_bias
 var warmup_time
 
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
+func _on_tools_external_paths_set():
+	_initialize()
+	
+func _initialize():
 	_link_labels()
-	var params = Tools.load_json_dict(PARAMS_FILEPATH)
+	var params = Tools.load_json_dict(Tools.USER_PARAMS_PATH)
 	if params.is_empty():
-		print("Warning: %s is corrupted. Loading default parameters." % PARAMS_FILEPATH)
+		print("Warning: %s is corrupted. Loading default parameters." % Tools.USER_PARAMS_PATH)
 		reset_params()
 		save_params()
 	else:
 		_load_params(params)
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
+	
 
 ## Gets the UI labels for parameters. Access values using ".value"
 func _link_labels():
@@ -73,7 +68,7 @@ func _load_params(params : Dictionary):
 
 ## Sets parameters to default values
 func reset_params():
-	var params = Tools.load_json_dict(DEFAULT_PARAMS_FILEPATH)
+	var params = Tools.load_json_dict(Tools.DEFAULT_USER_PARAMS_PATH)
 	_load_params(params)
 
 ## Saves parameters to file
@@ -98,4 +93,4 @@ func save_params():
 	params['full_bias'] = full_bias.value / 100
 	params['warmup_time'] = warmup_time.value
 	# Save to file
-	Tools.save_json(PARAMS_FILEPATH, params)
+	Tools.save_json(Tools.USER_PARAMS_PATH, params)

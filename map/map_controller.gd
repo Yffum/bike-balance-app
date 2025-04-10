@@ -25,7 +25,7 @@ func _process(delta):
 
 func _inst_markers():
 	# Get coords from json
-	var coords = Tools.load_json_array('res://data/station_coords.json')
+	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)
 	# Iteratively instance markers
 	for coord in coords:
 		coord = Vector2(coord[0], coord[1])

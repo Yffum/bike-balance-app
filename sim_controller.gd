@@ -10,8 +10,6 @@ var python_command_str = 'python3'
 
 var thread : Thread
 
-signal sim_complete
-
 func _notification(what):
 	# On application close:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
@@ -31,19 +29,13 @@ func _process(delta):
 
 ## Returns the filepath of the log
 func run_simulation() -> String:
-	var python_script_path = ProjectSettings.globalize_path('res://simulate.py')
+	var python_script_path = Tools.SIM_SCRIPT_PATH
 	var output := []
-	var error := []
-	var exit_code := OS.execute(python_command_str, [python_script_path], output)
-
-	#print('Exit code:', exit_code)
-	#print('Output:\n', '\n'.join(output))
+	var exit_code := OS.execute(python_command_str, [python_script_path], output, false, false)
 	return output[0]
 
 ## Returns the content of the given log as a String
 func get_log(path : String) -> String:
-	#print(DirAccess.get_files_at('res://logs'))
-	path = ProjectSettings.globalize_path(path)
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		var fail_str = 'Failed to open log file: %s' % path
@@ -108,7 +100,9 @@ func _process_simulation():
 	call_deferred('_handle_sim_end', log_path)
 
 func _handle_sim_end(log_path : String):
-	log_path = 'res://' + log_path.replace('\\', '/')
+	log_path = log_path.replace('\\', '/')
+	log_path = log_path.replace('external/', '')
+	log_path = Tools.EXTERNAL_DIR.path_join(log_path)
 	# Write log text to panel
 	log_label.text = get_log(log_path)
 	thread.wait_to_finish()

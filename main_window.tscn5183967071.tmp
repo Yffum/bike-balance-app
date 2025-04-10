@@ -411,33 +411,16 @@ text = "The log of the last simulation run will display here."
 
 [node name="StationTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
-current_tab = 0
+current_tab = 1
 tabs_visible = false
 use_hidden_tabs_for_min_size = true
 tab_focus_mode = 0
-
-[node name="SelectStation" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 50
-theme_override_constants/margin_top = 50
-theme_override_constants/margin_right = 50
-theme_override_constants/margin_bottom = 50
-metadata/_tab_index = 0
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/SelectStation"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-text = "Select a station on the map to view station info."
-label_settings = SubResource("LabelSettings_l06f4")
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
 
 [node name="StationSettings" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer"]
 visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
-metadata/_tab_index = 1
+metadata/_tab_index = 0
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings"]
 layout_mode = 2
@@ -517,6 +500,23 @@ popup/item_0/id = 0
 popup/item_1/text = "Smart"
 popup/item_1/id = 1
 
+[node name="SelectStation" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 50
+metadata/_tab_index = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/SelectStation"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+text = "Select a station on the map to view station info."
+label_settings = SubResource("LabelSettings_l06f4")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
 [node name="Tools" type="Node" parent="."]
 script = ExtResource("5_bfu0d")
 
@@ -536,4 +536,3 @@ log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitCo
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton" to="SimController" method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed/CheckBox" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController" method="_on_check_box_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController" method="_on_button_pressed"]
-[connection signal="external_paths_set" from="Tools" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" method="_on_tools_external_paths_set"]

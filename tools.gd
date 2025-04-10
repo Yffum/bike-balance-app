@@ -1,15 +1,40 @@
 extends Node
 
-var MAX_LOG_COUNT = 20
+var MAX_LOG_COUNT = 20  # Max number of log files before pruning
 
+#----------------- Internal Paths ------------------
+var INTERNAL_DATA_PATH = ProjectSettings.globalize_path('res://data')
+var DEFAULT_USER_PARAMS_PATH = INTERNAL_DATA_PATH.path_join('default_user_params.json')
+var STATION_COORDS_PATH = INTERNAL_DATA_PATH.path_join('station_coords.json')
 
+#----------------- External Paths ------------------
+var EXTERNAL_DIR : String
+var EXTERNAL_DATA_PATH : String
+var LOGS_PATH : String
+var USER_PARAMS_PATH : String
+var SIM_SCRIPT_PATH : String
 
-#--------------------------- Global Paths --------------------------------
+signal external_paths_set
 
-var LOGS_PATH = ProjectSettings.globalize_path('res://logs')
-var DATA_PATH = ProjectSettings.globalize_path('res://data')
+func _ready():
+	_set_external_paths()
+	external_paths_set.emit()
 
-
+## Uses internal directory if in editor
+func _set_external_paths():
+	# If in editor, use resource paths
+	if OS.has_feature('editor'):
+		EXTERNAL_DIR = ProjectSettings.globalize_path('res://external')
+	# If in exported executable, use base folder
+	else:
+		EXTERNAL_DIR = OS.get_executable_path().get_base_dir()
+		
+	EXTERNAL_DATA_PATH = EXTERNAL_DIR.path_join('data')
+	LOGS_PATH = EXTERNAL_DIR.path_join('logs')
+	USER_PARAMS_PATH = EXTERNAL_DATA_PATH.path_join('user_params.json')
+	SIM_SCRIPT_PATH = EXTERNAL_DIR.path_join('simulate.py')
+	
+	print(SIM_SCRIPT_PATH)
 
 #----------------------- Global Tool Functions ---------------------------
 

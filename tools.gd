@@ -1,5 +1,16 @@
 extends Node
 
+var MAX_LOG_COUNT = 20
+
+
+
+#--------------------------- Global Paths --------------------------------
+
+var LOGS_PATH = ProjectSettings.globalize_path('res://logs')
+var DATA_PATH = ProjectSettings.globalize_path('res://data')
+
+
+
 #----------------------- Global Tool Functions ---------------------------
 
 func load_json_array(path: String) -> Array:

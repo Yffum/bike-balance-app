@@ -14,11 +14,6 @@ var empty_bias
 var full_bias
 var warmup_time
 
-func _notification(what):
-	# Save parameters before closing
-	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		save_params()
-		get_tree().quit()  # default behavior
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

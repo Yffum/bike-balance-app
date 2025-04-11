@@ -89,16 +89,11 @@ if not OVERRIDE_USER_PARAMS:
 
 #--------------- BIKE SYSTEM PARAMETERS ----------------
 
-BIKE_SYSTEM_PARAMS_FILEPATH = 'data/sim_params.json'
-ALT_BIKE_SYSTEM_PARAMS_FILEPATH = 'external/data/sim_params.json'
+BIKE_SYSTEM_PARAMS_FILEPATH = 'data/sim_params.json' if not USE_EXTERNAL_DIR else 'external/data/sim_params.json'
 
 # Load bike system parameters for unpacking
-try:
-    with open(BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
-        params = json.load(file)
-except:
-    with open(ALT_BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
-        params = json.load(file)
+with open(BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
+    params = json.load(file)
 
 # Number of stations
 N = len(params['capacities'])
@@ -455,7 +450,7 @@ def simulate_batch(batch_size: int) -> dict:
     logger.setLevel(BATCH_LOG_LEVEL) 
     # Ensure SEED is not preset
     if SEED != None:
-        logger.error(f'{Error} SEED should be None for batch simulation.')
+        logger.error(f'{ERROR} SEED should be None for batch simulation.')
     # Iterate through batch
     batch_data = None
     for i in range(batch_size):

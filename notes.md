@@ -17,3 +17,9 @@
 
 - [ ] For smart agent, search highest incentives first when biking/walking for first node, instead of nearest
 - [ ] Add mode to application for finding average reward instead of batch
+
+
+- Idea: try predicting and caching all updated incentives, then only calculate new incentive for stations traveled to/from
+
+- Precalculate and cache every possible incentive for each bike count for each station? 125 stations * ~40 bike counts = 5000 incentives, not bad
+--> then have agent search best incentives instead of nearest stations

@@ -1,0 +1,68 @@
+Delta: inf, Mean: 0.00
+Delta: inf, Mean: 58.00
+Delta: 63.53, Mean: 53.00
+Delta: 12.75, Mean: 52.33
+Delta: 7.28, Mean: 53.25
+Delta: 4.92, Mean: 53.20
+Delta: 3.84, Mean: 52.83
+Delta: 3.58, Mean: 53.57
+Delta: 3.17, Mean: 53.13
+Delta: 2.78, Mean: 52.89
+Delta: 2.78, Mean: 52.30
+Delta: 2.89, Mean: 51.64
+Delta: 2.64, Mean: 51.83
+Delta: 3.26, Mean: 52.85
+Delta: 3.03, Mean: 53.07
+Delta: 2.86, Mean: 53.33
+Delta: 2.70, Mean: 53.56
+Delta: 2.62, Mean: 53.24
+Delta: 2.50, Mean: 53.44
+Delta: 2.50, Mean: 53.84
+Delta: 2.36, Mean: 53.85
+Delta: 2.27, Mean: 53.67
+Delta: 2.16, Mean: 53.68
+Delta: 2.11, Mean: 53.91
+Delta: 2.13, Mean: 54.25
+Delta: 2.07, Mean: 54.08
+Delta: 2.03, Mean: 53.88
+Total runtime (s): 12.734375
+Average replication runtime (s): 0.47164351851851855
+Replication count: 27
+Variance: 24.22507122507124
+We are 95.0% confident the mean reward is 53.92592592592592 +/- 2
+excursion_time:
+	Mean: 3.97
+	Median: 3.97
+	Std Dev: 0.02
+	Max: 4.00
+	Min: 3.93
+real_time_duration:
+	Mean: 0.47
+	Median: 0.47
+	Std Dev: 0.04
+	Max: 0.57
+	Min: 0.40
+bike_count:
+	Mean: 52.48
+	Median: 52.00
+	Std Dev: 3.68
+	Max: 60.00
+	Min: 45.00
+walk_count:
+	Mean: 52.48
+	Median: 52.00
+	Std Dev: 3.68
+	Max: 60.00
+	Min: 45.00
+wait_count:
+	Mean: 0.00
+	Median: 0.00
+	Std Dev: 0.00
+	Max: 0.00
+	Min: 0.00
+reward:
+	Mean: 53.93
+	Median: 54.00
+	Std Dev: 4.83
+	Max: 65.00
+	Min: 45.00

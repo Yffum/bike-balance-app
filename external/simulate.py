@@ -5,6 +5,8 @@ import numpy as np
 import logging
 import time
 import os
+from queue import PriorityQueue
+from scipy import stats
 
         
 # Unless otherwise indicated:
@@ -12,18 +14,24 @@ import os
 # - "time" refers to simulated time measured in hours
 
 #------------------- USER PARAMETER OVERRIDE --------------------
-OVERRIDE_USER_PARAMS = False 
+OVERRIDE_USER_PARAMS = False  # Must be False for application to work
 # The following parameters are only used if OVERRIDE_USER_PARAMS is True.
 # Otherwise parameters are loaded from file
 SEED = None  # Unsigned 32 bit int (if None, one will be generated)
-BATCH_SIZE = 1  # Number of simulation replications
+BATCH_SIZE = 1000  # Number of simulation replications
 START_STATION = 0  # Agent start station index
 FINAL_STATION = 0  # Agent final station index
 EXCURSION_TIME = 4.0  # Length of excursion in hours
 AGENT_INTELLIGENCE = 'smart'  # 'basic', 'smart'
-WARM_UP_TIME = 2.0  # The number of hours that the simulation runs before starting the agent
+WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starting the agent
 EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
+
+# Establish data directory
+if os.path.exists('external'):
+    BASE_PATH = 'external/'
+else:
+    BASE_PATH = ''
 
 #=============================== STATIC PARAMETERS ===========================================
 
@@ -32,11 +40,11 @@ START_TIME = 16.0  # Time of day (HH) when the simulation begins
 
 ESTIMATE_FAIL_COUNT_TIME_HORIZON = 1.0  # The amount of time in hours used for
                                         # the fail count estimation sub-simulation
-ESTIMATE_FAIL_COUNT_IS_STOCHASTIC = False  # Determines the estimate_fail_count function                                     
+ESTIMATE_FAIL_COUNT_IS_STOCHASTIC = True  # Determines the estimate_fail_count function                                     
 ESTIMATE_FAIL_COUNT_REP_COUNT = 20  # Number of simulation replications for stochastic 
                                     # estimation of fail count                                                              
                                         
-AGENT_SEARCH_BRANCH_FACTOR = 3  # The number of nearest stations (with rewards if biking) to
+AGENT_SEARCH_BRANCH_FACTOR = 6  # The number of nearest stations (with rewards if biking) to
                                 # search when expanding a node
 AGENT_MAX_SEARCH_DEPTH = 4  # The max depth of the agent's search tree
 AGENT_MAX_SEARCH_TIME = 2.0  # This is the maximum time from the root node that a node can have.
@@ -45,6 +53,7 @@ AGENT_MAX_SEARCH_TIME = 2.0  # This is the maximum time from the root node that 
 AGENT_WAIT_TIME = 5.001/60  # The length of time in hours the agent waits when no station found
 AGENT_WAIT_TIME_LENIENCY = 2/60  # If the wait time ends at most this much time before
                                  # the update, then agent extends wait till update
+AGENT_MAX_WALK_TIME = 5/60  # The maximum time in hours the agent will walk to a station (for basic only)
 INCENTIVE_COST = 0.5  # The number of failures that must be mitigated to warrant
                     # incentivizing a station
 if not ESTIMATE_FAIL_COUNT_IS_STOCHASTIC:  # Deterministic doesn't work with incentive cost
@@ -65,17 +74,9 @@ ERROR = '\U0001F534 '
 
 #------------------- USER PARAMETERS -------------------
 if not OVERRIDE_USER_PARAMS:
-    USER_PARAMS_FILEPATH = 'data/user_params.json'
-    ALT_USER_PARAMS_FILEPATH = 'external/data/user_params.json'
-
-    try:
-        with open(USER_PARAMS_FILEPATH, 'r') as file:
-            user_params = json.load(file)
-            USE_EXTERNAL_DIR = False
-    except:
-        with open(ALT_USER_PARAMS_FILEPATH, 'r') as file:
-            user_params = json.load(file)
-            USE_EXTERNAL_DIR = True
+    USER_PARAMS_FILEPATH = BASE_PATH + 'data/user_params.json'
+    with open(USER_PARAMS_FILEPATH, 'r') as file:
+        user_params = json.load(file)
 
     SEED = user_params['seed']  # Unsigned 32 bit int (if None, one will be generated)
     BATCH_SIZE = user_params['batch_size']  # Number of simulation replications
@@ -89,7 +90,7 @@ if not OVERRIDE_USER_PARAMS:
 
 #--------------- BIKE SYSTEM PARAMETERS ----------------
 
-BIKE_SYSTEM_PARAMS_FILEPATH = 'data/sim_params.json' if not USE_EXTERNAL_DIR else 'external/data/sim_params.json'
+BIKE_SYSTEM_PARAMS_FILEPATH = BASE_PATH + 'data/sim_params.json'
 
 # Load bike system parameters for unpacking
 with open(BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
@@ -143,10 +144,7 @@ WRITE_LOG_FILE = True
 
 def generate_log_filepath(seed):
     """ Generates a log filepath in the format data/YYMMDD_HHMM_s<seed>.log """
-    if USE_EXTERNAL_DIR:
-        log_dir = os.path.join('external', 'logs')
-    else:
-        log_dir = 'logs'
+    log_dir = os.path.join(BASE_PATH[:-1], 'logs')
     
     # Ensure the directory exists
     os.makedirs(log_dir, exist_ok=True)
@@ -210,17 +208,107 @@ class Agent:
         self.mode = 'bike'
         self.end_time = START_TIME + EXCURSION_TIME  # Agent should arrive at final station by this time
         self.reward = 0  # Total rewards earned
+        self.can_rent_bike = True # True if the agent cant rent a bike from the current station
+                                  # (becomes False after delivering a bike)
 
     def update(self, new_station: int, reward_gain: float) -> None:
         """ Updates the agent's state based on the given trip data. """
         # Update station
         self.station = new_station
-        # Alternate mode
-        self.mode = 'walk' if self.mode == 'bike' else 'bike'
+        # Alternate mode and set rent restriction
+        if self.mode == 'walk':
+            self.mode = 'bike'
+            self.can_rent_bike = True
+        elif self.mode == 'bike':
+            self.mode = 'walk'
+            self.can_rent_bike = False
         # Adjust reward
         self.reward += reward_gain    
 
     def get_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
+        """ Returns the next station the agent will travel to. """
+        # Use smart action if agent is smart, otherwise use basic action
+        if AGENT_INTELLIGENCE == 'smart':
+            return self.get_smart_action(bike_counts, incentives, current_time)
+        elif AGENT_INTELLIGENCE == 'basic':
+            return self.get_basic_action(bike_counts, incentives, current_time)
+
+    def get_basic_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
+        """" Returns the next station the agent will travel without prediction. """
+        # Set nearest stations and trip times based on mode
+        if self.mode == 'bike':
+            near_stations = NEAR_BIKE_STATIONS
+            trip_times = BIKE_TIMES
+        elif self.mode == 'walk':
+            near_stations = NEAR_WALK_STATIONS
+            trip_times = WALK_TIMES
+            # Track closest walk station without return incentive
+            nearest_walk_station = None
+        # Queue stations prioritized by incentive per time
+        station_queue = PriorityQueue()
+        # Track whether there's time to reach final station
+        has_time_to_finish_excursion = False
+        for end_station in near_stations[self.station]:
+            # Ensure there is enough time to reach final station
+            return_time = (
+                current_time 
+                + trip_times[self.station][end_station] 
+                + WALK_TIMES[end_station][self.final_station]
+            )
+            if return_time > self.end_time:
+                continue
+            else:
+                has_time_to_finish_excursion = True
+            # Ensure not walking to far away station
+            if self.mode == 'walk' and trip_times[self.station][end_station] > AGENT_MAX_WALK_TIME:
+                break  # Iterating through nearest stations, so trips only get longer
+            # Ensure there is no counter-incentive
+            incentive = incentives[end_station]
+            if self.mode == 'walk':
+                incentive *= -1  # Invert return incentive for walking
+            # If walking, set nearest walk station
+            if incentive >= 0 and self.mode == 'walk' and nearest_walk_station is None:
+                nearest_walk_station = end_station
+            if incentive <= 0:
+                continue
+            # Add station to queue
+            value = incentive / trip_times[self.station][end_station]
+            station_queue.put((-1 * value, end_station))
+        # If there's no time to finish the excursion, end trip
+        if not has_time_to_finish_excursion:
+            return END_TRIP
+        # No stations found
+        if station_queue.empty():
+            # No valid incentivized walk stations
+            if self.mode == 'walk':
+                # If the agent can rent a bike, just wait 
+                if self.can_rent_bike:
+                    return NULL_STATION
+                # Otherwise, check for nearest walk station  
+                if nearest_walk_station is not None:
+                    return nearest_walk_station
+                # No valid walk station
+                else:
+                    # If no time to wait, end trip
+                    logger.warning(f'\t{WARNING} No valid walk station')
+                    return_time = (
+                        current_time 
+                        + AGENT_WAIT_TIME
+                        + WALK_TIMES[self.station][self.final_station]
+                    )
+                    if return_time > self.end_time:
+                        return END_TRIP
+                    # Otherwise wait
+                    else:
+                        return NULL_STATION
+            # If no stations to bike to, wait
+            elif self.mode == 'bike':
+                return NULL_STATION
+        # Return station with highest incentive per time 
+        action = station_queue.get()[1]
+        return action 
+
+    def get_smart_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
         """ Returns the next station the agent will travel to using a search tree. """
         # Estimate and cache future incentives for comparing nodes
         incentives_cache = dict() # {(<update_time>, <station>): <incentive>}     
@@ -436,12 +524,12 @@ def format_time(time: float) -> str:
     return f"{hours:02d}:{minutes:02d}"
 
 
-def print_bike_counts(bike_counts: list) -> None:
+def log_bike_counts(bike_counts: list) -> None:
     """ Prints a list of every station's bike count and capacity. """
-    print(f'--- Bike Counts ---')
+    logger.info(f'--- Bike Counts ---')
     for i in range(N):
-        print(f'{i}: ({bike_counts[i]}/{CAPACITIES[i]})')
-    print('-------------------')
+        logger.info(f'{i}: ({bike_counts[i]}/{CAPACITIES[i]})')
+    logger.info('-------------------')
 
 
 def simulate_batch(batch_size: int) -> dict:
@@ -461,16 +549,20 @@ def simulate_batch(batch_size: int) -> dict:
         # Add run data to dict
         for key in run_data.keys():
             batch_data[key].append(run_data[key])
-        logger.error(f'\rRunning simulation batch: {i+1}/{batch_size} complete', end='')
+        logger.error(f'\rRunning simulation batch: {i+1}/{batch_size} complete')
     # Analyze batch data
     logger.error(f'\n------- Batch Complete ({batch_size} runs) --------')
-    for key in batch_data:
+    logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
+    log_data_stats(batch_data)
+    
+def log_data_stats(data: dict) -> None:
+    for key in data:
         logger.error(f'{key}:')
-        logger.error(f'\tMean: {np.mean(batch_data[key]):.2f}')
-        logger.error(f'\tMedian: {np.median(batch_data[key]):.2f}')
-        logger.error(f'\tStd Dev: {np.std(batch_data[key]):.2f}')
-        logger.error(f'\tMax: {np.max(batch_data[key]):.2f}')
-        logger.error(f'\tMin: {np.min(batch_data[key]):.2f}')
+        logger.error(f'\tMean: {np.mean(data[key]):.2f}')
+        logger.error(f'\tMedian: {np.median(data[key]):.2f}')
+        logger.error(f'\tStd Dev: {np.std(data[key]):.2f}')
+        logger.error(f'\tMax: {np.max(data[key]):.2f}')
+        logger.error(f'\tMin: {np.min(data[key]):.2f}')
 
 
 def simulate_bike_share() -> dict:
@@ -510,11 +602,12 @@ def simulate_bike_share() -> dict:
         end_station = agent.get_action(bike_counts, incentives, current_time)
         #-------------------- No trip found ----------------------
         # No trip found, try switching modes or wait till next update
-        if end_station == NULL_STATION: # and agent.mode == 'walk'
-            logger.warning(f'\t{WARNING} No trip found, trying walking')
+        if end_station == NULL_STATION:
+            logger.warning(f'\t{WARNING} No trip found')
             #--------------- Try walking ------------------
             # If biking, try one-off walking attempt before waiting
             if agent.mode == 'bike':
+                logger.warning(f'\t{WARNING} One-off walking attempt')
                 agent.mode = 'walk'
                 # Look for path starting with walk action
                 end_station = agent.get_action(bike_counts, incentives, current_time)
@@ -526,7 +619,6 @@ def simulate_bike_share() -> dict:
                     agent.mode = 'bike'
                 # If station found, process trip
                 else:
-                    logger.error(f'\nSEED: {seed}')
                     logger.error(f'\t{WARNING} Switch to walk mode')
             #------------------- Wait ----------------------
             # If biking or one-off walking attempt failed, wait
@@ -610,7 +702,7 @@ def simulate_bike_share() -> dict:
         # Report trip
         reward_str = ''
         if agent.mode == 'bike':
-            reward_str = f'+{reward}'
+            reward_str = f'+{reward:.2f}'
         if trip_duration*60 < 10:
             duration_str = f'{trip_duration*60:.1f} min'
         else:
@@ -650,6 +742,71 @@ def simulate_bike_share() -> dict:
     data['wait_count'] = wait_count
     data['reward'] = agent.reward
     return data
+
+
+def replicate(alpha=0.05, rho=2):
+    """Using the Fixed-Width Confidence Interval, replicate simulations,
+    until the margin of error delta is less than rho. Confidence level 
+    is 1 - alpha """
+    # Set logger level
+    logger.setLevel(BATCH_LOG_LEVEL) 
+    # Remove static seed
+    global SEED
+    SEED = None
+    # Collect sim data
+    batch_data = None
+    # Update variance using Welford's online algo
+    n = 0 # sample count
+    mean = 0.0
+    m2 = 0.0  # The sum of squares of differences from the mean
+    delta = float('inf')  # margin of error
+    runtimes = []
+
+    def update_variance(x):
+        nonlocal n, mean, m2
+        n += 1
+        delta_x = x - mean
+        mean += delta_x / n
+        m2 += delta_x * (x - mean)
+
+    def get_variance():
+        if n < 2:
+            return float('inf')  # Not enough samples to compute variance
+        return m2 / (n - 1)
+
+    # Start sampling
+    total_start_time = time.process_time()
+    while delta > rho:
+        start_time = time.process_time()
+        # Run simulation and save data
+        datum = simulate_bike_share()
+        # Create dict based on simulation data if first run
+        if batch_data == None:
+            batch_data = {key: [] for key in datum}
+        # Add run data to dict
+        for key in datum.keys():
+            batch_data[key].append(datum[key])
+        # Get reward and update stats
+        sample = datum['reward']
+        runtimes.append(time.process_time() - start_time)
+        update_variance(sample)
+        # Update variance and delta
+        variance = get_variance()
+        if n > 1:  # Calculate t-score and margin of error only with sufficient samples
+            t_score = stats.t.ppf(1 - alpha / 2, n - 1)
+            delta = t_score * np.sqrt(variance / n)
+        logger.error(f'Delta: {delta:.2f}, Mean: {mean:.2f}')
+    total_runtime = time.process_time() - total_start_time
+    logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
+    logger.error(f'Batch size: {n}')
+    logger.error(f'Total runtime (s): {total_runtime}')
+    logger.error(f'Average replication runtime (s): {sum(runtimes)/len(runtimes)}')
+    logger.error(f'Replication count: {n}')
+    logger.error(f'Variance: {get_variance()}')
+    logger.error(f'We are {(1 - alpha) * 100}% confident the mean reward is {mean} +/- {rho}')
+    
+    log_data_stats(batch_data)
+    return batch_data
 
 
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
@@ -872,6 +1029,9 @@ def log_incentivized_stations(incentives: list) -> None:
     
     
 def main():
+    # replicate()
+    # return
+    
     # Run simulation directly for single run
     if BATCH_SIZE == 1:
         # Set logger level

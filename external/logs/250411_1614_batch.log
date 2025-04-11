@@ -1,0 +1,51 @@
+Delta: inf, Mean: 16.31
+Delta: 4.57, Mean: 16.67
+Delta: 3.19, Mean: 15.96
+Delta: 2.29, Mean: 16.45
+Delta: 2.69, Mean: 17.25
+Delta: 2.16, Mean: 17.52
+Delta: 2.08, Mean: 17.05
+Delta: 1.94, Mean: 17.41
+Agent Intelligence: smart
+Batch size: 8
+Total runtime (s): 115.40625
+Average replication runtime (s): 14.421875
+Replication count: 8
+Variance: 5.366491018941294
+We are 95.0% confident the mean reward is 17.409818438014845 +/- 2
+excursion_time:
+	Mean: 3.97
+	Median: 3.97
+	Std Dev: 0.02
+	Max: 4.00
+	Min: 3.92
+real_time_duration:
+	Mean: 14.51
+	Median: 13.97
+	Std Dev: 1.76
+	Max: 17.46
+	Min: 12.59
+bike_count:
+	Mean: 39.62
+	Median: 40.00
+	Std Dev: 2.06
+	Max: 42.00
+	Min: 35.00
+walk_count:
+	Mean: 39.62
+	Median: 40.00
+	Std Dev: 2.06
+	Max: 42.00
+	Min: 35.00
+wait_count:
+	Mean: 0.00
+	Median: 0.00
+	Std Dev: 0.00
+	Max: 0.00
+	Min: 0.00
+reward:
+	Mean: 17.41
+	Median: 17.48
+	Std Dev: 2.17
+	Max: 20.42
+	Min: 14.23

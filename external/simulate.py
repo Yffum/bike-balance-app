@@ -1,24 +1,26 @@
 # Main simulation
 import json
 from dataclasses import dataclass
-import numpy as np
 import logging
 import time
 import os
 from queue import PriorityQueue
+
+import numpy as np
 from scipy import stats
 
+from tools import estimate_stochastic_mean
         
 # Unless otherwise indicated:
 # - "station" refers to station index
 # - "time" refers to simulated time measured in hours
 
 #------------------- USER PARAMETER OVERRIDE --------------------
-OVERRIDE_USER_PARAMS = False  # Must be False for application to work
+OVERRIDE_USER_PARAMS = True  # Must be False for application to work
 # The following parameters are only used if OVERRIDE_USER_PARAMS is True.
 # Otherwise parameters are loaded from file
 SEED = None  # Unsigned 32 bit int (if None, one will be generated)
-BATCH_SIZE = 1000  # Number of simulation replications
+BATCH_SIZE = 1  # Number of simulation replications
 START_STATION = 0  # Agent start station index
 FINAL_STATION = 0  # Agent final station index
 EXCURSION_TIME = 4.0  # Length of excursion in hours
@@ -36,13 +38,7 @@ else:
 #=============================== STATIC PARAMETERS ===========================================
 
 #-------------------- CONFIGURATION --------------------
-START_TIME = 16.0  # Time of day (HH) when the simulation begins
-
-ESTIMATE_FAIL_COUNT_TIME_HORIZON = 1.0  # The amount of time in hours used for
-                                        # the fail count estimation sub-simulation
-ESTIMATE_FAIL_COUNT_IS_STOCHASTIC = True  # Determines the estimate_fail_count function                                     
-ESTIMATE_FAIL_COUNT_REP_COUNT = 20  # Number of simulation replications for stochastic 
-                                    # estimation of fail count                                                              
+START_TIME = 16.0  # Time of day (HH) when the simulation begins                                                     
                                         
 AGENT_SEARCH_BRANCH_FACTOR = 6  # The number of nearest stations (with rewards if biking) to
                                 # search when expanding a node
@@ -56,8 +52,6 @@ AGENT_WAIT_TIME_LENIENCY = 2/60  # If the wait time ends at most this much time 
 AGENT_MAX_WALK_TIME = 5/60  # The maximum time in hours the agent will walk to a station (for basic only)
 INCENTIVE_COST = 0.5  # The number of failures that must be mitigated to warrant
                     # incentivizing a station
-if not ESTIMATE_FAIL_COUNT_IS_STOCHASTIC:  # Deterministic doesn't work with incentive cost
-    INCENTIVE_COST = 0                     # because it uses int estimates
 INCENTIVE_UPDATE_INTERVAL = 0.25  # The period of time in hours between incentives updates
 
 #----------------------- TESTING -----------------------
@@ -130,6 +124,22 @@ def get_near_stations_list(travel_time_matrix: list) -> list:
 # List of nearest stations (excluding itself, so [N x (N-1)] int matrix)
 NEAR_BIKE_STATIONS = get_near_stations_list(params['bike_times'])
 NEAR_WALK_STATIONS = get_near_stations_list(params['walk_times'])
+
+# Load incentives from file
+INCENTIVES_FILEPATH = BASE_PATH + 'data/incentives.json'
+with open(INCENTIVES_FILEPATH, 'r') as file:
+    # INCENTIVES[<station>][<bike_count>]
+    INCENTIVES = json.load(file)
+
+def adjust_incentives():
+    """ Subtract incentive cost from incentives """
+    pass
+    # ToDo
+    
+    
+    
+    
+    
 #============================================================================================
 
 #----------------------------------------- LOGGING ------------------------------------------
@@ -430,7 +440,7 @@ class Agent:
                         rent_reward = get_reward(incentives_cache[(incentive_time, node.station)], 'rent')
                     else:
                         old_bike_count = estimate_bike_count(node.station, root_bike_counts[node.station], -1 * incentive_time_from_root)
-                        incentive = generate_single_incentive(node.station, old_bike_count)
+                        incentive = INCENTIVES[node.station][old_bike_count]
                         rent_reward = get_reward(incentive, 'rent')
                         incentives_cache[(incentive_time, node.station)] = incentive
                     # Check if end station incentive is already cached
@@ -438,7 +448,7 @@ class Agent:
                         return_reward = get_reward(incentives_cache[(incentive_time, end_station)], 'return')
                     else:
                         old_bike_count = estimate_bike_count(end_station, root_bike_counts[end_station], -1 * incentive_time_from_root)
-                        incentive = generate_single_incentive(end_station, old_bike_count)
+                        incentive = INCENTIVES[end_station][old_bike_count]
                         return_reward = get_reward(incentive, 'return')
                         incentives_cache[(incentive_time, end_station)] = incentive                        
                     reward = rent_reward + return_reward
@@ -470,29 +480,6 @@ class Agent:
             if len(new_nodes) == branch_factor:
                 break
         return new_nodes
-
-    def _predict_failure(self, station: int, option: str, bike_count: int):
-        """ Returns true if a failure for the given option is expected at the given station 
-        within ESTIMATE_FAIL_COUNT_TIME_HORIZON. Returns false if a failure for the 
-        alternate option is predicted, or if no failures are predicted.
-        Args:
-            option (str): {'rent', 'return'} The type of failure to predict
-            bike_offset (int): The bike count is offest by this amount
-        """
-        # Get net rate of bikes being added
-        net_rate = RETURN_RATES[station] - RENT_RATES[station]
-        # Get new bike count
-        bike_difference = net_rate * ESTIMATE_FAIL_COUNT_TIME_HORIZON
-        bike_difference = bike_difference
-        bike_count += bike_difference
-        # Predict rental failure
-        if option == 'rent' and bike_count < 0: 
-            return True
-        # Predict return failure
-        if option == 'return' and bike_count > CAPACITIES[station]:
-            return True
-        # No failures predicted for given option
-        return False
            
     def _validate_station(self, station: int, bike_count: int, mode: str) -> bool:
         """ Returns true iff the station is a valid destination. That means going here
@@ -501,24 +488,30 @@ class Agent:
             mode (str): {'walk', 'bike'} the mode of travel used to reach
                 the given station
         """
-        # Predict if going to station would result in failure
-        if (
-            mode == 'bike'
-            and self._predict_failure(station, 'return', bike_count + 1)
-            ):
-            return False
-        elif (
-            mode == 'walk'
-            and self._predict_failure(station, 'rent', bike_count - 1)
-            ):
-            return False
-        # No failures predicted
+        if mode == 'walk':
+            # Remove bike, limited by capacity
+            bike_count = min(bike_count + 1, CAPACITIES[station])
+            # Get incentive
+            incentive = INCENTIVES[station][bike_count]
+            # Station is not valid if returns are incentivized
+            if incentive > 0:
+                return False
+        else:  # mode == 'bike'
+            # Add bike, limited by capacity
+            bike_count = max(bike_count - 1, 0)
+            # Get incentive
+            incentive = INCENTIVES[station][bike_count]
+            # Station is not valid if rentals are incentivized
+            if incentive < 0:
+                return False
+        # Station is valid
         return True
-
+        
 
 def format_time(time: float) -> str:
     """ Takes a float representing the time of day in hours and returns
-    a string in HH:mm format. """
+    a string in HH:mm format. 
+    """
     hours = int(time)
     minutes = int((time - hours) * 60)
     return f"{hours:02d}:{minutes:02d}"
@@ -555,6 +548,7 @@ def simulate_batch(batch_size: int) -> dict:
     logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
     log_data_stats(batch_data)
     
+    
 def log_data_stats(data: dict) -> None:
     for key in data:
         logger.error(f'{key}:')
@@ -581,7 +575,7 @@ def simulate_bike_share() -> dict:
     #------------ Initialize params/vars -----------
     # Initialize bike system
     bike_counts = generate_bike_counts(INITIAL_BIKE_COUNTS, WARM_UP_TIME)
-    incentives = generate_incentives(bike_counts)
+    incentives = [INCENTIVES[station][bike_counts[station]] for station in range(N)]
     current_time = START_TIME  # Hour of the day (HH)
     # Initialize agent
     agent = Agent()
@@ -643,7 +637,7 @@ def simulate_bike_share() -> dict:
                     # Update bike counts
                     bike_counts = generate_bike_counts(bike_counts, wait_time)
                     # Update incentives
-                    incentives = generate_incentives(bike_counts)              
+                    incentives = [INCENTIVES[station][bike_counts[station]] for station in range(N)]
                 # Update time and report
                 current_time += wait_time
                 logger.info(f'\t{MISS} No trip found. Wait until {format_time(current_time)}')
@@ -680,7 +674,7 @@ def simulate_bike_share() -> dict:
         else:
             # Update bike counts to time of incentive update and get new incentives
             bike_counts = generate_bike_counts(bike_counts, update_time - current_time)
-            new_incentives = generate_incentives(bike_counts)
+            new_incentives = [INCENTIVES[station][bike_counts[station]] for station in range(N)]
             # Update bike counts to time of end of trip
             bike_counts = generate_bike_counts(bike_counts, end_time - update_time)
         #------------ Update reward -------------
@@ -853,119 +847,6 @@ def estimate_bike_count(station: int, bike_count: int, time_difference: float) -
     return new_bike_count
 
 
-def estimate_fail_count(station: int, bike_count: int, bike_offset: int, rep_count: int=ESTIMATE_FAIL_COUNT_REP_COUNT) -> int:
-    if ESTIMATE_FAIL_COUNT_IS_STOCHASTIC:
-        return estimate_fail_count_stochastic(station, bike_count, bike_offset, rep_count)
-    else:
-        return estimate_fail_count_deterministic(station, bike_count, bike_offset)
-
-
-def estimate_fail_count_stochastic(station: int, bike_count: int, bike_offset: int, rep_count: int=ESTIMATE_FAIL_COUNT_REP_COUNT) -> int:
-    """ Estimates the number of failures at the given station in a finite time horizon
-    using a sub-simulation. Returns None if given bike_offset puts the bike count out
-    of bounds.
-    bike_count: number of bikes at station
-    bike_offset: offset of number of bikes """
-    # Get station parameters
-    capacity = CAPACITIES[station]
-    agg_rate = RETURN_RATES[station] + RENT_RATES[station]
-    # Adjust bike count and return LARGE_INT (like inf) to indicate
-    # impossible scenario if bike count is out of bounds
-    initial_bike_count = bike_count + bike_offset
-    if initial_bike_count < 0 or initial_bike_count > capacity:
-        #logger.error(f'>>>{station:3d} | bike_count:{bike_count}, init_bike_count:{initial_bike_count}, capacity:{capacity}')
-        return LARGE_INT
-    # Get probability that an arrival is a rental
-    p_rent = RENT_RATES[station]/agg_rate
-    # Repeat sub-simulation and get average of values
-    values = []
-    for _ in range(rep_count):
-        # Set time and bike count
-        T = ESTIMATE_FAIL_COUNT_TIME_HORIZON
-        t = 0  # current time
-        bike_count = initial_bike_count
-        # Track time full/empty
-        time_full, time_empty = 0, 0
-        # Sub-simulation:
-        while True:
-            # Get holding time for next arrival
-            tau = np.random.exponential(1/agg_rate)
-            # Increment time, limited by horizon
-            if t + tau <= T:
-                t += tau
-            else:
-                tau = T - t
-                t = T
-            # Add holding time to full/empty times
-            if bike_count == capacity:
-                time_full += tau
-            elif bike_count == 0:
-                time_empty += tau
-            # End simulation at time horizon
-            if t == T:
-                break
-            # Determine arrival option and adjust bike count
-            U = np.random.uniform(0, 1)
-            if U < p_rent and bike_count > 0:
-                bike_count -= 1
-            elif bike_count < capacity:
-                bike_count += 1
-        # Estimate fail count conditioned on time full/empty
-        fail_count = (
-            time_empty * RENT_RATES[station]
-            + time_full * RETURN_RATES[station]
-        )
-        values.append(fail_count)
-    # Get average fail count
-    return float(np.mean(values))
-
-
-def estimate_fail_count_deterministic(station: int, bike_count: int, bike_offset: int) -> int:
-    # Adjust bike count and return LARGE_INT (like inf) to indicate
-    # impossible scenario if bike count is out of bounds
-    bike_count += bike_offset
-    if bike_count < 0 or bike_count > CAPACITIES[station]:
-        return LARGE_INT
-    # Set time and bike count
-    T = ESTIMATE_FAIL_COUNT_TIME_HORIZON
-    t = 0
-    # Track failures
-    rent_fail_count = 0
-    return_fail_count = 0
-    # Set up clocks
-    rates = [RENT_RATES[station], RETURN_RATES[station]]
-    rent_clock = 1/rates[0]
-    return_clock = 1/rates[1]
-    clocks = [rent_clock, return_clock]
-    while True:
-        # Get event
-        event = np.argmin(clocks)
-        # Get holding time
-        tau = clocks[event]
-        # Adjust clocks
-        clocks = [clock - tau for clock in clocks]
-        clocks[event] = 1/rates[event]
-        t += tau
-        # Check time horizon
-        if t >= T:
-            break
-        # Update bikes
-        if event == 0:  # Rental
-            bike_count -= 1
-            # Failed rental
-            if bike_count < 0:
-                rent_fail_count += 1
-                bike_count = 0
-        elif event == 1:  # Return
-            bike_count += 1
-            # Failed return
-            if bike_count > CAPACITIES[station]:
-                return_fail_count += 1
-                bike_count = CAPACITIES[station]
-    # Simulation complete
-    return rent_fail_count + return_fail_count
-
-
 def get_reward(incentive: float, option: str) -> int:
     """ Returns the reward for returning or renting a bike to a station
     with the given incentive. 
@@ -984,38 +865,6 @@ def get_reward(incentive: float, option: str) -> int:
     return reward
 
 
-def generate_single_incentive(station: int, bike_count: int) -> float:
-    # Estimate fail counts for adding/removing a bike
-    fail_count = estimate_fail_count(station, bike_count, bike_offset=0)
-    rent_fail_count = estimate_fail_count(station, bike_count, bike_offset=-1)
-    return_fail_count = estimate_fail_count(station, bike_count, bike_offset=1)
-    # Calculate failure reductions
-    rent_fail_reduction = fail_count - rent_fail_count
-    return_fail_reduction = fail_count - return_fail_count
-    # Subtract incentive cost to determine performance
-    rent_performance = rent_fail_reduction - INCENTIVE_COST
-    return_performance = return_fail_reduction - INCENTIVE_COST
-    # Determine station's incentive based on performance
-    # ToDo: Test for cases where both reductions exceed 0
-    # Incentive is negative if rentals are incentivized
-    if rent_performance > 0:
-        return -1 * rent_performance
-    # Incentive is positive if returns are incentivized
-    elif return_performance > 0:
-        return return_performance
-    # Zero indicates no incentive
-    else: 
-        return 0
-
-
-def generate_incentives(bike_counts: list) -> list:
-    """ Returns a list of incentives based on the given bike counts """
-    incentives = [0] * N
-    for station in range(N):
-        incentives[station] = generate_single_incentive(station, bike_counts[station])
-    return incentives
-
-
 def log_incentivized_stations(incentives: list) -> None:
     """ Prints incentivized stations categorized by incentive option (rentals/returns) """
     rent_stations = []
@@ -1027,10 +876,27 @@ def log_incentivized_stations(incentives: list) -> None:
             rent_stations.append(i)
     logger.info(f'Rent:    {rent_stations}\nReturn:  {return_stations}')
     
+
+def run_sim_and_get_reward() -> float:
+    logger.setLevel(BATCH_LOG_LEVEL)
+    data = simulate_bike_share()
+    return data['reward']
     
 def main():
     # replicate()
     # return
+    
+    print()
+    logger.setLevel(BATCH_LOG_LEVEL)
+    estimate_stochastic_mean(
+        run_sim_and_get_reward, 
+        args=(), 
+        margin_of_error=1, 
+        confidence_level=0.95, 
+        batch_size=2**1,
+        log_progress=True
+    )
+    return
     
     # Run simulation directly for single run
     if BATCH_SIZE == 1:

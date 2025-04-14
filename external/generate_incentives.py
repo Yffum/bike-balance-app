@@ -1,4 +1,3 @@
-
 import json
 import os
 import time
@@ -53,7 +52,7 @@ MIN_SAMPLES = 10  # Minimum number of samples before checking margin of error
 BATCH_SIZE = 2**14  # Number of samples to run in parallel (tune to CPU)
 
 # Generate incentives (deterministic)
-INCENTIVE_COST = 0.2  # Deducted from fail count reduction
+INCENTIVE_COST = 0.0  # Deducted from fail count reduction
 
 #-------------------------- Formatting -------------------------#
 
@@ -113,6 +112,8 @@ def estimate_stochastic_process_mean(process, args, margin_of_error=0.1, confide
                 delta = t_score * np.sqrt(variance / n)
             if verbose:
                 print(f'Delta: {delta:.5f}, Mean: {mean:.5f}')
+                print(f'n: {n}, Variance: {variance:.5f}')
+                print(f'Batch size: {len(batch)}, Time elapsed (s): {time.time() - start_time:.2f}')
     runtime = time.time() - start_time
     if verbose:
         print(f'\nProcess: {process.__name__}{args}')
@@ -167,7 +168,7 @@ def generate_fail_count(station: int, bike_count: int) -> float:
     # Get average fail count
     return fail_count
 
-def estimate_all_fail_counts(verbose=True) -> list:
+def estimate_all_fail_counts(verbose=True, save_to_file=True) -> list:
     if verbose:
         total_run_count = sum(CAPACITIES)
         run_count = 0
@@ -185,20 +186,24 @@ def estimate_all_fail_counts(verbose=True) -> list:
                 margin_of_error=MARGIN_OF_ERROR,
                 confidence_level=CONFIDENCE_LEVEL,
                 batch_size=BATCH_SIZE,
-                verbose=False
+                verbose=True
                 )
             station_fail_counts.append(fail_count)
             if verbose:
                 run_count += 1
                 run_rate = run_count / (time.time() - start_time)
-                eta = run_rate * (total_run_count - run_count)
+                eta = (total_run_count - run_count) / run_rate
                 eta = seconds_to_hms(eta)
                 print(f'fail_count[{station}][{bike_count}] ← {fail_count:.3f}\t ETA: {eta}', end='\r')
         # Add list of fail counts to main list
         fail_counts.append(station_fail_counts)
     if verbose:
-        print('Fail count estimation complete.')
+        print('\nFail count estimation complete.')
         print('Total runtime:', seconds_to_hms(time.time() - start_time))
+    if save_to_file:
+        with open(FAIL_COUNTS_FILEPATH, 'w') as file:
+            json.dump(fail_counts, file)
+        print(f'Fail counts saved to {FAIL_COUNTS_FILEPATH}')
     return fail_counts
 
 #-------------------------------- Calculate Incentives ------------------------------#
@@ -221,12 +226,13 @@ def calculate_incentive(station: int, bike_count: int, fail_counts: list) -> flo
         return_performance = return_fail_reduction - INCENTIVE_COST
     else:
         return_performance = 0
-        
+    
+    # If both performances are positive, use higher one
     if rent_performance > 0 and return_performance > 0:
-        print('Warning: Both rent and return performance are positive.')
-        print('Rent performance:', rent_performance)
-        print('Return performance:', return_performance)
-        input()
+        if rent_performance > return_performance:
+            return_performance = 0
+        else:
+            rent_performance = 0
 
     # Assign incentive based on performance
     if rent_performance > 0:
@@ -235,7 +241,7 @@ def calculate_incentive(station: int, bike_count: int, fail_counts: list) -> flo
         return return_performance
     return 0
 
-def calculate_all_incentives(fail_counts: list) -> list:
+def calculate_all_incentives(fail_counts: list, save_to_file=True) -> list:
     """ Calculates incentives for each station and bike count based on fail counts. """
     incentives = []
     # Iterate through each station
@@ -247,28 +253,30 @@ def calculate_all_incentives(fail_counts: list) -> list:
             station_incentives.append(incentive)
         # Add list of incentives to main list
         incentives.append(station_incentives)
+    # Save to file
+    if save_to_file:
+        with open(INCENTIVES_FILEPATH, 'w') as file:
+            json.dump(incentives, file)    
+        print(f'Incentives saved to {INCENTIVES_FILEPATH}')    
     return incentives
 
 #-------------------------------- Main -------------------------------#
 
-def generate_incentives(save_fail_counts=True, save_incentives=True, verbose=True):
-    print('Estimating fail counts...')
-    fail_counts = estimate_all_fail_counts(verbose)
-    
-    if save_fail_counts:
-        with open(FAIL_COUNTS_FILEPATH, 'w') as file:
-            json.dump(fail_counts, file)
+def generate_incentives(import_fail_counts=False, save_incentives=True, verbose=True):
+    if import_fail_counts:
+        print('Importing fail counts...')
+        with open(FAIL_COUNTS_FILEPATH, 'r') as file:
+            fail_counts = json.load(file)
+    else:
+        print('Estimating fail counts...')
+        fail_counts = estimate_all_fail_counts(verbose, save_to_file=True)
     
     print('Calculating incentives...')
-    incentives = calculate_all_incentives(fail_counts, verbose)
+    calculate_all_incentives(fail_counts, save_incentives)
     
-    if save_incentives:
-        with open(INCENTIVES_FILEPATH, 'w') as file:
-            json.dump(incentives, file)
-
 def main():
     generate_incentives(
-        save_fail_counts=True,
+        import_fail_counts=False,
         save_incentives=True,
         verbose=True
     )

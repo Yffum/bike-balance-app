@@ -893,7 +893,7 @@ def main():
         args=(), 
         margin_of_error=1, 
         confidence_level=0.95, 
-        batch_size=2**1,
+        batch_size=12,
         log_progress=True
     )
     return

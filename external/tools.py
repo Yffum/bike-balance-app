@@ -12,7 +12,7 @@ def seconds_to_hms(seconds: float) -> str:
     seconds = int(seconds % 60)
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
-def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_level=0.95, batch_size=2**14, log_progress=True) -> float:
+def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_level=0.95, batch_size=8, log_progress=True) -> float:
     """ Runs the given stochastic process in parallel batches until 
     a mean with the desired margin of error is found with the given 
     confidence level. Returns the mean.

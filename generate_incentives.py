@@ -3,6 +3,10 @@ import json
 import os
 import time
 from scipy import stats
+import multiprocessing
+from itertools import repeat
+
+#------------------------- Description --------------------------#
 
 # Generates a list of incentives for each bike count of each station. The
 # first index is the station, and the second index is the bike count. The value at
@@ -11,14 +15,18 @@ from scipy import stats
 # Incentives are generated based on the rental and return rates in the 
 # bike system parameters file and saved to the incentives file.
 
+# Negative incentive means the station needs rentals
+# Positive incentive means the station needs returns
 
 #-------------------------- Load Data --------------------------#
+
 # Establish data directory
 if os.path.exists('external'):
     BASE_PATH = 'external/'
 else:
     BASE_PATH = ''
 
+FAIL_COUNTS_FILEPATH = BASE_PATH + 'data/fail_counts.json'
 INCENTIVES_FILEPATH = BASE_PATH + 'data/incentives.json'
 BIKE_SYSTEM_PARAMS_FILEPATH = BASE_PATH + 'data/sim_params.json'
 
@@ -29,45 +37,92 @@ with open(BIKE_SYSTEM_PARAMS_FILEPATH, 'r') as file:
 # Number of stations
 N = len(params['capacities'])
 # Lists indexed by station (length N)
-RENT_RATES = params['rent_rates']
+RENT_RATES = params['rent_rates']  # floats
 RETURN_RATES = params['return_rates']  # floats
 CAPACITIES = params['capacities']  # ints
 
 #-------------------------- Constants --------------------------#
+
 # Estimate fail counts (stochastic)
 FAIL_COUNT_SIM_TIME_HORIZON = 2.0  # Hours
-CONFIDENCE_LEVEL = 0.95  # (0-1)
+CONFIDENCE_LEVEL = 0.99  # (0-1)
 MARGIN_OF_ERROR = 0.01  # (positive float)
 MIN_SAMPLES = 10  # Minimum number of samples before checking margin of error
+BATCH_SIZE = 2**14  # Number of samples to run in parallel (tune to CPU)
+
 # Generate incentives (deterministic)
-INCENTIVE_COST = 0.5  # Deducted from fail count reduction
+INCENTIVE_COST = 0.2  # Deducted from fail count reduction
 
-def generate_single_incentive(station: int, bike_count: int) -> float:
-    # Estimate fail counts for adding/removing a bike
-    fail_count = estimate_fail_count(station, bike_count, bike_offset=0)
-    rent_fail_count = estimate_fail_count(station, bike_count, bike_offset=-1)
-    return_fail_count = estimate_fail_count(station, bike_count, bike_offset=1)
-    # Calculate failure reductions
-    rent_fail_reduction = fail_count - rent_fail_count
-    return_fail_reduction = fail_count - return_fail_count
-    # Subtract incentive cost to determine performance
-    rent_performance = rent_fail_reduction - INCENTIVE_COST
-    return_performance = return_fail_reduction - INCENTIVE_COST
-    # Determine station's incentive based on performance
-    # ToDo: Test for cases where both reductions exceed 0
-    # Incentive is negative if rentals are incentivized
-    if rent_performance > 0:
-        return -1 * rent_performance
-    # Incentive is positive if returns are incentivized
-    elif return_performance > 0:
-        return return_performance
-    # Zero indicates no incentive
-    else: 
-        return 0
+#-------------------------- Formatting -------------------------#
 
-def estimate_fail_count(station: int, bike_count: int) -> float:
-    """ Estimates the number of failures at the given station in a finite time horizon
-    using a retrospective simulation. """
+def seconds_to_hms(seconds: float) -> str:
+    """ Returns seconds in 'HH:MM:SS' format. """
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+#-------------------------------- Estimate Fail Counts ------------------------------#
+
+def estimate_stochastic_process_mean(process, args, margin_of_error=0.1, confidence_level=0.95, batch_size=2**12, verbose=True) -> float:
+    """ Takes a stochastic process and runs it in parallel batches until 
+    a mean with the desired margin of error is found with the given 
+    confidence level. 
+    Args:
+        process (Callable): function to run in parallel batches
+        args (Tuple): arguments to pass to the function
+        margin_of_error (float): desired margin of error (positive float)
+        confidence_level (float): desired confidence level (0-1)
+        batch_size (int): number of samples to run in parallel batches
+        verbose (bool): whether to print progress and results
+    Returns:
+        mean: mean of value returned by the process
+    """
+    rho = margin_of_error
+    alpha = 1 - confidence_level
+    n = 0
+    mean = 0.0
+    m2 = 0.0
+    delta = float('inf') # Current margin of error
+
+    # Update variance using Welford's online algo
+    def update_variance(x_batch):
+        nonlocal n, mean, m2
+        for xi in x_batch:
+            n += 1
+            delta_x = xi - mean
+            mean += delta_x / n
+            m2 += delta_x * (xi - mean)
+
+    def get_variance():
+        return m2 / (n - 1) if n >= 2 else float('inf')
+
+    start_time = time.time()
+    with multiprocessing.Pool() as pool:
+        # Process batches until margin of error is small enough
+        while delta > rho:
+            # Process batch in parallel
+            batch = pool.starmap(process, repeat(args, batch_size))
+            # Update mean, variance, delta
+            update_variance(batch)
+            variance = get_variance()
+            if n >= MIN_SAMPLES:
+                t_score = stats.t.ppf(1 - alpha / 2, n - 1)
+                delta = t_score * np.sqrt(variance / n)
+            if verbose:
+                print(f'Delta: {delta:.5f}, Mean: {mean:.5f}')
+    runtime = time.time() - start_time
+    if verbose:
+        print(f'\nProcess: {process.__name__}{args}')
+        print('Total runtime (s):', runtime)
+        print('Replication count: ', n)
+        print('Variance: ', get_variance())
+        print(f'Mean: {mean} +/- {rho} ({(1 - alpha) * 100}% Confidence)')
+    return mean
+
+def generate_fail_count(station: int, bike_count: int) -> float:
+    """ Returns a sample of the number of failures at the given station in a 
+    finite time horizon using a retrospective simulation. """
     # Get station parameters
     capacity = CAPACITIES[station]
     agg_rate = RETURN_RATES[station] + RENT_RATES[station]
@@ -110,62 +165,111 @@ def estimate_fail_count(station: int, bike_count: int) -> float:
     # Get average fail count
     return fail_count
 
-
-
-def get_confidence_interval(process, kwargs : dict):
-    # Using the Fixed-Width Confidence Interval, replicate simulations,
-    # until the margin of error delta is less than rho
-    # confidence level is 1 - alpha
-    
-    rho = MARGIN_OF_ERROR
-    alpha = 1 - CONFIDENCE_LEVEL
-    n = 0 # sample count
-    mean = 0.0
-    m2 = 0.0  # The sum of squares of differences from the mean
-    delta = float('inf')  # margin of error
-    runtimes = []
-
-    def update_variance(x):
-        nonlocal n, mean, m2
-        n += 1
-        delta_x = x - mean
-        mean += delta_x / n
-        m2 += delta_x * (x - mean)
-
-    def get_variance():
-        if n < 2:
-            return float('inf')  # Not enough samples to compute variance
-        return m2 / (n - 1)
-
-    # Start sampling
-    total_start_time = time.time()
-    while delta > rho:
+def estimate_all_fail_counts(verbose=True) -> list:
+    if verbose:
+        total_run_count = sum(CAPACITIES)
+        run_count = 0
         start_time = time.time()
-        sample = process(**kwargs)
-        runtimes.append(time.time() - start_time)
-        update_variance(sample)
-        variance = get_variance()
-        if n >= MIN_SAMPLES:  # Calculate t-score and margin of error only with sufficient samples
-            t_score = stats.t.ppf(1 - alpha / 2, n - 1)
-            delta = t_score * np.sqrt(variance / n)
-        print(f'Delta: {delta:.5f}, Mean: {mean:.5f}')
-    total_runtime = time.time() - total_start_time
-    print(f'\nProcess: {process.__name__}')
-    print(f'{kwargs.items()}')
-    print('Total runtime (s):', total_runtime)
-    print('Average replication runtime (s): ', sum(runtimes)/len(runtimes))
-    print('Replication count: ', n)
-    print('Variance: ', get_variance())
-    print(f'Mean: {mean} +/- {rho} ({(1 - alpha) * 100}% Confidence)')
-    return mean
+    fail_counts = []
+    # Iterate through each station
+    for station in range(N):
+        # Generate fail counts for each bike count
+        station_fail_counts = []
+        for bike_count in range(CAPACITIES[station] + 1):
+            # Generate incentive for each station and bike count
+            fail_count = estimate_stochastic_process_mean(
+                process=generate_fail_count, 
+                args=(station, bike_count),
+                margin_of_error=MARGIN_OF_ERROR,
+                confidence_level=CONFIDENCE_LEVEL,
+                batch_size=BATCH_SIZE,
+                verbose=False
+                )
+            station_fail_counts.append(fail_count)
+            if verbose:
+                run_count += 1
+                run_rate = run_count / (time.time() - start_time)
+                eta = run_rate * (total_run_count - run_count)
+                eta = seconds_to_hms(eta)
+                print(f'fail_count[{station}][{bike_count}] ← {fail_count:.3f}\t ETA: {eta}', end='\r')
+        # Add list of fail counts to main list
+        fail_counts.append(station_fail_counts)
+    if verbose:
+        print('Fail count estimation complete.')
+        print('Total runtime:', seconds_to_hms(time.time() - start_time))
+    return fail_counts
 
+#-------------------------------- Calculate Incentives ------------------------------#
+
+def calculate_incentive(station: int, bike_count: int, fail_counts: list) -> float:
+    """ Calculates the incentive for a given station and bike count. """
+    fail_count = fail_counts[station][bike_count] 
+    
+    # Determine performance by comparing fail counts
+    if bike_count > 0:
+        rent_fail_count = fail_counts[station][bike_count - 1]
+        rent_fail_reduction = fail_count - rent_fail_count
+        rent_performance = rent_fail_reduction - INCENTIVE_COST
+    else:
+        rent_performance = 0
+    
+    if bike_count < CAPACITIES[station]:
+        return_fail_count = fail_counts[station][bike_count + 1]
+        return_fail_reduction = fail_count - return_fail_count
+        return_performance = return_fail_reduction - INCENTIVE_COST
+    else:
+        return_performance = 0
+        
+    if rent_performance > 0 and return_performance > 0:
+        print('Warning: Both rent and return performance are positive.')
+        print('Rent performance:', rent_performance)
+        print('Return performance:', return_performance)
+        input()
+
+    # Assign incentive based on performance
+    if rent_performance > 0:
+        return -1 * rent_performance
+    if return_performance > 0:
+        return return_performance
+    return 0
+
+def calculate_all_incentives(fail_counts: list) -> list:
+    """ Calculates incentives for each station and bike count based on fail counts. """
+    incentives = []
+    # Iterate through each station
+    for station in range(N):
+        # Calculate incentives for each bike count
+        station_incentives = []
+        for bike_count in range(CAPACITIES[station] + 1):
+            incentive = calculate_incentive(station, bike_count, fail_counts)
+            station_incentives.append(incentive)
+        # Add list of incentives to main list
+        incentives.append(station_incentives)
+    return incentives
+
+#-------------------------------- Main -------------------------------#
+
+def generate_incentives(save_fail_counts=True, save_incentives=True, verbose=True):
+    print('Estimating fail counts...')
+    fail_counts = estimate_all_fail_counts(verbose)
+    
+    if save_fail_counts:
+        with open(FAIL_COUNTS_FILEPATH, 'w') as file:
+            json.dump(fail_counts, file)
+    
+    print('Calculating incentives...')
+    incentives = calculate_all_incentives(fail_counts, verbose)
+    
+    if save_incentives:
+        with open(INCENTIVES_FILEPATH, 'w') as file:
+            json.dump(incentives, file)
 
 def main():
-    get_confidence_interval(estimate_fail_count, {
-        'station': 0,
-        'bike_count': 1
-    })
-
+    generate_incentives(
+        save_fail_counts=True,
+        save_incentives=True,
+        verbose=True
+    )
 
 if __name__ == '__main__':
     main()

@@ -1,10 +1,12 @@
-import numpy as np
+
 import json
 import os
 import time
-from scipy import stats
 import multiprocessing
 from itertools import repeat
+
+import numpy as np
+from scipy import stats
 
 #------------------------- Description --------------------------#
 

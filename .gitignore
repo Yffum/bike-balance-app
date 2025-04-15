@@ -1,3 +1,8 @@
+# Project-specific ignores
+external/logs/*.log
+
+#------------------------------------------------------------
+
 # Godot 4+ specific ignores
 .godot/
 

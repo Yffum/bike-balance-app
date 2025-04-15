@@ -24,7 +24,7 @@ BATCH_SIZE = 1  # Number of simulation replications
 START_STATION = 0  # Agent start station index
 FINAL_STATION = 0  # Agent final station index
 EXCURSION_TIME = 4.0  # Length of excursion in hours
-AGENT_INTELLIGENCE = 'smart'  # 'basic', 'smart'
+AGENT_INTELLIGENCE = 'basic'  # 'basic', 'smart'
 WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starting the agent
 EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
@@ -738,71 +738,6 @@ def simulate_bike_share() -> dict:
     return data
 
 
-def replicate(alpha=0.05, rho=2):
-    """Using the Fixed-Width Confidence Interval, replicate simulations,
-    until the margin of error delta is less than rho. Confidence level 
-    is 1 - alpha """
-    # Set logger level
-    logger.setLevel(BATCH_LOG_LEVEL) 
-    # Remove static seed
-    global SEED
-    SEED = None
-    # Collect sim data
-    batch_data = None
-    # Update variance using Welford's online algo
-    n = 0 # sample count
-    mean = 0.0
-    m2 = 0.0  # The sum of squares of differences from the mean
-    delta = float('inf')  # margin of error
-    runtimes = []
-
-    def update_variance(x):
-        nonlocal n, mean, m2
-        n += 1
-        delta_x = x - mean
-        mean += delta_x / n
-        m2 += delta_x * (x - mean)
-
-    def get_variance():
-        if n < 2:
-            return float('inf')  # Not enough samples to compute variance
-        return m2 / (n - 1)
-
-    # Start sampling
-    total_start_time = time.process_time()
-    while delta > rho:
-        start_time = time.process_time()
-        # Run simulation and save data
-        datum = simulate_bike_share()
-        # Create dict based on simulation data if first run
-        if batch_data == None:
-            batch_data = {key: [] for key in datum}
-        # Add run data to dict
-        for key in datum.keys():
-            batch_data[key].append(datum[key])
-        # Get reward and update stats
-        sample = datum['reward']
-        runtimes.append(time.process_time() - start_time)
-        update_variance(sample)
-        # Update variance and delta
-        variance = get_variance()
-        if n > 1:  # Calculate t-score and margin of error only with sufficient samples
-            t_score = stats.t.ppf(1 - alpha / 2, n - 1)
-            delta = t_score * np.sqrt(variance / n)
-        logger.error(f'Delta: {delta:.2f}, Mean: {mean:.2f}')
-    total_runtime = time.process_time() - total_start_time
-    logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
-    logger.error(f'Batch size: {n}')
-    logger.error(f'Total runtime (s): {total_runtime}')
-    logger.error(f'Average replication runtime (s): {sum(runtimes)/len(runtimes)}')
-    logger.error(f'Replication count: {n}')
-    logger.error(f'Variance: {get_variance()}')
-    logger.error(f'We are {(1 - alpha) * 100}% confident the mean reward is {mean} +/- {rho}')
-    
-    log_data_stats(batch_data)
-    return batch_data
-
-
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
     """ Returns an updated list of bike counts for each station after the elapsed time. """
     # Don't modify given list
@@ -882,17 +817,14 @@ def run_sim_and_get_reward() -> float:
     data = simulate_bike_share()
     return data['reward']
     
-def main():
-    # replicate()
-    # return
-    
+def main():    
     print()
     logger.setLevel(BATCH_LOG_LEVEL)
     estimate_stochastic_mean(
         run_sim_and_get_reward, 
         args=(), 
-        margin_of_error=1, 
-        confidence_level=0.95, 
+        margin_of_error=0.01, 
+        confidence_level=0.999, 
         batch_size=12,
         log_progress=True
     )

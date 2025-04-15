@@ -276,7 +276,7 @@ def generate_incentives(import_fail_counts=False, save_incentives=True, verbose=
     
 def main():
     generate_incentives(
-        import_fail_counts=False,
+        import_fail_counts=True,
         save_incentives=True,
         verbose=True
     )

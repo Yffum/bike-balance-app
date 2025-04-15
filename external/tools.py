@@ -20,7 +20,7 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
         process (Callable): function to run in parallel batches. The
             function must return a float value.
         args (Tuple): arguments to pass to the function
-        margin_of_error (float): desired margin of error (positive float)
+        margin_of_error (float): desired CI halfwidth (positive float)
         confidence_level (float): desired confidence level (0-1)
         batch_size (int): number of samples to run in parallel batches
         verbose (bool): whether to print progress and results
@@ -61,7 +61,7 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
             batch = pool.starmap(process, repeat(args, batch_size))
             batch_count += 1
             batch_times.append(time.time() - batch_start_time)
-            # Update mean, variance, delta
+            # Update mean, variance, error
             update_variance(batch)
             variance = get_variance()
             if n >= MIN_SAMPLES:
@@ -76,8 +76,8 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
         print(f'Time per process (s): {np.mean(batch_times) / batch_size}')
         print(f'Batch size: {batch_size}')
         print(f'Avg batch time: {seconds_to_hms(np.mean(batch_times))}')
-        print('Total runtime (s):', runtime)
-        print('Replication count: ', n)
-        print('Variance: ', get_variance())
-        print(f'Mean: {mean} +/- {rho} ({(1 - alpha) * 100}% Confidence)')
+        print(f'Total runtime: {seconds_to_hms(runtime)}')
+        print(f'Replication count: {n}')
+        print(f'Variance: {get_variance()}')
+        print(f'Mean: {mean:.5f} +/- {rho} ({(1 - alpha) * 100}% Confidence)')
     return mean

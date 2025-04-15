@@ -7,7 +7,6 @@ import os
 from queue import PriorityQueue
 
 import numpy as np
-from scipy import stats
 
 from tools import estimate_stochastic_mean
         
@@ -24,10 +23,17 @@ BATCH_SIZE = 1  # Number of simulation replications
 START_STATION = 0  # Agent start station index
 FINAL_STATION = 0  # Agent final station index
 EXCURSION_TIME = 4.0  # Length of excursion in hours
-AGENT_INTELLIGENCE = 'basic'  # 'basic', 'smart'
+AGENT_INTELLIGENCE = 'smart'  # 'basic', 'smart'
 WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starting the agent
 EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
+#----------- Batches -----------
+MARGIN_OF_ERROR = 0.1
+CONFIDENCE_LEVEL = 1 - 1e-4
+PARALLEL_BATCH_SIZE = 12
+PRINT_BATCH_PROGRESS = True
+
+
 
 # Establish data directory
 if os.path.exists('external'):
@@ -131,15 +137,29 @@ with open(INCENTIVES_FILEPATH, 'r') as file:
     # INCENTIVES[<station>][<bike_count>]
     INCENTIVES = json.load(file)
 
-def adjust_incentives():
-    """ Subtract incentive cost from incentives """
-    pass
-    # ToDo
+def get_incentives_with_cost():
+    """ Returns incentives with incentive cost deducted. Incentive cost
+    is deducted from absolute value of incentive and does not go beyond
+    zero. """
+    new_incentives = []
+    for station_incentives in INCENTIVES:
+        new_station_incentives = []
+        for incentive in station_incentives:
+            # Subtract cost if positive
+            if incentive > 0:
+                incentive = max(0, incentive - INCENTIVE_COST)
+            # Add cost if negative
+            elif incentive < 0:
+                capacity = len(station_incentives)
+                incentive = min(capacity, incentive + INCENTIVE_COST)
+            # Add to list
+            new_station_incentives.append(incentive)
+        new_incentives.append(new_station_incentives)
+    return new_incentives
     
-    
-    
-    
-    
+# Subtract cost from incentives 
+INCENTIVES = get_incentives_with_cost()
+
 #============================================================================================
 
 #----------------------------------------- LOGGING ------------------------------------------
@@ -559,9 +579,13 @@ def log_data_stats(data: dict) -> None:
         logger.error(f'\tMin: {np.min(data[key]):.2f}')
 
 
-def simulate_bike_share() -> dict:
+def simulate_bike_share(return_full_stats=False) -> float | dict:
     """ Simulates a single excursion of an agent rebalancing bikes in a bike share system,
-    and returns a dictionary of stats including rewards earned and trips taken. """
+    and returns a dictionary of stats including rewards earned and trips taken. 
+    Args:
+        return_full_stats (bool): Returns the mean reward if False. Returns a dict of stats
+            if True.
+    """
     # Track simulation time
     real_start_time = time.perf_counter()
     #--------------- Set seed ---------------
@@ -727,15 +751,18 @@ def simulate_bike_share() -> dict:
     logger.info(f'Total reward: {agent.reward}')
     logger.info(f'Seed: {seed}')
     logger.info('')
-    # Return stats
-    data = dict()
-    data['excursion_time'] = current_time - START_TIME
-    data['real_time_duration'] = real_time_duration
-    data['bike_count'] = bike_trip_count
-    data['walk_count'] = walk_trip_count
-    data['wait_count'] = wait_count
-    data['reward'] = agent.reward
-    return data
+    # Return stats if prompted to
+    if return_full_stats:
+        data = dict()
+        data['excursion_time'] = current_time - START_TIME
+        data['real_time_duration'] = real_time_duration
+        data['bike_count'] = bike_trip_count
+        data['walk_count'] = walk_trip_count
+        data['wait_count'] = wait_count
+        data['reward'] = agent.reward
+        return data
+    # Return agent's total excursion reward by default
+    return agent.reward
 
 
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
@@ -810,23 +837,18 @@ def log_incentivized_stations(incentives: list) -> None:
         elif incentive < 0:
             rent_stations.append(i)
     logger.info(f'Rent:    {rent_stations}\nReturn:  {return_stations}')
-    
 
-def run_sim_and_get_reward() -> float:
-    logger.setLevel(BATCH_LOG_LEVEL)
-    data = simulate_bike_share()
-    return data['reward']
     
 def main():    
     print()
     logger.setLevel(BATCH_LOG_LEVEL)
     estimate_stochastic_mean(
-        run_sim_and_get_reward, 
+        process=simulate_bike_share, 
         args=(), 
-        margin_of_error=0.01, 
-        confidence_level=0.999, 
-        batch_size=12,
-        log_progress=True
+        margin_of_error=MARGIN_OF_ERROR, 
+        confidence_level=CONFIDENCE_LEVEL, 
+        batch_size=PARALLEL_BATCH_SIZE,
+        log_progress=PRINT_BATCH_PROGRESS
     )
     return
     

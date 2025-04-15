@@ -69,7 +69,7 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
                 delta = t_score * np.sqrt(variance / n)
             if log_progress:
                 elapsed_time = time.time() - start_time
-                print(f'Delta: {delta:.5f}, Mean: {mean:.5f}, Time elaped: {seconds_to_hms(elapsed_time)}')
+                print(f'Delta: {delta:.5f}, Mean: {mean:.5f}, Elapsed time: {seconds_to_hms(elapsed_time)}')
     runtime = time.time() - start_time
     if log_progress:
         print(f'\nProcess: {process.__name__}{args}')

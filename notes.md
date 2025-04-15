@@ -23,3 +23,9 @@
 
 - Precalculate and cache every possible incentive for each bike count for each station? 125 stations * ~40 bike counts = 5000 incentives, not bad
 --> then have agent search best incentives instead of nearest stations
+
+
+# Notes
+
+- One problem with the twin fail count simulations is sometimes adding a single bike doesn't reduce the fail count very much if it's completely empty (but adding multiple bikes reduces it significantly) so it isn't incentivized for returns when it should be.
+  - Analyze incentive data. E.g. min/max/avg incentive for empty/full stations

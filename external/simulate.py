@@ -28,8 +28,8 @@ WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starti
 EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
 #----------- Batches -----------
-MARGIN_OF_ERROR = 0.1
-CONFIDENCE_LEVEL = 1 - 1e-4
+MARGIN_OF_ERROR = 1
+CONFIDENCE_LEVEL = 1 - 1e-1
 PARALLEL_BATCH_SIZE = 12
 PRINT_BATCH_PROGRESS = True
 
@@ -214,6 +214,7 @@ if WRITE_LOG_FILE:
     logger.addHandler(file_handler)
 
 ### logging.disable()
+
 #============================================================================================
 
 @dataclass(frozen=True)
@@ -537,6 +538,86 @@ def format_time(time: float) -> str:
     return f"{hours:02d}:{minutes:02d}"
 
 
+def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
+    """ Returns a generated list of bike counts for each station after the elapsed time. """
+    # Don't modify given list
+    counts = list(bike_counts)
+    # Time must be non-negative
+    if elapsed_time < 0:
+        logger.error(f"{ERROR} Error: elapsed_time {elapsed_time:.4f} less than 0")
+    # If no time has passed, use the same counts
+    if np.isclose(0, elapsed_time):
+        return counts
+    # Generate change in bike count for each station
+    for station, count in enumerate(counts):
+        # ToDo: account for full empty stations (see retrospective_notes.md)
+        # Estimate incoming/outgoing bikes
+        est_bikes_in = elapsed_time * RETURN_RATES[station]
+        est_bikes_out = elapsed_time * RENT_RATES[station]
+        # Generate incoming/outgoing bike counts
+        bikes_in = np.random.poisson(est_bikes_in)
+        bikes_out = np.random.poisson(est_bikes_out)
+        bike_diff = int(round(bikes_in - bikes_out))
+        # Adjust bike count and limit by capacity
+        count += bike_diff 
+        count = max(0, min(CAPACITIES[station], count))
+        # Update count
+        counts[station] = count
+    return counts
+
+
+def estimate_bike_count(station: int, bike_count: int, time_difference: float, overestimate: bool=True) -> int:
+    """ Given the current bike count of a station, returns an estimate of the 
+    bike count after the time difference (or before, if time_difference < 0).
+    This is a deterministic estimation and should not be used for simulation.
+    Args:
+        time_difference (float): amount of time in hours after (or before, if
+            time_difference < 0) the station has the given bike_count.
+        overestimate (bool): (experimental) rounds up estimated bike change
+            to produce an optimistic estimate for the agent
+    """
+    # Bike count is unchanged for zero time difference
+    if time_difference == 0:
+        return bike_count
+    # Estimate change in bike count during elapsed time
+    if overestimate:
+        # Use net rate and round up absolute value of bike difference
+        net_rate = RETURN_RATES[station] - RENT_RATES[station]
+        if net_rate > 0:
+            bike_difference = np.ceil(time_difference * net_rate)
+        else:
+            bike_difference = np.floor(time_difference * net_rate)
+    else:
+        # Estimate bikes added/removed individually using floor
+        bikes_added = np.floor(time_difference * RETURN_RATES[station])
+        bikes_removed = np.floor(time_difference * RENT_RATES[station])
+        bike_difference = bikes_added - bikes_removed
+    # Subtract difference to get previous bike count
+    new_bike_count = bike_count + bike_difference
+    # Limit by capacity
+    new_bike_count = max(0, min(CAPACITIES[station], new_bike_count))
+    return int(new_bike_count)
+
+
+def get_reward(incentive: float, option: str) -> int:
+    """ Returns the reward for returning or renting a bike to a station
+    with the given incentive. 
+    Args:
+        incentive (float): the incentive of the station
+        option (str): {'rent', 'return'}"""
+    # If incentive is for other option, reward is 0
+    if (
+        (incentive < 0 and option == 'return')
+        or (incentive > 0 and option == 'rent')
+        ):
+        return 0
+    # Remove sign
+    reward = abs(incentive)
+    # Limit reward
+    # reward = min(1, reward)
+    return reward
+
+
 def log_bike_counts(bike_counts: list) -> None:
     """ Prints a list of every station's bike count and capacity. """
     logger.info(f'--- Bike Counts ---')
@@ -545,30 +626,6 @@ def log_bike_counts(bike_counts: list) -> None:
     logger.info('-------------------')
 
 
-def simulate_batch(batch_size: int) -> dict:
-    """ Runs a batch of bike share simulations and returns stats """
-    # Set logger level
-    logger.setLevel(BATCH_LOG_LEVEL) 
-    # Ensure SEED is not preset
-    if SEED != None:
-        logger.error(f'{ERROR} SEED should be None for batch simulation.')
-    # Iterate through batch
-    batch_data = None
-    for i in range(batch_size):
-        run_data = simulate_bike_share()
-        # Create dict based on simulation data if first run
-        if batch_data == None:
-            batch_data = {key: [] for key in run_data}
-        # Add run data to dict
-        for key in run_data.keys():
-            batch_data[key].append(run_data[key])
-        logger.error(f'\rRunning simulation batch: {i+1}/{batch_size} complete')
-    # Analyze batch data
-    logger.error(f'\n------- Batch Complete ({batch_size} runs) --------')
-    logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
-    log_data_stats(batch_data)
-    
-    
 def log_data_stats(data: dict) -> None:
     for key in data:
         logger.error(f'{key}:')
@@ -577,6 +634,18 @@ def log_data_stats(data: dict) -> None:
         logger.error(f'\tStd Dev: {np.std(data[key]):.2f}')
         logger.error(f'\tMax: {np.max(data[key]):.2f}')
         logger.error(f'\tMin: {np.min(data[key]):.2f}')
+
+
+def log_incentivized_stations(incentives: list) -> None:
+    """ Prints incentivized stations categorized by incentive option (rentals/returns) """
+    rent_stations = []
+    return_stations = []
+    for i, incentive in enumerate(incentives):
+        if incentive > 0:
+            return_stations.append(i)
+        elif incentive < 0:
+            rent_stations.append(i)
+    logger.info(f'Rent:    {rent_stations}\nReturn:  {return_stations}')
 
 
 def simulate_bike_share(return_full_stats=False) -> float | dict:
@@ -765,79 +834,29 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
     return agent.reward
 
 
-def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
-    """ Returns an updated list of bike counts for each station after the elapsed time. """
-    # Don't modify given list
-    counts = list(bike_counts)
-    # Time must be non-negative
-    if elapsed_time < 0:
-        logger.error(f"{ERROR} Error: elapsed_time {elapsed_time:.4f} less than 0")
-    # If no time has passed, use the same counts
-    if np.isclose(0, elapsed_time):
-        return counts
-    # Generate change in bike count for each station
-    for station, count in enumerate(counts):
-        # ToDo: account for full empty stations (see retrospective_notes.md)
-        # Estimate incoming/outgoing bikes
-        est_bikes_in = elapsed_time * RETURN_RATES[station]
-        est_bikes_out = elapsed_time * RENT_RATES[station]
-        # Generate incoming/outgoing bike counts
-        bikes_in = np.random.poisson(est_bikes_in)
-        bikes_out = np.random.poisson(est_bikes_out)
-        bike_diff = int(round(bikes_in - bikes_out))
-        # Adjust bike count and limit by capacity
-        count += bike_diff 
-        count = max(0, min(CAPACITIES[station], count))
-        # Update count
-        counts[station] = count
-    return counts
-
-
-def estimate_bike_count(station: int, bike_count: int, time_difference: float) -> int:
-    """ Given the current bike count of a station, returns an estimate of the 
-    bike count after the time difference (or before, if time_difference < 0)"""
-    # Bike count is unchanged for zero time difference
-    if time_difference == 0:
-        return bike_count
-    # Estimate change in bike count during elapsed time
-    net_rate = RETURN_RATES[station] - RENT_RATES[station]
-    bike_difference = int(round(time_difference * net_rate))
-    # Subtract difference to get previous bike count
-    new_bike_count = bike_count + bike_difference
-    # Limit by capacity
-    new_bike_count = max(0, min(CAPACITIES[station], new_bike_count))
-    return new_bike_count
-
-
-def get_reward(incentive: float, option: str) -> int:
-    """ Returns the reward for returning or renting a bike to a station
-    with the given incentive. 
-    Args:
-        option (str): {'rent', 'return'}"""
-    # If incentive is for other option, reward is 0
-    if (
-        (incentive < 0 and option == 'return')
-        or (incentive > 0 and option == 'rent')
-        ):
-        return 0
-    # Remove sign
-    reward = abs(incentive)
-    # Limit reward
-    reward = min(1, reward)
-    return reward
-
-
-def log_incentivized_stations(incentives: list) -> None:
-    """ Prints incentivized stations categorized by incentive option (rentals/returns) """
-    rent_stations = []
-    return_stations = []
-    for i, incentive in enumerate(incentives):
-        if incentive > 0:
-            return_stations.append(i)
-        elif incentive < 0:
-            rent_stations.append(i)
-    logger.info(f'Rent:    {rent_stations}\nReturn:  {return_stations}')
-
+def simulate_batch(batch_size: int) -> dict:
+    """ Runs a batch of bike share simulations and returns stats """
+    # Set logger level
+    logger.setLevel(BATCH_LOG_LEVEL) 
+    # Ensure SEED is not preset
+    if SEED != None:
+        logger.error(f'{ERROR} SEED should be None for batch simulation.')
+    # Iterate through batch
+    batch_data = None
+    for i in range(batch_size):
+        run_data = simulate_bike_share()
+        # Create dict based on simulation data if first run
+        if batch_data == None:
+            batch_data = {key: [] for key in run_data}
+        # Add run data to dict
+        for key in run_data.keys():
+            batch_data[key].append(run_data[key])
+        logger.error(f'\rRunning simulation batch: {i+1}/{batch_size} complete')
+    # Analyze batch data
+    logger.error(f'\n------- Batch Complete ({batch_size} runs) --------')
+    logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
+    log_data_stats(batch_data)
+    
     
 def main():    
     print()
@@ -850,6 +869,7 @@ def main():
         batch_size=PARALLEL_BATCH_SIZE,
         log_progress=PRINT_BATCH_PROGRESS
     )
+    print(OUTPUT)
     return
     
     # Run simulation directly for single run

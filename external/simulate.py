@@ -260,11 +260,11 @@ class Agent:
         """ Returns the next station the agent will travel to. """
         # Use smart action if agent is smart, otherwise use basic action
         if AGENT_INTELLIGENCE == 'smart':
-            return self.get_smart_action(bike_counts, incentives, current_time)
+            return self._get_smart_action(bike_counts, incentives, current_time)
         elif AGENT_INTELLIGENCE == 'basic':
-            return self.get_basic_action(bike_counts, incentives, current_time)
+            return self._get_basic_action(incentives, current_time)
 
-    def get_basic_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
+    def _get_basic_action(self, incentives: list, current_time: float) -> int:
         """" Returns the next station the agent will travel without prediction. """
         # Set nearest stations and trip times based on mode
         if self.mode == 'bike':
@@ -339,7 +339,7 @@ class Agent:
         action = station_queue.get()[1]
         return action 
 
-    def get_smart_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
+    def _get_smart_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
         """ Returns the next station the agent will travel to using a search tree. """
         # Estimate and cache future incentives for comparing nodes
         incentives_cache = dict() # {(<update_time>, <station>): <incentive>}     

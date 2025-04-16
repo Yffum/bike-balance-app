@@ -30,7 +30,7 @@ EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
 #----------- Batches -----------
 GET_MEAN_REWARD = True
-MARGIN_OF_ERROR = 0.1
+MARGIN_OF_ERROR = 0.9
 CONFIDENCE_LEVEL = 1 - 1e-4
 PARALLEL_BATCH_SIZE = 12
 PRINT_BATCH_PROGRESS = True
@@ -498,10 +498,10 @@ class Agent:
                 if incentive < 0:
                     reward = get_reward(incentive, 'rent')
                     reward_rate = reward / WALK_TIMES[node.station][end_station]
-                    station_reward_rate_pairs.append((end_station, reward_rate))
+                    station_reward_rate_pairs.append( (end_station, reward_rate) )
                 # Get travel times for every neutral station
                 elif incentive == 0:
-                    station_travel_time_pairs.append((end_station, WALK_TIMES[node.station][end_station]))    
+                    station_travel_time_pairs.append( (end_station, WALK_TIMES[node.station][end_station]) )    
             #---------------------- Get best stations --------------------------
             WALK_BRANCH_FACTOR = AGENT_SEARCH_BRANCH_FACTOR
             new_stations = []
@@ -523,7 +523,7 @@ class Agent:
                         end_bike_count = estimate_bike_count(end_station, root_bike_counts[end_station], trip_end_time - root_time)
                         if self._validate_station(end_station, end_bike_count, node.mode):
                             new_stations.append(end_station)
-                        # Validate until branching factor is met
+                        # Add stations until branching factor is met
                         if len(new_stations) == WALK_BRANCH_FACTOR:
                             break
             #-------------------- Instantiate new nodes ----------------------
@@ -562,8 +562,17 @@ class Agent:
                 bike_count += bike_difference
                 incentives[station] = INCENTIVES[station][bike_count]
             #----------------------- Assess Stations ---------------------------
+            # Consider neutral stations if there's a reward for renting from current station
+            can_go_to_neutral = (
+                # Current reward is greater than previous
+                (node.prev != None and node.reward > node.prev.reward)
+                # Or current station is incentivized for return
+                or get_reward(incentives[node.station], 'rent') > 0
+                # ToDo: Probably only need second option
+            )
             # Get reward rates and travel times
             station_reward_rate_pairs = []
+            station_travel_time_pairs = []
             for end_station, incentive in enumerate(incentives):
                 # Skip station
                 bike_time = BIKE_TIMES[node.station][end_station]
@@ -579,7 +588,10 @@ class Agent:
                 if incentive > 0:
                     reward = get_reward(incentive, 'return')
                     reward_rate = reward / BIKE_TIMES[node.station][end_station]
-                    station_reward_rate_pairs.append((end_station, reward_rate))
+                    station_reward_rate_pairs.append( (end_station, reward_rate) )
+                # Get travel times for neutral stations
+                if can_go_to_neutral and incentive == 0:
+                    station_travel_time_pairs.append( (end_station, BIKE_TIMES[node.station][end_station]) )
             #---------------------- Get best stations --------------------------
             BIKE_BRANCH_FACTOR = AGENT_SEARCH_BRANCH_FACTOR
             new_stations = []
@@ -590,6 +602,20 @@ class Agent:
                 stations = [pair[0] for pair in station_reward_rate_pairs]
                 # Add stations up to branch factor
                 new_stations.extend(stations[:BIKE_BRANCH_FACTOR])
+            # Not enough incentivized stations, try neutral
+            if can_go_to_neutral and len(new_stations) < BIKE_BRANCH_FACTOR:
+                if station_travel_time_pairs:
+                    # Sort stations by ascending travel time
+                    station_travel_time_pairs = sorted(station_travel_time_pairs, key=lambda x: x[1])
+                    # Validate and add station to new stations
+                    for end_station, _ in station_travel_time_pairs:
+                        trip_end_time = node.time + BIKE_TIMES[node.station][end_station]
+                        end_bike_count = estimate_bike_count(end_station, root_bike_counts[end_station], trip_end_time - root_time)
+                        if self._validate_station(end_station, end_bike_count, node.mode):
+                            new_stations.append(end_station)
+                        # Add stations until branch factor is met
+                        if len(new_stations) == BIKE_BRANCH_FACTOR:
+                            break
             #-------------------- Instantiate new nodes ----------------------
             for end_station in new_stations:
                 # Adjust bike difference for end station

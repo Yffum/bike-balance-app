@@ -1,10 +1,11 @@
 # Main simulation
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 import time
 import os
 from queue import PriorityQueue
+import bisect
 
 import numpy as np
 
@@ -228,6 +229,8 @@ class Node:
     reward: float      # Total reward
     depth: int=0       # Depth in search tree
     prev: 'Node'=None  # Previous node
+    bike_differences: dict=field(default_factory=dict)   # {<station>: <bike_difference>} Track net bikes
+                                    # the agent has added/removed from each station
     
     
 class Agent:
@@ -341,8 +344,31 @@ class Agent:
 
     def _get_smart_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
         """ Returns the next station the agent will travel to using a search tree. """
-        # Estimate and cache future incentives for comparing nodes
-        incentives_cache = dict() # {(<update_time>, <station>): <incentive>}     
+        #---------------------------- Estimate future incentives ---------------------------
+        # [(start_time, incentives0), (update1_time, incentives1), ...]
+        predicted_incentives = [(current_time, incentives.copy())]
+        prev_time = current_time
+        prev_bike_counts = bike_counts
+        # Get first future incentive update time
+        new_time = np.ceil(current_time / INCENTIVE_UPDATE_INTERVAL) * INCENTIVE_UPDATE_INTERVAL
+        # Iterate through update times
+        while new_time - current_time < AGENT_MAX_SEARCH_TIME:
+            # Get bike counts and incentives for new time
+            new_bike_counts = []
+            new_incentives = []
+            for station in range(N):
+                new_bike_count = estimate_bike_count(station, prev_bike_counts[station], new_time - prev_time)
+                new_incentive = INCENTIVES[station][new_bike_count]
+                new_bike_counts.append(new_bike_count)
+                new_incentives.append(new_incentive)
+            # Add incentives for new time to cache
+            predicted_incentives.append( (new_time, new_incentives) )
+            # Save bike counts and update time to next incentives update
+            prev_bike_counts = new_bike_counts
+            prev_time = new_time
+            new_time += INCENTIVE_UPDATE_INTERVAL
+        
+        #------------------------- Set up tree search ------------------------------
         # Use current time for root node
         root_time = current_time
         # Track best node
@@ -388,7 +414,7 @@ class Agent:
                     best_node = node
             #----------------- Expand node --------------------
             else:
-                new_nodes = self._expand_node(node, bike_counts, incentives, root_time, incentives_cache)
+                new_nodes = self._expand_node(node, bike_counts, root_time, predicted_incentives)
                 search_queue += new_nodes
                 # Log tree expansion
                 if logger.level <= logging.DEBUG and (DEBUG_START_TIME < root_time < DEBUG_END_TIME):
@@ -429,7 +455,165 @@ class Agent:
         else:
             return END_TRIP  # Finish excursion       
 
-    def _expand_node(self, node: Node, root_bike_counts: list, root_incentives: list, root_time: float, incentives_cache: dict) -> list:
+    def _expand_node(self, node: Node, root_bike_counts: list, root_time: float, predicted_incentives: list) -> list:
+        # Get incentive times
+        # ToDo: change predicted_incentives to tuple of lists to avoid this step
+        incentive_times = [time_incentives_pair[0] for time_incentives_pair in predicted_incentives]
+        new_nodes = []
+        #------------------------------------- Walk -------------------------------------------
+        if node.mode == 'walk':
+            #-------------------------- Get incentives -------------------------
+            # For walking, get incentives using predicted end trip time
+            incentives = []
+            for end_station in range(N):
+                # Get time of incentive update before trip end, along with predicted incentives for that time
+                end_trip_time = node.time + WALK_TIMES[node.station][end_station]
+                predicted_incentives_index = bisect.bisect_right(incentive_times, end_trip_time)
+                update_time, incentives_for_time = predicted_incentives[predicted_incentives_index]
+                # Estimate bike count using bike differences if station visited previously
+                if end_station in node.bike_differences:
+                    bike_count = estimate_bike_count(end_station, root_bike_counts[end_station], update_time - root_time)
+                    bike_count += node.bike_differences[end_station]
+                    incentives.append(INCENTIVES[end_station][bike_count])
+                # Otherwise use precalculated incentive
+                else:
+                    incentives.append(incentives_for_time[end_station])
+            #------------------------ Adjust walk time -------------------------
+            # If no returns incentivized, extend max walk time to next update
+            max_walk_time = AGENT_MAX_WALK_TIME
+            if max(incentives) <= 0:  # no return incentivized
+                next_update_time = np.ceil(node.time / INCENTIVE_UPDATE_INTERVAL) * INCENTIVE_UPDATE_INTERVAL
+                time_until_update = next_update_time - node.time
+                max_walk_time = max(time_until_update, max_walk_time)
+            #----------------------- Assess Stations ---------------------------
+            # Get reward rates for incentivized stations and travel times for neutral stations
+            station_reward_rate_pairs = []  # Incentivized stations
+            station_travel_time_pairs = []  # Neutral stations
+            for station, incentive in enumerate(incentives):
+                # Skip station if trip exceeds max walk time
+                if (
+                    WALK_TIMES[node.station][station] > max_walk_time
+                    or node.station == station
+                ):
+                    continue
+                # Get reward rate for every incentivized station
+                if incentive < 0:
+                    reward = get_reward(incentive, 'rent')
+                    reward_rate = reward / WALK_TIMES[node.station][station]
+                    station_reward_rate_pairs.append((station, reward_rate))
+                # Get travel times for every neutral station
+                elif incentive == 0:
+                    station_travel_time_pairs.append((station, WALK_TIMES[node.station][station]))        
+            #---------------------- Get best stations --------------------------
+            WALK_BRANCH_FACTOR = AGENT_SEARCH_BRANCH_FACTOR
+            new_stations = []
+            # Get incentivized stations to expand to
+            if station_reward_rate_pairs:
+                # Sort stations by descending reward rate
+                station_reward_rate_pairs = sorted(station_reward_rate_pairs, key=lambda x: x[1], reverse=True)
+                stations = [pair[0] for pair in station_reward_rate_pairs]
+                # Add stations up to branch factor
+                new_stations.extend(stations[:WALK_BRANCH_FACTOR])
+            # Not enough incentivized stations, try neutral
+            if len(new_stations) < WALK_BRANCH_FACTOR:
+                if station_travel_time_pairs:
+                    # Sort stations by ascending travel time
+                    station_travel_time_pairs = sorted(station_travel_time_pairs, key=lambda x: x[1])
+                    # Validate and add station to new stations
+                    for end_station, _ in station_reward_rate_pairs:
+                        trip_end_time = node.time + WALK_TIMES[node.station][end_station]
+                        end_bike_count = estimate_bike_count(end_station, root_bike_counts[end_station], trip_end_time - root_time)
+                        if self._validate_station(end_station, end_bike_count, node.mode):
+                            new_stations.append(end_station)
+                        # Validate until branching factor is met
+                        if len(new_stations) == WALK_BRANCH_FACTOR:
+                            break  
+            #-------------------- Instantiate new nodes ----------------------
+            for end_station in new_stations:
+                # Adjust bike difference for end station
+                bike_differences = node.bike_differences.copy()
+                if end_station in bike_differences:
+                    bike_differences[end_station] -= 1
+                else:
+                    bike_differences[end_station] = -1
+                # Set action if previous node is root, otherwise use previous action
+                action = end_station if node.action == NULL_STATION else node.action
+                # Create node and add to expanded list
+                new_node = Node(
+                    action=action,
+                    station=end_station,
+                    mode='bike', 
+                    root_mode=node.root_mode,
+                    time=node.time + WALK_TIMES[node.station][end_station],
+                    reward=node.reward + get_reward(incentives[end_station], 'rent'),
+                    depth=node.depth + 1,
+                    prev=node,
+                    bike_differences=bike_differences
+                )
+                new_nodes.append(new_node)  
+        #------------------------------------- Bike -------------------------------------------
+        elif node.mode == 'bike':
+            #-------------------------- Get incentives -------------------------
+            # Get predicted incentives based on node time
+            predicted_incentives_index = bisect.bisect_right(incentive_times, node.time)
+            incentive_time, incentives = predicted_incentives[predicted_incentives_index]
+            incentives = incentives.copy()
+            # Adjust incentives based on bike differences
+            for station, bike_difference in node.bike_differences.items():
+                bike_count = estimate_bike_count(station, root_bike_counts[station], incentive_time - root_time)
+                bike_count += bike_difference
+                incentives[station] = INCENTIVES[station][bike_count]
+            #----------------------- Assess Stations ---------------------------
+            # Get reward rates and travel times
+            travel_times = BIKE_TIMES[node.station]
+            station_reward_rate_pairs = []
+            for end_station, incentive in enumerate(incentives):
+                # Skip station if it's the same
+                if end_station == node.station:
+                    continue
+                # Get reward rate for every incentivized stations
+                if incentive > 0:
+                    reward = get_reward(incentive, 'return')
+                    reward_rate = reward / BIKE_TIMES[node.station][end_station]
+                    station_reward_rate_pairs.append((end_station, reward_rate))
+            #---------------------- Get best stations --------------------------
+            BIKE_BRANCH_FACTOR = AGENT_SEARCH_BRANCH_FACTOR
+            new_stations = []
+            # Get incentivized stations to expand to
+            if station_reward_rate_pairs:
+                # Sort stations by descending reward rate
+                station_reward_rate_pairs = sorted(station_reward_rate_pairs, key=lambda x: x[1], reverse=True)
+                stations = [pair[0] for pair in station_reward_rate_pairs]
+                # Add stations up to branch factor
+                new_stations.extend(stations[:BIKE_BRANCH_FACTOR])
+            #-------------------- Instantiate new nodes ----------------------
+            for end_station in new_stations:
+                # Adjust bike difference for end station
+                bike_differences = node.bike_differences.copy()
+                if end_station in bike_differences:
+                    bike_differences[end_station] += 1
+                else:
+                    bike_differences[end_station] = 1
+                # Set action if previous node is root, otherwise use previous action
+                action = end_station if node.action == NULL_STATION else node.action
+                # Create node and add to expanded list
+                new_node = Node(
+                    action=action,
+                    station=end_station,
+                    mode='walk', 
+                    root_mode=node.root_mode,
+                    time=node.time + BIKE_TIMES[node.station][end_station],
+                    reward=node.reward + get_reward(incentives[end_station], 'return'),
+                    depth=node.depth + 1,
+                    prev=node,
+                    bike_differences=bike_differences
+                )
+                new_nodes.append(new_node)
+        # Return child nodes
+        return new_nodes
+        
+
+    def _expand_node_old(self, node: Node, root_bike_counts: list, root_incentives: list, root_time: float, incentives_cache: dict) -> list:
         """ Expand search node using nearest stations. Returns list of nodes. 
         Args:
             root_bike_counts (list): the bike_counts at the time of the root node 
@@ -536,6 +720,36 @@ def format_time(time: float) -> str:
     hours = int(time)
     minutes = int((time - hours) * 60)
     return f"{hours:02d}:{minutes:02d}"
+
+
+def get_closest_stations(current_station: int, max_travel_time: float, mode: str) -> list:
+    """ Returns a list of the closest stations to the current station, sorted by travel time
+    for the given mode, and limited by max_travel_time.
+    Args:
+        current_station (int): The start station from which the function finds the closest
+            stations to travel to
+        max_travel_time (float): The stations in the returned list have a travel time at most
+            equal to max_travel_time
+        mode: ('walk', 'bike') The mode of travel from the current_station
+    """
+    # Get list of travel times to each station and list of stations osrted by travel time
+    if mode == 'walk':
+        travel_times = WALK_TIMES[current_station]
+        near_stations = NEAR_WALK_STATIONS
+    elif mode == 'bike':
+        travel_times = BIKE_TIMES[current_station]
+        near_stations = NEAR_BIKE_STATIONS
+    # Binary search for cutoff
+    left, right = 0, len(near_stations)
+    while left < right:
+        mid = (left + right) // 2
+        if travel_times[near_stations[mid]] <= max_travel_time:
+            left = mid + 1
+        else:
+            right = mid
+    # Return nearest stations before time cutoff
+    return near_stations[:left]
+
 
 
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
@@ -859,18 +1073,18 @@ def simulate_batch(batch_size: int) -> dict:
     
     
 def main():    
-    print()
-    logger.setLevel(BATCH_LOG_LEVEL)
-    estimate_stochastic_mean(
-        process=simulate_bike_share, 
-        args=(), 
-        margin_of_error=MARGIN_OF_ERROR, 
-        confidence_level=CONFIDENCE_LEVEL, 
-        batch_size=PARALLEL_BATCH_SIZE,
-        log_progress=PRINT_BATCH_PROGRESS
-    )
-    print(OUTPUT)
-    return
+    # print()
+    # logger.setLevel(BATCH_LOG_LEVEL)
+    # estimate_stochastic_mean(
+    #     process=simulate_bike_share, 
+    #     args=(), 
+    #     margin_of_error=MARGIN_OF_ERROR, 
+    #     confidence_level=CONFIDENCE_LEVEL, 
+    #     batch_size=PARALLEL_BATCH_SIZE,
+    #     log_progress=PRINT_BATCH_PROGRESS
+    # )
+    # print(OUTPUT)
+    # return
     
     # Run simulation directly for single run
     if BATCH_SIZE == 1:

@@ -7,3 +7,23 @@
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(0, -60)
 texture = ExtResource("1_y68rr")
+
+[node name="Label" type="Label" parent="."]
+offset_left = -41.0
+offset_top = -105.0
+offset_right = 41.0
+offset_bottom = -38.0
+scale = Vector2(0.9, 0.9)
+pivot_offset = Vector2(41, 33.5)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "#"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_top = -60.0
+offset_right = 40.0
+offset_bottom = -20.0

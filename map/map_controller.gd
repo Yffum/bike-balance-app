@@ -27,11 +27,13 @@ func _inst_markers():
 	# Get coords from json
 	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)
 	# Iteratively instance markers
-	for coord in coords:
+	for i in coords.size():
+		var coord = coords[i]
 		coord = Vector2(coord[0], coord[1])
 		var marker = Marker.instantiate()
 		marker.position = WGS_to_pos(coord)
 		marker.scale = Vector2(_marker_scale, _marker_scale)
+		marker.get_node('Label').text = str(i)
 		markers.add_child(marker)
 
 ## Sets up parameters for transforming lat/lon to pos

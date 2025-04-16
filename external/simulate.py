@@ -19,7 +19,7 @@ from tools import estimate_stochastic_mean
 OVERRIDE_USER_PARAMS = True  # Must be False for application to work
 # The following parameters are only used if OVERRIDE_USER_PARAMS is True.
 # Otherwise parameters are loaded from file
-SEED = 1012531088  # Unsigned 32 bit int (if None, one will be generated)
+SEED = None  # Unsigned 32 bit int (if None, one will be generated)
 BATCH_SIZE = 1  # Number of simulation replications
 START_STATION = 0  # Agent start station index
 FINAL_STATION = 0  # Agent final station index
@@ -29,6 +29,7 @@ WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starti
 EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
 #----------- Batches -----------
+GET_MEAN_REWARD = True
 MARGIN_OF_ERROR = 1
 CONFIDENCE_LEVEL = 1 - 1e-1
 PARALLEL_BATCH_SIZE = 12
@@ -56,7 +57,7 @@ AGENT_MAX_SEARCH_TIME = 4.1 # This is the maximum time from the root node that a
 AGENT_WAIT_TIME = 5.001/60  # The length of time in hours the agent waits when no station found
 AGENT_WAIT_TIME_LENIENCY = 2/60 # If the wait time ends at most this much time before
                                 # the update, then agent extends wait till update
-AGENT_MAX_WALK_TIME = 7/60  # The maximum time in hours the agent will walk to a station (for basic only)
+AGENT_MAX_WALK_TIME = 12/60  # The maximum time in hours the agent will walk to a station (for basic only)
 INCENTIVE_COST = 0.1    # The number of failures that must be mitigated to warrant
                         # incentivizing a station
 INCENTIVE_PRECISION = 2     # The number of decimal places to round incentives to
@@ -171,7 +172,7 @@ INCENTIVES = get_incentives_with_cost()
 
 #----------------------------------------- LOGGING ------------------------------------------
 # Levels: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
-SINGLE_RUN_LOG_LEVEL = logging.DEBUG
+SINGLE_RUN_LOG_LEVEL = logging.INFO
 BATCH_LOG_LEVEL = logging.ERROR
 # Time range for debug log (HH)
 DEBUG_START_TIME = 17 + 20/60
@@ -430,7 +431,8 @@ class Agent:
                 #--------------------- No trips available  --------------------
                 if not new_nodes:
                     #------------- Evaluate current node --------------
-                    # Ensure there was at least one bike trip in this branch
+                    # Ensure there is a reward in this branch
+                    # ToDo: is this check necessary now?
                     if node.reward > 0:
                         # Evaluate current node
                         if is_best(node):
@@ -1089,29 +1091,30 @@ def simulate_batch(batch_size: int) -> dict:
     
 def main():    
     print()
-    # logger.setLevel(BATCH_LOG_LEVEL)
-    # estimate_stochastic_mean(
-    #     process=simulate_bike_share, 
-    #     args=(), 
-    #     margin_of_error=MARGIN_OF_ERROR, 
-    #     confidence_level=CONFIDENCE_LEVEL, 
-    #     batch_size=PARALLEL_BATCH_SIZE,
-    #     log_progress=PRINT_BATCH_PROGRESS
-    # )
-    # print(OUTPUT)
-    # return
     
-    # Run simulation directly for single run
-    if BATCH_SIZE == 1:
-        # Set logger level
-        logger.setLevel(SINGLE_RUN_LOG_LEVEL)
-        simulate_bike_share()
-    # Otherwise run batch (limits logging)
+    if GET_MEAN_REWARD:
+        logger.setLevel(BATCH_LOG_LEVEL)
+        estimate_stochastic_mean(
+            process=simulate_bike_share, 
+            args=(), 
+            margin_of_error=MARGIN_OF_ERROR, 
+            confidence_level=CONFIDENCE_LEVEL, 
+            batch_size=PARALLEL_BATCH_SIZE,
+            log_progress=PRINT_BATCH_PROGRESS
+        )
+        print(OUTPUT)
     else:
-        simulate_batch(BATCH_SIZE)
-    
-    file_handler.close()
-    logging.shutdown()
+        # Run simulation directly for single run
+        if BATCH_SIZE == 1:
+            # Set logger level
+            logger.setLevel(SINGLE_RUN_LOG_LEVEL)
+            simulate_bike_share()
+        # Otherwise run batch (limits logging)
+        else:
+            simulate_batch(BATCH_SIZE)
+        
+        file_handler.close()
+        logging.shutdown()
     
 
 if __name__ == "__main__":

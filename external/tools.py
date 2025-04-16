@@ -81,3 +81,5 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
         print(f'Variance: {get_variance()}')
         print(f'Mean: {mean:.5f} +/- {rho} ({(1 - alpha) * 100}% Confidence)')
     return mean
+
+#ToDo: Create batch function that finds average for all dictionary items using a relative margin of error

@@ -27,7 +27,7 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
     Returns:
         mean: mean of value returned by the process
     """
-    MIN_SAMPLES = 100 # Minimum number of samples before assessing margin of error
+    MIN_SAMPLES = 300 # Minimum number of samples before assessing margin of error
     
     rho = margin_of_error
     alpha = 1 - confidence_level

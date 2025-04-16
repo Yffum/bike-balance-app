@@ -25,6 +25,10 @@
 --> then have agent search best incentives instead of nearest stations
 
 
+# 2025-04-16
+- [ ] If current node reward is more than previous node reward for expand bike node, that means there was a reward for walking i.e. a reward for renting a bike, so look for neutral stations to travel to like when walking
+- [ ] Change wait handling based on ^
+
 # Notes
 
 - One problem with the twin fail count simulations is sometimes adding a single bike doesn't reduce the fail count very much if it's completely empty (but adding multiple bikes reduces it significantly) so it isn't incentivized for returns when it should be.

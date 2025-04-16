@@ -50,16 +50,17 @@ START_TIME = 16.0  # Time of day (HH) when the simulation begins
 AGENT_SEARCH_BRANCH_FACTOR = 6  # The number of nearest stations (with rewards if biking) to
                                 # search when expanding a node
 AGENT_MAX_SEARCH_DEPTH = 4  # The max depth of the agent's search tree
-AGENT_MAX_SEARCH_TIME = 2.0  # This is the maximum time from the root node that a node can have.
-                           # (Shouldn't be reached, only used to generated future
-                           # incentives)
+AGENT_MAX_SEARCH_TIME = 4.1 # This is the maximum time from the root node that a node can have.
+                            # (Shouldn't be reached, only used to generated future
+                            # incentives)
 AGENT_WAIT_TIME = 5.001/60  # The length of time in hours the agent waits when no station found
-AGENT_WAIT_TIME_LENIENCY = 2/60  # If the wait time ends at most this much time before
-                                 # the update, then agent extends wait till update
+AGENT_WAIT_TIME_LENIENCY = 2/60 # If the wait time ends at most this much time before
+                                # the update, then agent extends wait till update
 AGENT_MAX_WALK_TIME = 5/60  # The maximum time in hours the agent will walk to a station (for basic only)
-INCENTIVE_COST = 0.5  # The number of failures that must be mitigated to warrant
-                    # incentivizing a station
-INCENTIVE_UPDATE_INTERVAL = 0.25  # The period of time in hours between incentives updates
+INCENTIVE_COST = 0.1    # The number of failures that must be mitigated to warrant
+                        # incentivizing a station
+INCENTIVE_PRECISION = 2     # The number of decimal places to round incentives to
+INCENTIVE_UPDATE_INTERVAL = 0.25    # The period of time in hours between incentives updates
 
 #----------------------- TESTING -----------------------
 HARD_STOP_TIME = 0  # Stop simulation after this many hours. If 0, don't stop until finished.
@@ -151,8 +152,9 @@ def get_incentives_with_cost():
                 incentive = max(0, incentive - INCENTIVE_COST)
             # Add cost if negative
             elif incentive < 0:
-                capacity = len(station_incentives)
-                incentive = min(capacity, incentive + INCENTIVE_COST)
+                incentive = min(0, incentive + INCENTIVE_COST)
+            # Round incentive
+            incentive = round(incentive, INCENTIVE_PRECISION)
             # Add to list
             new_station_incentives.append(incentive)
         new_incentives.append(new_station_incentives)
@@ -165,11 +167,11 @@ INCENTIVES = get_incentives_with_cost()
 
 #----------------------------------------- LOGGING ------------------------------------------
 # Levels: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
-SINGLE_RUN_LOG_LEVEL = logging.INFO
+SINGLE_RUN_LOG_LEVEL = logging.DEBUG
 BATCH_LOG_LEVEL = logging.ERROR
 # Time range for debug log (HH)
-DEBUG_START_TIME = 18 + 12/60
-DEBUG_END_TIME = 18 + 28/60
+DEBUG_START_TIME = 16 + 0/60
+DEBUG_END_TIME = 16 + 28/60
 
 WRITE_LOG_FILE = True
 
@@ -367,7 +369,6 @@ class Agent:
             prev_bike_counts = new_bike_counts
             prev_time = new_time
             new_time += INCENTIVE_UPDATE_INTERVAL
-        
         #------------------------- Set up tree search ------------------------------
         # Use current time for root node
         root_time = current_time
@@ -417,7 +418,7 @@ class Agent:
                 new_nodes = self._expand_node(node, bike_counts, root_time, predicted_incentives)
                 search_queue += new_nodes
                 # Log tree expansion
-                if logger.level <= logging.DEBUG and (DEBUG_START_TIME < root_time < DEBUG_END_TIME):
+                if logger.level <= logging.DEBUG and (DEBUG_START_TIME <= root_time <= DEBUG_END_TIME):
                     logger.debug(f'{node.station}, time: {format_time(node.time)}, reward: {node.reward}, {node.mode} to {[n.station for n in new_nodes]}')
                 #--------------------- No trips available  --------------------
                 if not new_nodes:
@@ -611,7 +612,6 @@ class Agent:
                 new_nodes.append(new_node)
         # Return child nodes
         return new_nodes
-        
 
     def _expand_node_old(self, node: Node, root_bike_counts: list, root_incentives: list, root_time: float, incentives_cache: dict) -> list:
         """ Expand search node using nearest stations. Returns list of nodes. 
@@ -1073,7 +1073,7 @@ def simulate_batch(batch_size: int) -> dict:
     
     
 def main():    
-    # print()
+    print()
     # logger.setLevel(BATCH_LOG_LEVEL)
     # estimate_stochastic_mean(
     #     process=simulate_bike_share, 

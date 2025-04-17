@@ -18,11 +18,6 @@ func _ready():
 	markers = $Markers
 	_inst_markers()
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
-
 func _inst_markers():
 	# Get coords from json
 	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)

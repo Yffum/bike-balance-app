@@ -450,35 +450,71 @@ theme_override_constants/margin_bottom = 20
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer"]
 layout_mode = 2
 
-[node name="Placeholder1" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer"]
+[node name="StartStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/Placeholder1"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/StartStation"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Start Station (index)"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/Placeholder1"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/StartStation"]
 layout_mode = 2
 size_flags_horizontal = 3
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="Placeholder2" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer"]
+[node name="EndStation" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/Placeholder2"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/EndStation"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "End Station (index)"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/Placeholder2"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/EndStation"]
 layout_mode = 2
 size_flags_horizontal = 3
 custom_arrow_step = 1.0
 select_all_on_focus = true
+
+[node name="ExcursionTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/ExcursionTime"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Excursion Time"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/ExcursionTime"]
+layout_mode = 2
+size_flags_horizontal = 3
+step = 0.1
+suffix = "hrs"
+custom_arrow_step = 1.0
+select_all_on_focus = true
+
+[node name="AgentMode" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/AgentMode"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Agent Mode"
+
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/StationSettings/MarginContainer/VBoxContainer/AgentMode"]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 1
+item_count = 2
+popup/item_0/text = "Basic"
+popup/item_0/id = 0
+popup/item_1/text = "Smart"
+popup/item_1/id = 1
 
 [node name="Tools" type="Node" parent="."]
 script = ExtResource("5_bfu0d")
@@ -494,19 +530,19 @@ run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxCo
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
 log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log")
 
-[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "seed_text", "seed_checkbox", "seed_setter", "batch_size")]
+[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "seed_text", "seed_checkbox", "seed_setter", "batch_size", "empty_bias", "full_bias", "warmup_time")]
 script = ExtResource("4_guodr")
 start_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox")
 end_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox")
 excursion_time = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/ExcursionTime/SpinBox")
 agent_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/AgentMode/OptionButton")
-full_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/FullBias/SpinBox")
-empty_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/EmptyBias/SpinBox")
-warmup_time = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime/SpinBox")
 seed_text = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed/LineEdit")
 seed_checkbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed/CheckBox")
 seed_setter = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed")
 batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchSize/SpinBox")
+empty_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/EmptyBias/SpinBox")
+full_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/FullBias/SpinBox")
+warmup_time = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime/SpinBox")
 
 [connection signal="mouse_entered" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]

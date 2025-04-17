@@ -82,4 +82,108 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
         print(f'Mean: {mean:.5f} +/- {rho} ({(1 - alpha) * 100}% Confidence)')
     return mean
 
-#ToDo: Create batch function that finds average for all dictionary items using a relative margin of error
+
+def estimate_stochastic_stats(
+    process, args=(), relative_margin_of_error=0.01,
+    minimum_margin_of_error=None,
+    confidence_level=0.95, batch_size=8, log_progress=True
+) -> dict:
+    """Estimate the mean of a stochastic dictionary-valued process until all
+    keys are within the desired relative margin of error.
+
+    Args:
+        process (Callable): Function that returns a dict of float values.
+        args (Tuple): Arguments to pass to the process.
+        relative_margin_of_error (float): Relative margin of error for each key.
+        confidence_level (float): Confidence level for the interval.
+        batch_size (int): Number of processes per batch.
+        log_progress (bool): Whether to log progress.
+
+    Returns:
+        dict: Dictionary of means for each key.
+    """
+    MIN_SAMPLES = 300
+    alpha = 1 - confidence_level
+
+    n = 0  # Sample count
+    stats_dict = {}  # {key: {'mean': float, 'm2': float}}
+    deltas = {}      # {key: current margin of error}
+
+    batch_count = 1
+    batch_times = []
+    start_time = time.time()
+
+    def update_variance(batch):
+        nonlocal n
+        for result in batch:
+            n += 1
+            for k, v in result.items():
+                if k not in stats_dict:
+                    stats_dict[k] = {'mean': 0.0, 'm2': 0.0}
+                entry = stats_dict[k]
+                delta = v - entry['mean']
+                entry['mean'] += delta / n
+                entry['m2'] += delta * (v - entry['mean'])
+
+    def get_variance(k):
+        entry = stats_dict[k]
+        return entry['m2'] / (n - 1) if n >= 2 else float('inf')
+
+    def all_deltas_within_bounds():
+        # Only check deltas if there are enough samples
+        if n < MIN_SAMPLES:
+            return False
+        # Check delta of each stat
+        for k in stats_dict:
+            delta_out_of_bounds = (
+                # Delta is greater than given reltaive MoE
+                deltas[k] > relative_margin_of_error * abs(stats_dict[k]['mean'])
+                # And there is no minimum MoE or delta is greater than it
+                and (minimum_margin_of_error is None or deltas[k] > minimum_margin_of_error)
+            )
+            if delta_out_of_bounds:
+                return False
+        # Every delta passed check
+        return True
+
+    with multiprocessing.Pool() as pool:
+        while True:
+            if log_progress:
+                print(f'Processing batch {batch_count}...', end='\r')
+            batch_start_time = time.time()
+            batch = pool.starmap(process, repeat(args, batch_size))
+            batch_times.append(time.time() - batch_start_time)
+            update_variance(batch)
+
+            # Update deltas
+            deltas.clear()
+            if n >= MIN_SAMPLES:
+                t_score = stats.t.ppf(1 - alpha / 2, n - 1)
+                for k in stats_dict:
+                    variance = get_variance(k)
+                    delta = t_score * np.sqrt(variance / n)
+                    deltas[k] = delta
+            else:
+                for k in stats_dict:
+                    deltas[k] = float('inf')
+
+            if log_progress:
+                elapsed = time.time() - start_time
+                print(f'Batch {batch_count} complete. Elapsed: {seconds_to_hms(elapsed)}')
+                for k in sorted(stats_dict):
+                    mean_k = stats_dict[k]['mean']
+                    delta_k = deltas[k]
+                    print(f'\t{k}: {mean_k:.5f} ± {delta_k:.5f}')
+                print()
+
+            if all_deltas_within_bounds():
+                break
+            batch_count += 1
+
+    means = {k: v['mean'] for k, v in stats_dict.items()}
+    if log_progress:
+        print(f'Final results after {batch_count} batches:')
+        for k, mean in means.items():
+            moe = deltas[k]
+            print(f'  {k}: {mean:.5f} ± {moe:.5f}')
+    return means

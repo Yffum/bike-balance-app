@@ -9,7 +9,7 @@ import bisect
 
 import numpy as np
 
-from tools import estimate_stochastic_mean
+from tools import estimate_stochastic_mean, estimate_stochastic_stats
         
 # Unless otherwise indicated:
 # - "station" refers to station index
@@ -29,7 +29,8 @@ WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starti
 EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
 FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
 #----------- Batches -----------
-GET_MEAN_REWARD = True
+GET_MEAN_REWARD = False
+GET_MEAN_STATS = True
 MARGIN_OF_ERROR = 0.9
 CONFIDENCE_LEVEL = 1 - 1e-4
 PARALLEL_BATCH_SIZE = 12
@@ -707,7 +708,6 @@ def get_closest_stations(current_station: int, max_travel_time: float, mode: str
     return near_stations[:left]
 
 
-
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
     """ Returns a generated list of bike counts for each station after the elapsed time. """
     # Don't modify given list
@@ -1041,6 +1041,18 @@ def main():
             batch_size=PARALLEL_BATCH_SIZE,
             log_progress=PRINT_BATCH_PROGRESS
         )
+    elif GET_MEAN_STATS:
+        logger.setLevel(BATCH_LOG_LEVEL)
+        print('test')
+        print(estimate_stochastic_stats(
+            process=simulate_bike_share, 
+            args=(True,), 
+            relative_margin_of_error=0.01,
+            minimum_margin_of_error=0.1,
+            confidence_level=0.9, 
+            batch_size=PARALLEL_BATCH_SIZE,
+            log_progress=PRINT_BATCH_PROGRESS
+        ))
     else:
         # Run simulation directly for single run
         if BATCH_SIZE == 1:

@@ -1,12 +1,12 @@
 extends Node
 
-# Agent Parameters
+#--------- Agent Parameters --------
 @export var start_station : SpinBox
 @export var end_station : SpinBox
 @export var excursion_time : SpinBox
 @export var agent_mode : OptionButton
 
-# Simulation Parameters
+#------ Simulation Parameters ------
 @export var full_bias : SpinBox
 @export var empty_bias : SpinBox
 @export var warmup_time : SpinBox

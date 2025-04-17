@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=15 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://bb0snknvsciph" path="res://UI/seed_controller.gd" id="4_iwhwg"]
 [ext_resource type="Script" uid="uid://dn50ac575shwp" path="res://tools.gd" id="5_bfu0d"]
 [ext_resource type="Script" uid="uid://q5g8pul385u7" path="res://addons/tattomoosa.spinner/spinner.gd" id="5_fc6ls"]
+[ext_resource type="Script" uid="uid://tphp00oas6w3" path="res://UI/batch_controller.gd" id="8_0oce6"]
 [ext_resource type="Script" uid="uid://bbvq1vxl5x7rc" path="res://settings.gd" id="9_1rr46"]
 [ext_resource type="Script" uid="uid://d1hwt2xwxkual" path="res://sim_controller.gd" id="9_5y2nw"]
 
@@ -172,11 +173,13 @@ split_offset = 581
 
 [node name="SettingsTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
-current_tab = 0
+current_tab = 1
 clip_tabs = false
 drag_to_rearrange_enabled = true
+tabs_rearrange_group = 0
 
 [node name="Agent" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
+visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
 metadata/_tab_index = 0
@@ -264,10 +267,14 @@ popup/item_0/id = 0
 popup/item_1/text = "Smart"
 popup/item_1/id = 1
 
-[node name="Simulation" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
-visible = false
+[node name="Simulation" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" node_paths=PackedStringArray("single_run_mode_container", "batch_mode_container", "fixed_mode_container", "precision_mode_container")]
 layout_mode = 2
 horizontal_scroll_mode = 0
+script = ExtResource("8_0oce6")
+single_run_mode_container = NodePath("MarginContainer/VBoxContainer/SingleRunContainer")
+batch_mode_container = NodePath("MarginContainer/VBoxContainer/BatchContainer")
+fixed_mode_container = NodePath("MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer")
+precision_mode_container = NodePath("MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer")
 metadata/_tab_index = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation"]
@@ -282,59 +289,21 @@ theme_override_constants/margin_bottom = 20
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer"]
 layout_mode = 2
 
-[node name="SeedController" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
-layout_mode = 2
-script = ExtResource("4_iwhwg")
-
-[node name="ToggleSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController"]
+[node name="WarmupTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Use Static Seed"
+text = "Warmup Time"
 
-[node name="CheckBox" type="CheckBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed"]
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="SetSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController"]
-visible = false
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Static Seed:"
-
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Button" type="Button" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Randomize"
-icon = ExtResource("4_bfu0d")
-
-[node name="BatchSize" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchSize"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Batch Size"
-
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchSize"]
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 1.0
-max_value = 5000.0
-value = 1.0
-suffix = "run(s)"
+max_value = 5.0
+step = 0.1
+suffix = "hrs"
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
@@ -372,23 +341,265 @@ suffix = "%"
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="WarmupTime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+[node name="SimMode" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime"]
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SimMode"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Warmup Time"
+text = "Mode"
 
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime"]
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SimMode"]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 5.0
+selected = 0
+item_count = 2
+popup/item_0/text = "Single Run"
+popup/item_0/id = 0
+popup/item_1/text = "Batch"
+popup/item_1/id = 1
+
+[node name="SingleRunContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="SeedController" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer"]
+layout_mode = 2
+script = ExtResource("4_iwhwg")
+
+[node name="ToggleSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Use Static Seed"
+
+[node name="CheckBox" type="CheckBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SetSeed" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController"]
+visible = false
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Static Seed:"
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button" type="Button" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Randomize"
+icon = ExtResource("4_bfu0d")
+
+[node name="BatchContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ConfidenceLevel" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ConfidenceLevel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Confidence Level"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ConfidenceLevel"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.1
 step = 0.1
-suffix = "hrs"
+value = 99.0
+suffix = "%"
 custom_arrow_step = 1.0
 select_all_on_focus = true
+
+[node name="ParallelBatchSize" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ParallelBatchSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Parallel Batch Size"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ParallelBatchSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 100000.0
+value = 8.0
+custom_arrow_step = 1.0
+select_all_on_focus = true
+
+[node name="BatchMode" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Batch Mode"
+
+[node name="OptionButton" type="OptionButton" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode"]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 2
+popup/item_0/text = "Precision Based"
+popup/item_0/id = 0
+popup/item_1/text = "Fixed Sample Size"
+popup/item_1/id = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 7
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer"]
+layout_mode = 2
+current_tab = 1
+tabs_visible = false
+
+[node name="FixedContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 7
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer"]
+layout_mode = 2
+
+[node name="BatchSize" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer/VBoxContainer/BatchSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sample size"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer/VBoxContainer/BatchSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 2.0
+max_value = 5000.0
+value = 300.0
+suffix = "runs"
+custom_arrow_step = 1.0
+select_all_on_focus = true
+
+[node name="PrecisionContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 7
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer"]
+layout_mode = 2
+
+[node name="MinSampleSize" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MinSampleSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Min sample size"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MinSampleSize"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 2.0
+max_value = 5000.0
+value = 300.0
+suffix = "runs"
+custom_arrow_step = 1.0
+select_all_on_focus = true
+
+[node name="RelativeDelta" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/RelativeDelta"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Relative margin of error"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/RelativeDelta"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.001
+step = 0.001
+value = 1.0
+suffix = "%"
+custom_arrow_step = 1.0
+select_all_on_focus = true
+
+[node name="AbsoluteDelta" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/AbsoluteDelta"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Absolute margin of error"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/AbsoluteDelta"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.001
+step = 0.001
+value = 0.1
+custom_arrow_step = 1.0
+select_all_on_focus = true
+
+[node name="MaxRuntime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MaxRuntime"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Maximum runtime"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MaxRuntime"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.5
+step = 0.1
+value = 0.5
+suffix = "min"
+custom_arrow_step = 0.5
+select_all_on_focus = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 7
+theme_override_constants/margin_bottom = 7
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MarginContainer"]
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.813258, 0.813258, 0.813258, 1)
+theme_override_font_sizes/font_size = 14
+text = "Replications will stop once max runtime reached, or margin of error is below bound (relative or absolute) for every statitistic. Lower runtime by increasing margin of error and/or decreasing confidence level."
+autowrap_mode = 2
 
 [node name="Log" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 visible = false
@@ -411,7 +622,8 @@ text = "The log of the last simulation run will display here."
 [node name="StationTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
 current_tab = 0
-tabs_visible = false
+drag_to_rearrange_enabled = true
+tabs_rearrange_group = 0
 use_hidden_tabs_for_min_size = true
 tab_focus_mode = 0
 
@@ -503,14 +715,16 @@ agent_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSpli
 full_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/FullBias/SpinBox")
 empty_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/EmptyBias/SpinBox")
 warmup_time = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime/SpinBox")
-seed_text = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed/LineEdit")
-seed_checkbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed/CheckBox")
-seed_setter = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed")
-batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchSize/SpinBox")
+seed_text = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/LineEdit")
+seed_checkbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed/CheckBox")
+seed_setter = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed")
+batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer/VBoxContainer/BatchSize/SpinBox")
 
 [connection signal="mouse_entered" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton" to="SimController" method="_on_run_button_pressed"]
-[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/ToggleSeed/CheckBox" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController" method="_on_check_box_pressed"]
-[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SeedController" method="_on_button_pressed"]
+[connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SimMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_sim_mode_selected"]
+[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed/CheckBox" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_check_box_pressed"]
+[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_button_pressed"]
+[connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_batch_mode_selected"]
 [connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]

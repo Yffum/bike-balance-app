@@ -5,7 +5,7 @@
 - [ ] Get appropriate distribution and generate travel times
 - [ ] Create proper output file for godot instead of using print output
 - [ ] Add warning for minimum samples not reached when timeout
-
+- [ ] Add way to pause or stop simulation from app
 
 
 ### Station

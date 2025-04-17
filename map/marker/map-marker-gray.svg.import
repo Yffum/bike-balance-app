@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8cqv4bj8pq3a"
-path="res://.godot/imported/map-marker.svg-65d667b3c444415a6fe1cd173010f659.ctex"
+uid="uid://cye7iq557t35e"
+path="res://.godot/imported/map-marker-gray.svg-b15d56de2a0b1d19d8233eaa1139668a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://map/marker/map-marker.svg"
-dest_files=["res://.godot/imported/map-marker.svg-65d667b3c444415a6fe1cd173010f659.ctex"]
+source_file="res://map/marker/map-marker-gray.svg"
+dest_files=["res://.godot/imported/map-marker-gray.svg-b15d56de2a0b1d19d8233eaa1139668a.ctex"]
 
 [params]
 

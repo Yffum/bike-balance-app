@@ -230,8 +230,8 @@ class Node:
     reward: float      # Total reward
     depth: int=0       # Depth in search tree
     prev: 'Node'=None  # Previous node
-    bike_differences: dict=field(default_factory=dict)   # {<station>: <bike_difference>} Track net bikes
-                                    # the agent has added/removed from each station
+    bike_differences: dict=field(default_factory=dict)  # {<station>: <bike_difference>} Track net bikes
+                                                        # the agent has added/removed from each station
     
     
 class Agent:

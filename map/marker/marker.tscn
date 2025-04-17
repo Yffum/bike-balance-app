@@ -1,12 +1,46 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqpoqjxm1ij56"]
+[gd_scene load_steps=7 format=3 uid="uid://bqpoqjxm1ij56"]
 
-[ext_resource type="Texture2D" uid="uid://c8cqv4bj8pq3a" path="res://map/marker/map-marker.svg" id="1_y68rr"]
+[ext_resource type="Texture2D" uid="uid://bil8eac25re1s" path="res://map/marker/map-marker-selected-outline.svg" id="1_k80nn"]
+[ext_resource type="Texture2D" uid="uid://cye7iq557t35e" path="res://map/marker/map-marker-gray.svg" id="2_07kpn"]
+[ext_resource type="Texture2D" uid="uid://b04akuy8omoy5" path="res://map/marker/map-marker-green.svg" id="2_7oei3"]
+[ext_resource type="Texture2D" uid="uid://bi70nps5nco62" path="res://map/marker/map-marker-white.svg" id="2_l3yed"]
+[ext_resource type="Texture2D" uid="uid://5vlpnkknax28" path="res://map/marker/map-marker-checkered.png" id="3_07kpn"]
+[ext_resource type="Texture2D" uid="uid://n5avdaibtr6c" path="res://map/marker/map-marker-half-checkered.png" id="4_qss0v"]
 
 [node name="Marker" type="Node2D"]
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Fill" type="Node2D" parent="."]
+
+[node name="Blank" type="Sprite2D" parent="Fill"]
 position = Vector2(0, -60)
-texture = ExtResource("1_y68rr")
+texture = ExtResource("2_l3yed")
+
+[node name="Gray" type="Sprite2D" parent="Fill"]
+visible = false
+position = Vector2(0, -60)
+texture = ExtResource("2_07kpn")
+
+[node name="Start" type="Sprite2D" parent="Fill"]
+visible = false
+position = Vector2(0, -60)
+texture = ExtResource("2_7oei3")
+
+[node name="End" type="Sprite2D" parent="Fill"]
+visible = false
+position = Vector2(0, -60)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("3_07kpn")
+
+[node name="StartEnd" type="Sprite2D" parent="Fill"]
+visible = false
+position = Vector2(0, -60)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_qss0v")
+
+[node name="SelectedOutline" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(0, -60)
+texture = ExtResource("1_k80nn")
 
 [node name="Label" type="Label" parent="."]
 offset_left = -41.0
@@ -17,11 +51,12 @@ scale = Vector2(0.9, 0.9)
 pivot_offset = Vector2(41, 33.5)
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 48
-text = "#"
+text = "555"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Control" type="Control" parent="."]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_top = -60.0

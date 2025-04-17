@@ -8,7 +8,7 @@
 
 - [ ] handle exit code 1 after calling sim in sim_controller.gd
 	- set spinner to X and write error to log
-- [ ] when expanding walk node, check nearest stations as well as nearest stations with negative incentive
+- [x] when expanding walk node, check nearest stations as well as nearest stations with negative incentive
 
 # 2025-04-11
 
@@ -26,7 +26,7 @@
 
 
 # 2025-04-16
-- [ ] If current node reward is more than previous node reward for expand bike node, that means there was a reward for walking i.e. a reward for renting a bike, so look for neutral stations to travel to like when walking
+- [x] If current node reward is more than previous node reward for expand bike node, that means there was a reward for walking i.e. a reward for renting a bike, so look for neutral stations to travel to like when walking
 - [ ] Change wait handling based on ^
 
 # Notes

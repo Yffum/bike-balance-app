@@ -22,7 +22,7 @@ extends Node
 # Fixed sample size
 @export var batch_size : SpinBox
 # Precision based
-@export var minimum_sample_size : SpinBox
+@export var min_sample_size : SpinBox
 @export var relative_margin_of_error : SpinBox
 @export var absolute_margin_of_error : SpinBox
 @export var max_runtime : SpinBox
@@ -79,7 +79,7 @@ func _load_params(params : Dictionary):
 	# Fixed sample size
 	batch_size.value = params['batch_size']
 	# Precision based
-	minimum_sample_size.value = params['minimum_sample_size']
+	min_sample_size.value = params['min_sample_size']
 	relative_margin_of_error.value = params['relative_margin_of_error'] * 100  # factor to percent
 	absolute_margin_of_error.value = params['absolute_margin_of_error']
 	max_runtime.value = params['max_runtime'] / 60.0  # seconds to minutes
@@ -125,7 +125,7 @@ func save_params():
 	# Fixed sample size
 	params['batch_size'] = int(batch_size.value)
 	# Precision based
-	params['minimum_sample_size'] = int(minimum_sample_size.value)
+	params['min_sample_size'] = int(min_sample_size.value)
 	params['relative_margin_of_error'] = relative_margin_of_error.value / 100 # percent to factor
 	params['absolute_margin_of_error'] = absolute_margin_of_error.value
 	params['max_runtime'] = max_runtime.value * 60  # minutes to seconds

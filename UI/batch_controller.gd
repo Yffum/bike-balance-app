@@ -8,22 +8,9 @@ extends Node
 @export var fixed_mode_container : Node
 @export var precision_mode_container : Node
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
-
-
-func _on_batch_mode_selected(index):
-	if index == 0:
-		precision_mode_container.visible = true
-	elif index == 1:
-		fixed_mode_container.visible = true
-
+func _on_param_controller_sim_and_batch_modes_initialized(sim_mode, batch_mode):
+	_on_sim_mode_selected(sim_mode)
+	_on_batch_mode_selected(batch_mode)
 
 func _on_sim_mode_selected(index):
 	if index == 0:
@@ -33,3 +20,10 @@ func _on_sim_mode_selected(index):
 		single_run_mode_container.visible = false
 		batch_mode_container.visible = true
 		
+func _on_batch_mode_selected(index):
+	if index == 0:
+		precision_mode_container.visible = true
+		fixed_mode_container.visible = false
+	elif index == 1:
+		precision_mode_container.visible = false
+		fixed_mode_container.visible = true

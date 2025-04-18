@@ -132,6 +132,12 @@ def get_near_stations_list(travel_time_matrix: list) -> list:
 NEAR_BIKE_STATIONS = get_near_stations_list(params['bike_times'])
 NEAR_WALK_STATIONS = get_near_stations_list(params['walk_times'])
 
+# Load fail counts from file
+FAIL_COUNTS_FILEPATH = BASE_PATH + 'data/fail_counts.json'
+with open(FAIL_COUNTS_FILEPATH, 'r') as file:
+    # FAIL_COUNTS[<station>][<bike_count>]
+    FAIL_COUNTS = json.load(file)
+
 # Load incentives from file
 INCENTIVES_FILEPATH = BASE_PATH + 'data/incentives.json'
 with open(INCENTIVES_FILEPATH, 'r') as file:
@@ -979,6 +985,7 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
             break
     #------------------------------- Simulation complete -----------------------------
     real_time_duration = time.perf_counter() - real_start_time
+    future_system_fail_count = np.sum([FAIL_COUNTS[station][bike_counts[station]] for station in range(N)])
     # Report simulation data
     logger.info(f"> {agent.station} ({format_time(current_time)})")
     logger.info(f'\n---------- Excursion Complete ----------')
@@ -988,6 +995,7 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
     logger.info(f'Walk count: {walk_trip_count}')
     logger.info(f'Wait count: {wait_count}')
     logger.info(f'Total reward: {agent.reward}')
+    logger.info(f'Future system fail count: {future_system_fail_count}')
     logger.info(f'Seed: {seed}')
     logger.info('')
     # Return stats if prompted to
@@ -999,6 +1007,7 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
         data['walk_count'] = walk_trip_count
         data['wait_count'] = wait_count
         data['reward'] = agent.reward
+        data['future_system_fail_count'] = future_system_fail_count
         return data
     # Return agent's total excursion reward by default
     return agent.reward
@@ -1043,7 +1052,6 @@ def main():
         )
     elif GET_MEAN_STATS:
         logger.setLevel(BATCH_LOG_LEVEL)
-        print('test')
         print(estimate_stochastic_stats(
             process=simulate_bike_share, 
             args=(True,), 

@@ -6,6 +6,7 @@
 - [ ] Create proper output file for godot instead of using print output
 - [ ] Add warning for minimum samples not reached when timeout
 - [ ] Add way to pause or stop simulation from app
+- [ ] New output stat: total number of expected rental/return failures over next hour, to demonstrate the state of the system
 
 
 ### Station

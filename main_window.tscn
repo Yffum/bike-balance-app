@@ -173,13 +173,12 @@ split_offset = 581
 
 [node name="SettingsTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
-current_tab = 1
+current_tab = 0
 clip_tabs = false
 drag_to_rearrange_enabled = true
 tabs_rearrange_group = 0
 
 [node name="Agent" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
-visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
 metadata/_tab_index = 0
@@ -227,6 +226,7 @@ text = "End Station (index)"
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 125.0
+value = 1.0
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
@@ -242,8 +242,10 @@ text = "Excursion Time"
 [node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/ExcursionTime"]
 layout_mode = 2
 size_flags_horizontal = 3
+min_value = 0.1
 max_value = 8.0
-step = 0.1
+step = 0.01
+value = 6.0
 suffix = "hrs"
 custom_arrow_step = 1.0
 select_all_on_focus = true
@@ -268,6 +270,7 @@ popup/item_1/text = "Smart"
 popup/item_1/id = 1
 
 [node name="Simulation" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" node_paths=PackedStringArray("single_run_mode_container", "batch_mode_container", "fixed_mode_container", "precision_mode_container")]
+visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
 script = ExtResource("8_0oce6")
@@ -706,7 +709,7 @@ run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxCo
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
 log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log")
 
-[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "seed_text", "seed_checkbox", "seed_setter", "batch_size")]
+[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "minimum_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime")]
 script = ExtResource("4_guodr")
 start_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox")
 end_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox")
@@ -715,10 +718,18 @@ agent_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSpli
 full_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/FullBias/SpinBox")
 empty_bias = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/EmptyBias/SpinBox")
 warmup_time = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/WarmupTime/SpinBox")
+sim_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SimMode/OptionButton")
 seed_text = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/LineEdit")
 seed_checkbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed/CheckBox")
 seed_setter = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed")
+confidence_level = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ConfidenceLevel/SpinBox")
+parallel_batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ParallelBatchSize/SpinBox")
+batch_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton")
 batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/FixedContainer/VBoxContainer/BatchSize/SpinBox")
+minimum_sample_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MinSampleSize/SpinBox")
+relative_margin_of_error = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/RelativeDelta/SpinBox")
+absolute_margin_of_error = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/AbsoluteDelta/SpinBox")
+max_runtime = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MaxRuntime/SpinBox")
 
 [connection signal="mouse_entered" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]
@@ -728,3 +739,4 @@ batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSpli
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_button_pressed"]
 [connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_batch_mode_selected"]
 [connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]
+[connection signal="sim_and_batch_modes_initialized" from="ParamController" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_param_controller_sim_and_batch_modes_initialized"]

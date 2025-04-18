@@ -15,29 +15,6 @@ from tools import estimate_stochastic_mean, estimate_stochastic_stats
 # - "station" refers to station index
 # - "time" refers to simulated time measured in hours
 
-#------------------- USER PARAMETER OVERRIDE --------------------
-OVERRIDE_USER_PARAMS = True  # Must be False for application to work
-# The following parameters are only used if OVERRIDE_USER_PARAMS is True.
-# Otherwise parameters are loaded from file
-SEED = None  # Unsigned 32 bit int (if None, one will be generated)
-BATCH_SIZE = 1  # Number of simulation replications
-START_STATION = 0  # Agent start station index
-FINAL_STATION = 0  # Agent final station index
-EXCURSION_TIME = 4.0  # Length of excursion in hours
-AGENT_INTELLIGENCE = 'smart'  # 'basic', 'smart'
-WARM_UP_TIME = 4.0  # The number of hours that the simulation runs before starting the agent
-EMPTY_BIAS = 0.0  # Bias towards emptying stations (0-1)
-FULL_BIAS = 0.0  # Bias towards filling stations (0-1)
-#----------- Batches -----------
-GET_MEAN_REWARD = False
-GET_MEAN_STATS = True
-MARGIN_OF_ERROR = 0.9
-CONFIDENCE_LEVEL = 1 - 1e-4
-PARALLEL_BATCH_SIZE = 12
-PRINT_BATCH_PROGRESS = True
-
-
-
 # Establish data directory
 if os.path.exists('external'):
     BASE_PATH = 'external/'
@@ -73,21 +50,36 @@ MISS = '\U000026AB '
 WARNING = '\U0001F535 '
 ERROR = '\U0001F534 '
 
-#------------------- USER PARAMETERS -------------------
-if not OVERRIDE_USER_PARAMS:
-    USER_PARAMS_FILEPATH = BASE_PATH + 'data/user_params.json'
-    with open(USER_PARAMS_FILEPATH, 'r') as file:
-        user_params = json.load(file)
+#---------------- LOAD USER PARAMETERS -----------------
+USER_PARAMS_FILEPATH = BASE_PATH + 'data/user_params.json'
+with open(USER_PARAMS_FILEPATH, 'r') as file:
+    user_params = json.load(file)
+    
+#----------- Agent Parameters -----------
+START_STATION = user_params['start_station']  # Agent start station index
+FINAL_STATION = user_params['end_station']  # Agent final station index
+EXCURSION_TIME = user_params['excursion_time']  # Length of excursion in hours
+AGENT_INTELLIGENCE = user_params['agent_mode']  # 'basic', 'smart'
+#------------ Sim Parameters ------------
+EMPTY_BIAS = user_params['empty_bias']  # Bias towards emptying stations (0-1)
+FULL_BIAS = user_params['full_bias']  # Bias towards filling stations (0-1)
+WARM_UP_TIME = user_params['warmup_time']  # The number of hours that the simulation runs before starting the agent
+SIM_MODE = user_params['sim_mode']  # 'single_run' or 'batch'
+# Single Run
+USE_STATIC_SEED = user_params['use_static_seed']
+SEED = user_params['seed']  # Unsigned 32 bit int
+# Batch
+CONFIDENCE_LEVEL = user_params['confidence_level']
+PARALLEL_BATCH_SIZE = user_params['parallel_batch_size']
+BATCH_MODE = user_params['batch_mode']  # 'precision_based' or 'fixed_sample_size'
+# Fixed sample size
+BATCH_SIZE = user_params['batch_size']  # Number of simulation replications
+# Precision based
+MIN_SAMPLE_SIZE = user_params['min_sample_size']
+RELATIVE_MARGIN_OF_ERROR = user_params['relative_margin_of_error']
+ABSOLUTE_MARGIN_OF_ERROR = user_params['absolute_margin_of_error']
+MAX_RUNTIME = user_params['max_runtime']
 
-    SEED = user_params['seed']  # Unsigned 32 bit int (if None, one will be generated)
-    BATCH_SIZE = user_params['batch_size']  # Number of simulation replications
-    START_STATION = user_params['start_station']  # Agent start station index
-    FINAL_STATION = user_params['end_station']  # Agent final station index
-    EXCURSION_TIME = user_params['excursion_time']  # Length of excursion in hours
-    AGENT_INTELLIGENCE = user_params['agent_mode']  # 'basic', 'smart'
-    WARM_UP_TIME = user_params['warmup_time']  # The number of hours that the simulation runs before starting the agent
-    EMPTY_BIAS = user_params['empty_bias']  # Bias towards emptying stations (0-1)
-    FULL_BIAS = user_params['full_bias']  # Bias towards filling stations (0-1)
 
 #--------------- BIKE SYSTEM PARAMETERS ----------------
 
@@ -174,6 +166,7 @@ INCENTIVES = get_incentives_with_cost()
 # Levels: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
 SINGLE_RUN_LOG_LEVEL = logging.INFO
 BATCH_LOG_LEVEL = logging.ERROR
+PRINT_BATCH_PROGRESS = True
 # Time range for debug log (HH)
 DEBUG_START_TIME = 17 + 20/60
 DEBUG_END_TIME = 17 + 30/60
@@ -834,12 +827,12 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
     # Track simulation time
     real_start_time = time.perf_counter()
     #--------------- Set seed ---------------
-    if SEED is None:
-        seed = np.random.randint(0, 2**32, dtype=np.uint32)  # Generate unsigned 32 bit int
-        logger.info(f"Generated random seed: {seed}")
-    else:
+    if USE_STATIC_SEED and SIM_MODE == 'single_run':
         seed = SEED
         logger.info(f"Using fixed seed: {SEED}")
+    else:
+        seed = np.random.randint(0, 2**32, dtype=np.uint32)  # Generate unsigned 32 bit int
+        logger.info(f"Generated random seed: {seed}") 
     np.random.seed(seed)
     #------------ Initialize params/vars -----------
     # Initialize bike system
@@ -1015,11 +1008,6 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
 
 def simulate_batch(batch_size: int) -> dict:
     """ Runs a batch of bike share simulations and returns stats """
-    # Set logger level
-    logger.setLevel(BATCH_LOG_LEVEL) 
-    # Ensure SEED is not preset
-    if SEED != None:
-        logger.error(f'{ERROR} SEED should be None for batch simulation.')
     # Iterate through batch
     batch_data = None
     for i in range(batch_size):
@@ -1038,10 +1026,32 @@ def simulate_batch(batch_size: int) -> dict:
     
     
 def main():    
+    
     print()
     
-    if GET_MEAN_REWARD:
+    if SIM_MODE == 'single_run':
+        logger.setLevel(SINGLE_RUN_LOG_LEVEL)
+        simulate_bike_share()
+        
+    elif SIM_MODE == 'batch':
         logger.setLevel(BATCH_LOG_LEVEL)
+        if BATCH_MODE == 'precision_based':
+            estimate_stochastic_stats(
+                process=simulate_bike_share, 
+                args=(True,),
+                min_samples=MIN_SAMPLE_SIZE,
+                max_runtime=MAX_RUNTIME,
+                relative_margin_of_error=RELATIVE_MARGIN_OF_ERROR,
+                minimum_margin_of_error=ABSOLUTE_MARGIN_OF_ERROR,
+                confidence_level=CONFIDENCE_LEVEL, 
+                batch_size=PARALLEL_BATCH_SIZE,
+                log_progress=PRINT_BATCH_PROGRESS
+            )
+        elif BATCH_MODE == 'fixed_sample_size':
+            simulate_batch(BATCH_SIZE)
+    
+    # Estimate reward only 
+    if False:
         estimate_stochastic_mean(
             process=simulate_bike_share, 
             args=(), 
@@ -1050,29 +1060,9 @@ def main():
             batch_size=PARALLEL_BATCH_SIZE,
             log_progress=PRINT_BATCH_PROGRESS
         )
-    elif GET_MEAN_STATS:
-        logger.setLevel(BATCH_LOG_LEVEL)
-        print(estimate_stochastic_stats(
-            process=simulate_bike_share, 
-            args=(True,), 
-            relative_margin_of_error=0.01,
-            minimum_margin_of_error=0.1,
-            confidence_level=0.9, 
-            batch_size=PARALLEL_BATCH_SIZE,
-            log_progress=PRINT_BATCH_PROGRESS
-        ))
-    else:
-        # Run simulation directly for single run
-        if BATCH_SIZE == 1:
-            # Set logger level
-            logger.setLevel(SINGLE_RUN_LOG_LEVEL)
-            simulate_bike_share()
-        # Otherwise run batch (limits logging)
-        else:
-            simulate_batch(BATCH_SIZE)
-        
-        file_handler.close()
-        logging.shutdown()
+
+    file_handler.close()
+    logging.shutdown()
     
 
 if __name__ == "__main__":

@@ -12,6 +12,13 @@ def seconds_to_hms(seconds: float) -> str:
     seconds = int(seconds % 60)
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
+def round_to_sig_figs(x, sig_figs=2):
+    if x == 0:
+        return 0
+    else:
+        digits = -int(np.floor(np.log10(np.abs(x)))) + sig_figs - 1
+        return round(x, digits)
+
 def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_level=0.95, batch_size=8, log_progress=True) -> float:
     """ Runs the given stochastic process in parallel batches until 
     a mean with the desired margin of error is found with the given 
@@ -84,10 +91,12 @@ def estimate_stochastic_mean(process, args=(), margin_of_error=0.1, confidence_l
 
 
 def estimate_stochastic_stats(
-    process, args=(), relative_margin_of_error=0.01,
-    minimum_margin_of_error=None,
+    process, args=(), min_samples=300,
+    max_runtime=60.0, # seconds
+    relative_margin_of_error=0.01,
+    minimum_margin_of_error=0.1,
     confidence_level=0.95, batch_size=8, log_progress=True
-) -> dict:
+):
     """Estimate the mean of a stochastic dictionary-valued process until all
     keys are within the desired relative margin of error.
 
@@ -101,8 +110,8 @@ def estimate_stochastic_stats(
 
     Returns:
         dict: Dictionary of means for each key.
+        dict: Dictionary of error margins for each key
     """
-    MIN_SAMPLES = 300
     alpha = 1 - confidence_level
 
     n = 0  # Sample count
@@ -131,17 +140,12 @@ def estimate_stochastic_stats(
 
     def all_deltas_within_bounds():
         # Only check deltas if there are enough samples
-        if n < MIN_SAMPLES:
+        if n < min_samples:
             return False
         # Check delta of each stat
         for k in stats_dict:
-            delta_out_of_bounds = (
-                # Delta is greater than given reltaive MoE
-                deltas[k] > relative_margin_of_error * abs(stats_dict[k]['mean'])
-                # And there is no minimum MoE or delta is greater than it
-                and (minimum_margin_of_error is None or deltas[k] > minimum_margin_of_error)
-            )
-            if delta_out_of_bounds:
+            rel_thresh = relative_margin_of_error * abs(stats_dict[k]['mean'])
+            if deltas[k] > rel_thresh and deltas[k] > minimum_margin_of_error:
                 return False
         # Every delta passed check
         return True
@@ -157,7 +161,7 @@ def estimate_stochastic_stats(
 
             # Update deltas
             deltas.clear()
-            if n >= MIN_SAMPLES:
+            if n >= min_samples:
                 t_score = stats.t.ppf(1 - alpha / 2, n - 1)
                 for k in stats_dict:
                     variance = get_variance(k)
@@ -176,14 +180,45 @@ def estimate_stochastic_stats(
                     print(f'\t{k}: {mean_k:.5f} ± {delta_k:.5f}')
                 print()
 
-            if all_deltas_within_bounds():
+            if n > min_samples and all_deltas_within_bounds():
+                print(f'Replications successful: margin of error bounds reached.')
+                break
+            if time.time() - start_time > max_runtime:
+                print(f'Timeout: max runtime {seconds_to_hms(max_runtime)} exceeded.')
+            
+            stop_replications = (
+                # Margin of errors are within bounds
+                (n > min_samples and all_deltas_within_bounds())
+                # Or timeout
+                or time.time() - start_time >= max_runtime   
+            )
+            if stop_replications:
                 break
             batch_count += 1
-
+    # Get collected means
     means = {k: v['mean'] for k, v in stats_dict.items()}
+    # Round deltas and means
+    for k in means:
+        # Just round mean if delta not found
+        if deltas[k] == float('inf'):
+            means[k] = round_to_sig_figs(means[k], 5)
+            continue
+        # Round delta based on sig figs
+        if deltas[k] < 100:
+            deltas[k] = round_to_sig_figs(deltas[k], 2)
+        else:
+            deltas[k] = round(deltas[k])
+        # Round mean to precision of delta
+        delta_str = str(deltas[k])
+        if '.' in delta_str:
+            precision = len(delta_str.split('.')[-1])
+        else:
+            precision = 0
+        means[k] = round(means[k], precision)
     if log_progress:
-        print(f'Final results after {batch_count} batches:')
+        print(f'Final results after {batch_count} batches ({batch_count * batch_size} replications):')
         for k, mean in means.items():
             moe = deltas[k]
-            print(f'  {k}: {mean:.5f} ± {moe:.5f}')
-    return means
+            print(f'  {k}: {mean} ± {moe}')
+    return means, deltas
+

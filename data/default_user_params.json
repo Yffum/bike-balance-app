@@ -9,7 +9,7 @@
   "excursion_time": 6.0,
   "full_bias": 0.0,
   "max_runtime": 30.0,
-  "minimum_sample_size": 300,
+  "min_sample_size": 300,
   "parallel_batch_size": 8,
   "relative_margin_of_error": 0.01,
   "seed": null,

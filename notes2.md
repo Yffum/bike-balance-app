@@ -7,7 +7,10 @@
 - [ ] Add warning for minimum samples not reached when timeout
 - [ ] Add way to pause or stop simulation from app
 - [ ] New output stat: total number of expected rental/return failures over next hour, to demonstrate the state of the system
-
+  
+# Search Algo 
+- [ ] Agent search node reward value should diminish with time (or maybe node depth?)
+- [ ] Search branches that end early should be considered less valuable (right now they arent because its just reward rate)
 
 ### Station
 - [ ] Change marker size with zoom

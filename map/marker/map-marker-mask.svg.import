@@ -1,0 +1,16 @@
+[remap]
+
+importer="bitmap"
+type="BitMap"
+uid="uid://caxaxxjr7xlde"
+path="res://.godot/imported/map-marker-mask.svg-d2fec6d5be0bb42b3b4732913c484b9f.res"
+
+[deps]
+
+source_file="res://map/marker/map-marker-mask.svg"
+dest_files=["res://.godot/imported/map-marker-mask.svg-d2fec6d5be0bb42b3b4732913c484b9f.res"]
+
+[params]
+
+create_from=1
+threshold=0.5

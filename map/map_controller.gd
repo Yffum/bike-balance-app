@@ -12,6 +12,8 @@ var _center_WGS_coord : Vector2
 var _x_scale : float
 var _y_scale : float
 
+@export var camera : Camera2D
+
 func _ready():
 	_set_coord_transformation()
 	
@@ -26,9 +28,14 @@ func _inst_markers():
 		var coord = coords[i]
 		coord = Vector2(coord[0], coord[1])
 		var marker = Marker.instantiate()
+		# Set up marker
 		marker.position = WGS_to_pos(coord)
 		marker.scale = Vector2(_marker_scale, _marker_scale)
 		marker.get_node('Label').text = str(i)
+		marker.station = i
+		# Connect signals
+		marker.marker_button_down.connect(_on_marker_button_down)
+		marker.marker_button_up.connect(_on_marker_button_up)
 		markers.add_child(marker)
 
 ## Sets up parameters for transforming lat/lon to pos
@@ -54,3 +61,9 @@ func WGS_to_pos(coord : Vector2) -> Vector2:
 	var pos_x = _x_scale * (coord.y - _center_WGS_coord.y)
 	var pos_y = _y_scale * (coord.x - _center_WGS_coord.x)
 	return Vector2(pos_x, pos_y)
+
+func _on_marker_button_down():
+	camera.input_enabled = false
+	
+func _on_marker_button_up():
+	camera.input_enabled = true

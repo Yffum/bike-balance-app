@@ -9,10 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://n5avdaibtr6c" path="res://map/marker/map-marker-half-checkered.png" id="4_qss0v"]
 [ext_resource type="BitMap" uid="uid://caxaxxjr7xlde" path="res://map/marker/map-marker-mask.svg" id="8_h8b0m"]
 
-[node name="Marker" type="Node2D" node_paths=PackedStringArray("fill", "label")]
+[node name="Marker" type="Node2D" node_paths=PackedStringArray("fill")]
 script = ExtResource("1_qss0v")
 fill = NodePath("Fill")
-label = NodePath("Label")
 
 [node name="Fill" type="Node2D" parent="."]
 
@@ -48,17 +47,10 @@ position = Vector2(0, -60)
 texture = ExtResource("1_k80nn")
 
 [node name="Label" type="Label" parent="."]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
 offset_left = -41.0
-offset_top = -106.0
+offset_top = -105.0
 offset_right = 41.0
-offset_bottom = -39.0
-grow_horizontal = 2
-grow_vertical = 0
+offset_bottom = -38.0
 scale = Vector2(0.9, 0.9)
 pivot_offset = Vector2(41, 33.5)
 theme_override_colors/font_color = Color(0, 0, 0, 1)

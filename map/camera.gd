@@ -14,9 +14,11 @@ var drag_start_mouse_pos = Vector2.ZERO
 var drag_start_camera_pos = Vector2.ZERO
 var is_dragging = false
 var input_enabled = false
+var map_is_smaller_than_viewport : bool
 
 var map_size : Vector2
 
+@export var map_controller : Node
 
 func _ready():
 	zoom = Vector2(INITIAL_ZOOM, INITIAL_ZOOM)
@@ -24,15 +26,20 @@ func _ready():
 	
 	zoom_target = zoom
 	map_size = map_sprite.texture.get_size() * map_sprite.scale
+	map_is_smaller_than_viewport = clamp_camera_position()
 
 
 func _process(delta):
 	if input_enabled:
 		handle_zoom(delta)
-		handle_pan()
+		if not map_is_smaller_than_viewport:
+			handle_pan()
 	elif is_dragging:
-		handle_pan()
-	clamp_camera_position()
+		if not map_is_smaller_than_viewport:
+			handle_pan()
+	map_is_smaller_than_viewport = clamp_camera_position()
+	if map_is_smaller_than_viewport:
+		is_dragging = false
 	
 
 func handle_zoom(delta: float):
@@ -50,8 +57,11 @@ func handle_zoom(delta: float):
 	zoom = new_zoom
 	
 	# Zoom at mouse position
-	position += zoom_ratio * get_viewport().get_mouse_position() / zoom
-
+	if not map_is_smaller_than_viewport:
+		position += zoom_ratio * get_viewport().get_mouse_position() / zoom
+	# Zoom at center
+	else:
+		position += zoom_ratio * get_viewport().size / 2 / zoom
 
 func handle_pan():
 	if not is_dragging and Input.is_action_just_pressed('camera_pan'):
@@ -64,7 +74,7 @@ func handle_pan():
 		var move_vector = get_viewport().get_mouse_position() - drag_start_mouse_pos
 		position = position.lerp(drag_start_camera_pos - move_vector / zoom.x, 1)
 
-
+## Returns false if camera is in bounds and true if it needs to be centered
 func clamp_camera_position():
 	var viewport_size = Vector2(get_parent().size)
 	var min_pos = map_size * -0.5
@@ -82,11 +92,15 @@ func clamp_camera_position():
 		or new_pos.y > max_pos.y
 		or new_pos.y < min_pos.y
 		):
+		# Center camera slowly
 		var centered_pos = Vector2.ZERO - viewport_size / (2 * zoom)
-		position = position.lerp(centered_pos, 1) # lower weight to smooth transition
-	# Otherwise update position
+		position = position.lerp(centered_pos, 0.01) # lower weight to smooth transition
+		return true
+	# Camera is in bounds already
 	else:
+		# Limit moving camera out of bounds
 		position = new_pos
+		return false
 
 
 func _on_map_container_mouse_entered():

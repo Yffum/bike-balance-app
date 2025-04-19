@@ -2,7 +2,6 @@ extends Node
 
 var log_count : int
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	log_count = get_file_count(Tools.LOGS_PATH)
 

@@ -35,7 +35,8 @@ func _on_tools_external_paths_set():
 func _initialize():
 	var params = Tools.load_json_dict(Tools.USER_PARAMS_PATH)
 	if params.is_empty():
-		print("Warning: %s is corrupted. Loading default parameters." % Tools.USER_PARAMS_PATH)
+		print("Warning: Unable to load parameters from %s " % Tools.USER_PARAMS_PATH)
+		print("Loading default parameters.")
 		reset_params()
 		save_params()
 		print("Default parameters saved to %s" % Tools.USER_PARAMS_PATH)

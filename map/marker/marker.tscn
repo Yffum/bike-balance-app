@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://bqpoqjxm1ij56"]
+[gd_scene load_steps=10 format=3 uid="uid://bqpoqjxm1ij56"]
 
 [ext_resource type="Texture2D" uid="uid://bil8eac25re1s" path="res://map/marker/map-marker-selected-outline.svg" id="1_k80nn"]
 [ext_resource type="Script" uid="uid://bqw2q00moalvl" path="res://map/marker/marker.gd" id="1_qss0v"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://b04akuy8omoy5" path="res://map/marker/map-marker-green.svg" id="2_7oei3"]
 [ext_resource type="Texture2D" uid="uid://bi70nps5nco62" path="res://map/marker/map-marker-white.svg" id="2_l3yed"]
 [ext_resource type="Texture2D" uid="uid://5vlpnkknax28" path="res://map/marker/map-marker-checkered.png" id="3_07kpn"]
+[ext_resource type="Texture2D" uid="uid://bgp84xkjdyj8y" path="res://map/marker/map-marker-thin-outline.svg" id="3_w7ufk"]
 [ext_resource type="Texture2D" uid="uid://n5avdaibtr6c" path="res://map/marker/map-marker-half-checkered.png" id="4_qss0v"]
 [ext_resource type="BitMap" uid="uid://caxaxxjr7xlde" path="res://map/marker/map-marker-mask.svg" id="8_h8b0m"]
 
@@ -18,6 +19,11 @@ outline = NodePath("Content/SelectedOutline")
 button = NodePath("Content/TextureButton")
 
 [node name="Content" type="Node2D" parent="."]
+
+[node name="ThinOutline" type="Sprite2D" parent="Content"]
+modulate = Color(0.362076, 0.36594, 0.415884, 1)
+position = Vector2(0, -60)
+texture = ExtResource("3_w7ufk")
 
 [node name="SelectedOutline" type="Sprite2D" parent="Content"]
 visible = false

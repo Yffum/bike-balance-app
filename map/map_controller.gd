@@ -31,7 +31,6 @@ func _process(delta):
 	marker_scale.y = marker_scale.x
 	for marker in _markers_list:
 		marker.scale = marker.scale.slerp(marker_scale, 0.9)
-	print(marker_scale)
 	
 func _instance_markers():
 	# Get coords from json
@@ -76,8 +75,15 @@ func WGS_to_pos(coord : Vector2) -> Vector2:
 	var pos_y = _y_scale * (coord.x - _center_WGS_coord.x)
 	return Vector2(pos_x, pos_y)
 
-func _on_marker_button_down():
+func _on_marker_button_down(station):
 	camera.input_enabled = false
+	# Remove outline of previously selected station
+	if selected_station >= 0:
+		_markers_list[selected_station].outline.visible = false
+	# Add outline to selected station
+	selected_station = station
+	_markers_list[selected_station].outline.visible = true
 	
 func _on_marker_button_up():
 	camera.input_enabled = true
+	

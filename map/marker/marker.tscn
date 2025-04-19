@@ -9,45 +9,51 @@
 [ext_resource type="Texture2D" uid="uid://n5avdaibtr6c" path="res://map/marker/map-marker-half-checkered.png" id="4_qss0v"]
 [ext_resource type="BitMap" uid="uid://caxaxxjr7xlde" path="res://map/marker/map-marker-mask.svg" id="8_h8b0m"]
 
-[node name="Marker" type="Node2D" node_paths=PackedStringArray("fill", "label")]
+[node name="Marker" type="Node2D" node_paths=PackedStringArray("content", "fill", "label", "outline", "button")]
 script = ExtResource("1_qss0v")
-fill = NodePath("Fill")
-label = NodePath("Label")
+content = NodePath("Content")
+fill = NodePath("Content/Fill")
+label = NodePath("Content/Label")
+outline = NodePath("Content/SelectedOutline")
+button = NodePath("Content/TextureButton")
 
-[node name="Fill" type="Node2D" parent="."]
+[node name="Content" type="Node2D" parent="."]
 
-[node name="Blank" type="Sprite2D" parent="Fill"]
+[node name="SelectedOutline" type="Sprite2D" parent="Content"]
+visible = false
+modulate = Color(0.458824, 0.713726, 1, 1)
+position = Vector2(0, -60)
+texture = ExtResource("1_k80nn")
+
+[node name="Fill" type="Node2D" parent="Content"]
+
+[node name="Blank" type="Sprite2D" parent="Content/Fill"]
 position = Vector2(0, -60)
 texture = ExtResource("2_l3yed")
 
-[node name="Gray" type="Sprite2D" parent="Fill"]
+[node name="Gray" type="Sprite2D" parent="Content/Fill"]
 visible = false
 position = Vector2(0, -60)
 texture = ExtResource("2_07kpn")
 
-[node name="Start" type="Sprite2D" parent="Fill"]
+[node name="Start" type="Sprite2D" parent="Content/Fill"]
 visible = false
 position = Vector2(0, -60)
 texture = ExtResource("2_7oei3")
 
-[node name="End" type="Sprite2D" parent="Fill"]
+[node name="End" type="Sprite2D" parent="Content/Fill"]
 visible = false
 position = Vector2(0, -60)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_07kpn")
 
-[node name="StartEnd" type="Sprite2D" parent="Fill"]
+[node name="StartEnd" type="Sprite2D" parent="Content/Fill"]
 visible = false
 position = Vector2(0, -60)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("4_qss0v")
 
-[node name="SelectedOutline" type="Sprite2D" parent="."]
-visible = false
-position = Vector2(0, -60)
-texture = ExtResource("1_k80nn")
-
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="Content"]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -67,15 +73,7 @@ text = "555"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Control" type="Control" parent="."]
-visible = false
-layout_mode = 3
-anchors_preset = 0
-offset_top = -60.0
-offset_right = 40.0
-offset_bottom = -20.0
-
-[node name="TextureButton" type="TextureButton" parent="."]
+[node name="TextureButton" type="TextureButton" parent="Content"]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -89,8 +87,8 @@ grow_horizontal = 2
 grow_vertical = 2
 texture_click_mask = ExtResource("8_h8b0m")
 
-[connection signal="button_down" from="TextureButton" to="." method="_on_button_down"]
-[connection signal="button_up" from="TextureButton" to="." method="_on_button_up"]
-[connection signal="mouse_entered" from="TextureButton" to="." method="_on_mouse_entered"]
-[connection signal="mouse_exited" from="TextureButton" to="." method="_on_mouse_exited"]
-[connection signal="pressed" from="TextureButton" to="." method="_on_button_pressed"]
+[connection signal="button_down" from="Content/TextureButton" to="." method="_on_button_down"]
+[connection signal="button_up" from="Content/TextureButton" to="." method="_on_button_up"]
+[connection signal="mouse_entered" from="Content/TextureButton" to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="Content/TextureButton" to="." method="_on_mouse_exited"]
+[connection signal="pressed" from="Content/TextureButton" to="." method="_on_button_pressed"]

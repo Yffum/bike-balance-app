@@ -94,7 +94,7 @@ func clamp_camera_position():
 		):
 		# Center camera slowly
 		var centered_pos = Vector2.ZERO - viewport_size / (2 * zoom)
-		position = position.lerp(centered_pos, 0.01) # lower weight to smooth transition
+		position = position.lerp(centered_pos, 0.05) # lower weight to smooth transition
 		return true
 	# Camera is in bounds already
 	else:

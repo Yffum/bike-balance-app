@@ -4,8 +4,11 @@ const MAP_WIDTH = 1775
 const MAP_HEIGHT = 1594
 
 var Marker = preload("res://map/marker/marker.tscn")
-var markers : Node  # markers container
+@export var markers_container : Node  # markers container
+var _markers_list : Array
 var _marker_scale = 0.5
+const MAX_MARKER_SCALE = 0.75
+const MIN_MARKER_SCALE = 0.4
 
 # Parameters for translating from lat/lon to pos
 var _center_WGS_coord : Vector2 
@@ -14,13 +17,23 @@ var _y_scale : float
 
 @export var camera : Camera2D
 
+var selected_station : int = -1
+
 func _ready():
 	_set_coord_transformation()
+	_instance_markers()
 	
-	markers = $Markers
-	_inst_markers()
-
-func _inst_markers():
+func _process(delta):
+	var marker_scale = Vector2.ONE / camera.zoom * 0.5
+	marker_scale.x -= 0.1
+	marker_scale.x = max(MIN_MARKER_SCALE, marker_scale.x)
+	marker_scale.x = min(MAX_MARKER_SCALE, marker_scale.x)
+	marker_scale.y = marker_scale.x
+	for marker in _markers_list:
+		marker.scale = marker.scale.slerp(marker_scale, 0.9)
+	print(marker_scale)
+	
+func _instance_markers():
 	# Get coords from json
 	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)
 	# Iteratively instance markers
@@ -31,12 +44,13 @@ func _inst_markers():
 		# Set up marker
 		marker.position = WGS_to_pos(coord)
 		marker.scale = Vector2(_marker_scale, _marker_scale)
-		marker.get_node('Label').text = str(i)
+		marker.set_label(str(i))
 		marker.station = i
 		# Connect signals
 		marker.marker_button_down.connect(_on_marker_button_down)
 		marker.marker_button_up.connect(_on_marker_button_up)
-		markers.add_child(marker)
+		markers_container.add_child(marker)
+		_markers_list.append(marker)
 
 ## Sets up parameters for transforming lat/lon to pos
 func _set_coord_transformation() -> void:

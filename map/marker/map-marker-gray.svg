@@ -8,6 +8,8 @@
       stroke="#ffffff" 
       stroke-width="2" 
       stroke-alignment="center"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
   </g>
 </svg>

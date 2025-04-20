@@ -8,6 +8,11 @@
 - [ ] Add way to pause or stop simulation from app
 - [ ] New output stat: total number of expected rental/return failures over next hour, to demonstrate the state of the system
 - [ ] Add stat_keys arg to tools.estimate_stochastic_stats that filters for only the given keys unless None
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!
+- [ ] When results loaded, duplicate map markers and keep separate list of results markers that are shown and hidden when the results tab is revealed/hidden.
+- [ ] Results tab has a load button, and automatically loads after simulations
+
   
 # Search Algo 
 - [ ] Agent search node reward value should diminish with time (or maybe node depth?)

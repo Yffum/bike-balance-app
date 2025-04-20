@@ -31,6 +31,8 @@ extends Node
 @export var station_spinbox : SpinBox
 @export var no_station_selected : Label
 @export var station_content : Node
+@export var is_start_station : CheckButton
+@export var is_end_station : CheckButton
 # Parameters
 @export var station_name : Label
 @export var station_id : Label
@@ -53,6 +55,8 @@ var station_ids : Array
 
 signal sim_and_batch_modes_initialized(sim_mode : int, batch_mode : int)
 signal station_selected(station : int)
+signal start_station_set(station : int)
+signal end_station_set(station : int)
 
 func _on_tools_external_paths_set():
 	sim_params = Tools.load_json_dict(Tools.SIM_PARAMS_PATH)
@@ -77,8 +81,8 @@ func _initialize_user_params():
 ## Loads parameters to interface
 func _load_user_params(params : Dictionary):
 	#--------- Agent Parameters --------
-	start_station.value = params['start_station']
-	end_station.value = params['end_station']
+	_set_start_station(params['start_station'])
+	_set_end_station(params['end_station'])
 	excursion_time.value = params['excursion_time']
 	if params['agent_mode'] == "basic":
 		agent_mode.selected = 0
@@ -166,6 +170,21 @@ func save_user_params():
 
 ## Sets the station parameters in the UI for the given station
 func set_station_params(station : int):
+	# Set checkbox if station is start
+	if station == start_station.value:
+		is_start_station.button_pressed = true
+		is_start_station.disabled = true
+	else:
+		is_start_station.button_pressed = false
+		is_start_station.disabled = false
+	# Set checkbox if station is end
+	if station == end_station.value:
+		is_end_station.button_pressed = true
+		is_end_station.disabled = true
+	else:
+		is_end_station.button_pressed = false
+		is_end_station.disabled = false
+	
 	var PRECISION = 0.01
 	station_name.text = station_names[station]
 	station_id.text = str(int(station_ids[station]))
@@ -182,6 +201,14 @@ func set_station_params(station : int):
 	elif incentive > 0: 
 		incentive_str = '(Return)'
 	initial_incentive_type.text = incentive_str
+
+func _set_start_station(station : int):
+	start_station.value = station
+	start_station_set.emit(station)
+	
+func _set_end_station(station: int):
+	end_station.value = station
+	end_station_set.emit(station)
 
 ## Update station params when map station selected
 func _on_map_controller_station_selected(station):
@@ -203,3 +230,23 @@ func _on_station_spinbox_gui_input(event):
 		station_content.visible = true
 		set_station_params(station_spinbox.value)
 		station_selected.emit(station_spinbox.value)
+
+
+func _on_start_station_spinbox_value_changed(value):
+	_set_start_station(value)
+
+
+func _on_end_station_spinbox_value_changed(value):
+	_set_end_station(value)
+
+## Set start station to selected station
+func _on_is_start_station_toggled(toggled_on):
+	if toggled_on:
+		is_start_station.disabled = true
+		_set_start_station(station_spinbox.value)
+
+## Set End station to selected station
+func _on_is_end_station_toggled(toggled_on):
+	if toggled_on:
+		is_end_station.disabled = true
+		_set_end_station(station_spinbox.value)

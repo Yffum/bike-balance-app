@@ -5,7 +5,7 @@
   "batch_size": 300,
   "confidence_level": 0.99,
   "empty_bias": 0.0,
-  "end_station": 1,
+  "end_station": 8,
   "excursion_time": 4.0,
   "full_bias": 0.0,
   "max_runtime": 30.0,
@@ -14,7 +14,7 @@
   "relative_margin_of_error": 0.01,
   "seed": 1866017951,
   "sim_mode": "batch",
-  "start_station": 0,
+  "start_station": 8,
   "use_static_seed": false,
   "warmup_time": 0.0
 }

@@ -17,7 +17,19 @@ var _y_scale : float
 
 @export var camera : Camera2D
 
+# Tracking marker states
 var selected_station : int = -1
+var start_station : int = -1
+var end_station : int = -1
+
+enum marker_sprite_frame {
+		BLANK,
+		START,
+		END,
+		START_END,
+		GRAY
+}
+
 signal station_selected(station : int)
 
 func _ready():
@@ -97,3 +109,42 @@ func _set_selected_station_outline(station):
 
 func _on_param_controller_station_selected(station):
 	_set_selected_station_outline(station)
+
+
+func _on_start_station_set(station):
+	# Remove previous start station
+	if start_station >= 0 and start_station != station:
+		var prev_start_marker = _markers_list[start_station]
+		if start_station == end_station:
+			prev_start_marker.set_sprite(marker_sprite_frame.END)
+		else:
+			prev_start_marker.set_sprite(marker_sprite_frame.BLANK)
+			prev_start_marker.label.visible = true
+	# Set new start station
+	start_station = station
+	var frame : int = marker_sprite_frame.START
+	if end_station == start_station:
+		frame = marker_sprite_frame.START_END
+	var new_start_marker = _markers_list[start_station]
+	new_start_marker.set_sprite(frame)
+	new_start_marker.label.visible = false
+
+
+func _on_end_station_set(station):
+	# Remove previous end station
+	if end_station >= 0 and end_station != station:
+		var prev_end_marker = _markers_list[end_station]
+		if start_station == end_station:
+			prev_end_marker.set_sprite(marker_sprite_frame.START)
+		else:
+			prev_end_marker.set_sprite(marker_sprite_frame.BLANK)
+			prev_end_marker.label.visible = true
+	# Set new end station
+	end_station = station
+	var frame : int = marker_sprite_frame.END
+	if end_station == start_station:
+		frame = marker_sprite_frame.START_END
+	var new_end_marker = _markers_list[end_station]
+	new_end_marker.set_sprite(frame)
+	new_end_marker.label.visible = false
+	

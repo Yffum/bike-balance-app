@@ -12,9 +12,15 @@ const ZOOM_ON_HOVER_SCALE = 1.15
 @export var label : Label
 @export var outline : Sprite2D
 @export var button : BaseButton
+@export var anim_sprite : AnimatedSprite2D
+
+
 
 func set_label(text : String):
 	label.text = text
+	
+func set_sprite(frame : int):
+	anim_sprite.frame = frame
 
 func _on_button_down():
 	marker_button_down.emit(station)

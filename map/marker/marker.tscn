@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bqpoqjxm1ij56"]
+[gd_scene load_steps=14 format=3 uid="uid://bqpoqjxm1ij56"]
 
 [ext_resource type="Texture2D" uid="uid://bil8eac25re1s" path="res://map/marker/map-marker-selected-outline.svg" id="1_k80nn"]
 [ext_resource type="Script" uid="uid://bqw2q00moalvl" path="res://map/marker/marker.gd" id="1_qss0v"]
@@ -9,14 +9,41 @@
 [ext_resource type="Texture2D" uid="uid://bgp84xkjdyj8y" path="res://map/marker/map-marker-thin-outline.svg" id="3_w7ufk"]
 [ext_resource type="Texture2D" uid="uid://n5avdaibtr6c" path="res://map/marker/map-marker-half-checkered.png" id="4_qss0v"]
 [ext_resource type="BitMap" uid="uid://caxaxxjr7xlde" path="res://map/marker/map-marker-mask.svg" id="8_h8b0m"]
+[ext_resource type="Texture2D" uid="uid://jwl8t4trf7g5" path="res://map/marker/map-marker-white.png" id="9_4mkax"]
+[ext_resource type="Texture2D" uid="uid://drdkuq7wvdgmf" path="res://map/marker/map-marker-green.png" id="10_nqohi"]
+[ext_resource type="Texture2D" uid="uid://bykaiv07rt0jj" path="res://map/marker/map-marker-gray.png" id="11_xmck3"]
 
-[node name="Marker" type="Node2D" node_paths=PackedStringArray("content", "fill", "label", "outline", "button")]
+[sub_resource type="SpriteFrames" id="SpriteFrames_10wfx"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_4mkax")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_nqohi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_07kpn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_qss0v")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_xmck3")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="Marker" type="Node2D" node_paths=PackedStringArray("content", "fill", "label", "outline", "button", "anim_sprite")]
 script = ExtResource("1_qss0v")
 content = NodePath("Content")
 fill = NodePath("Content/Fill")
 label = NodePath("Content/Label")
 outline = NodePath("Content/SelectedOutline")
 button = NodePath("Content/TextureButton")
+anim_sprite = NodePath("Content/AnimatedSprite2D")
 
 [node name="Content" type="Node2D" parent="."]
 
@@ -31,9 +58,17 @@ modulate = Color(0.458824, 0.713726, 1, 1)
 position = Vector2(0, -60)
 texture = ExtResource("1_k80nn")
 
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Content"]
+position = Vector2(0, -60)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_10wfx")
+speed_scale = 0.0
+
 [node name="Fill" type="Node2D" parent="Content"]
+visible = false
 
 [node name="Blank" type="Sprite2D" parent="Content/Fill"]
+visible = false
 position = Vector2(0, -60)
 texture = ExtResource("2_l3yed")
 

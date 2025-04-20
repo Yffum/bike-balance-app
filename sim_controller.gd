@@ -14,7 +14,7 @@ func _notification(what):
 	# On application close:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		# Save parameters
-		param_ctrl.save_params()
+		param_ctrl.save_user_params()
 		# Prune logs
 		_delete_oldest_logs()
 		# Quit
@@ -115,7 +115,7 @@ func _handle_sim_end(log_path : String):
 
 func _on_run_button_pressed():
 	# Save parameters to file
-	param_ctrl.save_params()
+	param_ctrl.save_user_params()
 	# Disable run button, start spinner
 	run_button.disabled = true
 	run_button.text = 'Running...'
@@ -126,3 +126,6 @@ func _on_run_button_pressed():
 
 func _exit_tree():
 	thread.wait_to_finish()	
+
+func _show_file(filepath : String):
+	OS.shell_show_in_file_manager(filepath)

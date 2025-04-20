@@ -18,6 +18,7 @@ var _y_scale : float
 @export var camera : Camera2D
 
 var selected_station : int = -1
+signal station_selected(station : int)
 
 func _ready():
 	_set_coord_transformation()
@@ -77,13 +78,22 @@ func WGS_to_pos(coord : Vector2) -> Vector2:
 
 func _on_marker_button_down(station):
 	camera.input_enabled = false
+	_set_selected_station_outline(station)
+	station_selected.emit(station)
+	
+func _on_marker_button_up():
+	camera.input_enabled = true
+	
+func _on_station_spinbox_value_changed(value):
+	_set_selected_station_outline(value)
+	
+func _set_selected_station_outline(station):
 	# Remove outline of previously selected station
 	if selected_station >= 0:
 		_markers_list[selected_station].outline.visible = false
 	# Add outline to selected station
 	selected_station = station
 	_markers_list[selected_station].outline.visible = true
-	
-func _on_marker_button_up():
-	camera.input_enabled = true
-	
+
+func _on_param_controller_station_selected(station):
+	_set_selected_station_outline(station)

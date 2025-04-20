@@ -27,25 +27,50 @@ extends Node
 @export var absolute_margin_of_error : SpinBox
 @export var max_runtime : SpinBox
 
+#------------------ Station -------------------
+@export var station_spinbox : SpinBox
+@export var no_station_selected : Label
+@export var station_content : Node
+
+# Parameters
+@export var rent_rate : Label
+@export var return_rate : Label
+@export var initial_bike_count : Label
+@export var max_bike_count : Label
+@export var initial_incentive : Label
+@export var initial_incentive_type : Label
+# Results
+@export var final_bike_count : Label 
+@export var final_incentive : Label
+@export var agent_rent_count : Label
+@export var agent_return_count : Label
+
+var sim_params : Dictionary
+var incentives : Array  # incentives[<station>][<bike_count>]
+
 signal sim_and_batch_modes_initialized(sim_mode : int, batch_mode : int)
+signal station_selected(station : int)
 
 func _on_tools_external_paths_set():
-	_initialize()
+	sim_params = Tools.load_json_dict(Tools.SIM_PARAMS_PATH)
+	incentives = Tools.load_json_array(Tools.INCENTIVES_PATH)
+	_initialize_user_params()
+	station_spinbox.get_child(0, true).text = 'Select station'
 	
-func _initialize():
+func _initialize_user_params():
 	var params = Tools.load_json_dict(Tools.USER_PARAMS_PATH)
 	if params.is_empty():
 		print("Warning: Unable to load parameters from %s " % Tools.USER_PARAMS_PATH)
 		print("Loading default parameters.")
-		reset_params()
-		save_params()
+		reset_user_params()
+		save_user_params()
 		print("Default parameters saved to %s" % Tools.USER_PARAMS_PATH)
 	else:
-		_load_params(params)
+		_load_user_params(params)
 		print("Parameters loaded from %s" % Tools.USER_PARAMS_PATH)
 		
 ## Loads parameters to interface
-func _load_params(params : Dictionary):
+func _load_user_params(params : Dictionary):
 	#--------- Agent Parameters --------
 	start_station.value = params['start_station']
 	end_station.value = params['end_station']
@@ -89,12 +114,12 @@ func _load_params(params : Dictionary):
 	sim_and_batch_modes_initialized.emit(sim_mode.selected, batch_mode.selected)
 
 ## Sets parameters to default values
-func reset_params():
+func reset_user_params():
 	var params = Tools.load_json_dict(Tools.DEFAULT_USER_PARAMS_PATH)
-	_load_params(params)
+	_load_user_params(params)
 
 ## Saves parameters to file
-func save_params():
+func save_user_params():
 	var params : Dictionary
 	#--------- Agent Parameters --------
 	params['start_station'] = int(start_station.value)
@@ -133,3 +158,38 @@ func save_params():
 
 	# Save to file
 	Tools.save_json(Tools.USER_PARAMS_PATH, params)
+
+## Sets the station parameters in the UI for the given station
+func set_station_params(station : int):
+	var PRECISION = 0.01
+	rent_rate.text = str(snappedf(sim_params['rent_rates'][station], PRECISION))
+	return_rate.text = str(snappedf(sim_params['return_rates'][station], PRECISION))
+	var bike_count : int = sim_params['initial_bike_counts'][station]
+	initial_bike_count.text = str(bike_count)
+	max_bike_count.text = str(int(sim_params['capacities'][station]))
+	var incentive : float = snappedf(incentives[station][bike_count], PRECISION)
+	initial_incentive.text = str(incentive)
+	var incentive_str = ''
+	if incentive < 0:
+		incentive_str = '(Rent)'
+	elif incentive > 0: 
+		incentive_str = '(Return)'
+	initial_incentive_type.text = incentive_str
+
+func _on_map_controller_station_selected(station):
+	no_station_selected.visible = false
+	station_content.visible = true
+	station_spinbox.value = station
+	set_station_params(station)
+
+func _on_station_spinbox_value_changed(value):
+	no_station_selected.visible = false
+	station_content.visible = true
+	set_station_params(value)
+
+func _on_station_spinbox_gui_input(event):
+	if event is InputEventMouseButton:
+		no_station_selected.visible = false
+		station_content.visible = true
+		set_station_params(station_spinbox.value)
+		station_selected.emit(station_spinbox.value)

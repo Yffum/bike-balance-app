@@ -12,6 +12,8 @@ var EXTERNAL_DIR : String
 var EXTERNAL_DATA_PATH : String
 var LOGS_PATH : String
 var USER_PARAMS_PATH : String
+var SIM_PARAMS_PATH : String
+var INCENTIVES_PATH : String
 var SIM_SCRIPT_PATH : String
 
 signal external_paths_set
@@ -32,10 +34,10 @@ func _set_external_paths():
 	EXTERNAL_DATA_PATH = EXTERNAL_DIR.path_join('data')
 	LOGS_PATH = EXTERNAL_DIR.path_join('logs')
 	USER_PARAMS_PATH = EXTERNAL_DATA_PATH.path_join('user_params.json')
+	SIM_PARAMS_PATH = EXTERNAL_DATA_PATH.path_join('sim_params.json')
+	INCENTIVES_PATH = EXTERNAL_DATA_PATH.path_join('incentives.json')
 	SIM_SCRIPT_PATH = EXTERNAL_DIR.path_join('simulate.py')
 	
-	print(SIM_SCRIPT_PATH)
-
 #----------------------- Global Tool Functions ---------------------------
 
 func load_json_array(path: String) -> Array:

@@ -31,8 +31,9 @@ extends Node
 @export var station_spinbox : SpinBox
 @export var no_station_selected : Label
 @export var station_content : Node
-
 # Parameters
+@export var station_name : Label
+@export var station_id : Label
 @export var rent_rate : Label
 @export var return_rate : Label
 @export var initial_bike_count : Label
@@ -47,6 +48,8 @@ extends Node
 
 var sim_params : Dictionary
 var incentives : Array  # incentives[<station>][<bike_count>]
+var station_names : Array
+var station_ids : Array
 
 signal sim_and_batch_modes_initialized(sim_mode : int, batch_mode : int)
 signal station_selected(station : int)
@@ -54,6 +57,8 @@ signal station_selected(station : int)
 func _on_tools_external_paths_set():
 	sim_params = Tools.load_json_dict(Tools.SIM_PARAMS_PATH)
 	incentives = Tools.load_json_array(Tools.INCENTIVES_PATH)
+	station_names = Tools.load_json_array(Tools.STATION_NAMES_PATH)
+	station_ids = Tools.load_json_array(Tools.STATION_IDS_PATH)
 	_initialize_user_params()
 	station_spinbox.get_child(0, true).text = 'Select station'
 	
@@ -162,6 +167,8 @@ func save_user_params():
 ## Sets the station parameters in the UI for the given station
 func set_station_params(station : int):
 	var PRECISION = 0.01
+	station_name.text = station_names[station]
+	station_id.text = str(int(station_ids[station]))
 	rent_rate.text = str(snappedf(sim_params['rent_rates'][station], PRECISION))
 	return_rate.text = str(snappedf(sim_params['return_rates'][station], PRECISION))
 	var bike_count : int = sim_params['initial_bike_counts'][station]
@@ -176,17 +183,20 @@ func set_station_params(station : int):
 		incentive_str = '(Return)'
 	initial_incentive_type.text = incentive_str
 
+## Update station params when map station selected
 func _on_map_controller_station_selected(station):
 	no_station_selected.visible = false
 	station_content.visible = true
 	station_spinbox.value = station
 	set_station_params(station)
 
+## Update station params when spinbox value changed
 func _on_station_spinbox_value_changed(value):
 	no_station_selected.visible = false
 	station_content.visible = true
 	set_station_params(value)
 
+## Activate station panel when spinbox is clicked
 func _on_station_spinbox_gui_input(event):
 	if event is InputEventMouseButton:
 		no_station_selected.visible = false

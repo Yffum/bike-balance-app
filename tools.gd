@@ -6,6 +6,8 @@ var MAX_LOG_COUNT = 20  # Max number of log files before pruning
 var INTERNAL_DATA_PATH = ProjectSettings.globalize_path('res://data')
 var DEFAULT_USER_PARAMS_PATH = INTERNAL_DATA_PATH.path_join('default_user_params.json')
 var STATION_COORDS_PATH = INTERNAL_DATA_PATH.path_join('station_coords.json')
+var STATION_NAMES_PATH = INTERNAL_DATA_PATH.path_join('station_names.json')
+var STATION_IDS_PATH = INTERNAL_DATA_PATH.path_join('station_ids.json')
 
 #----------------- External Paths ------------------
 var EXTERNAL_DIR : String

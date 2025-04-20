@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=18 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -25,6 +25,9 @@ LineEdit/styles/normal = null
 [sub_resource type="LabelSettings" id="LabelSettings_l06f4"]
 font_size = 24
 font_color = Color(0.784314, 0.784314, 0.784314, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_o2qoy"]
+font_size = 20
 
 [node name="MainWindow" type="ColorRect"]
 anchors_preset = 15
@@ -619,6 +622,7 @@ autowrap_mode = 2
 [node name="Log" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 visible = false
 layout_mode = 2
+horizontal_scroll_mode = 0
 metadata/_tab_index = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log"]
@@ -648,12 +652,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 metadata/_tab_index = 0
-
-[node name="ColorRect2" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station"]
-visible = false
-custom_minimum_size = Vector2(176.815, 2.565)
-layout_mode = 2
-color = Color(0.2, 0.2, 0.2, 1)
 
 [node name="StationSelector" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station"]
 layout_mode = 2
@@ -693,17 +691,19 @@ color = Color(0.137255, 0.137255, 0.137255, 1)
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
 [node name="NoMapSelected" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer"]
+visible = false
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 text = "Select a station on the map to view station info."
@@ -715,10 +715,16 @@ autowrap_mode = 2
 [node name="StationContent" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer"]
 layout_mode = 2
 
-[node name="StationParameters" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
+[node name="StationName" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
 layout_mode = 2
-text = "STATION NAME, MAKE START STATION, MAKE FINAL STATION"
+text = "station_name"
+label_settings = SubResource("LabelSettings_o2qoy")
 horizontal_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+color = Color(1, 1, 1, 0)
 
 [node name="StationStats" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
 layout_mode = 2
@@ -733,6 +739,22 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer"]
 layout_mode = 2
 
+[node name="StationID" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/StationID"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ID"
+horizontal_alignment = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/StationID"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "null"
+horizontal_alignment = 2
+
 [node name="RentRate" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
@@ -744,7 +766,7 @@ text = "Rental Rate"
 horizontal_alignment = 2
 
 [node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/RentRate"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "null"
 horizontal_alignment = 2
@@ -760,7 +782,7 @@ text = "Return Rate"
 horizontal_alignment = 2
 
 [node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/ReturnRate"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "null"
 horizontal_alignment = 2
@@ -776,7 +798,7 @@ text = "Initial Bike Count"
 horizontal_alignment = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/StartBikeCount"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 alignment = 2
 
@@ -804,7 +826,7 @@ text = "Initial Incentive"
 horizontal_alignment = 2
 
 [node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/Initial Incentive"]
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "null"
 horizontal_alignment = 2
@@ -812,8 +834,17 @@ horizontal_alignment = 2
 [node name="Newline" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 
+[node name="VSeparator" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+color = Color(1, 1, 1, 0)
+
 [node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer"]
 layout_mode = 2
+
+[node name="Label5" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer2"]
 layout_mode = 2
@@ -971,7 +1002,7 @@ run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxCo
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
 log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log")
 
-[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count")]
+[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count")]
 script = ExtResource("4_guodr")
 start_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox")
 end_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox")
@@ -995,6 +1026,8 @@ max_runtime = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSpl
 station_spinbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox")
 no_station_selected = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/NoMapSelected")
 station_content = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent")
+station_name = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationName")
+station_id = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/StationID/Label2")
 rent_rate = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/RentRate/Label2")
 return_rate = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/ReturnRate/Label2")
 initial_bike_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/StartBikeCount/HBoxContainer/InitialBikeCount")

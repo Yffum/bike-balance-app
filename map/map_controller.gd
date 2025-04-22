@@ -58,6 +58,8 @@ func _instance_markers():
 		marker.scale = Vector2(_marker_scale, _marker_scale)
 		marker.set_label(str(i))
 		marker.station = i
+		# Set z index based on y position so lower markers are in front
+		marker.z_index = int(marker.position.y/10 + 300)
 		# Connect signals
 		marker.marker_button_down.connect(_on_marker_button_down)
 		marker.marker_button_up.connect(_on_marker_button_up)

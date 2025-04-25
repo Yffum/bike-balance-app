@@ -111,6 +111,8 @@ def estimate_stochastic_stats(
     Returns:
         dict: Dictionary of means for each key.
         dict: Dictionary of error margins for each key
+        int: Total number of replications
+        float: Runtime (s)
     """
     alpha = 1 - confidence_level
 
@@ -181,13 +183,15 @@ def estimate_stochastic_stats(
                 print()
 
             if n > min_samples and all_deltas_within_bounds():
-                print(f'Replications successful: margin of error bounds reached.')
+                if log_progress:
+                    print(f'Replications successful: margin of error bounds reached.')
                 break
             if time.time() - start_time > max_runtime:
-                print(f'Timeout: max runtime {seconds_to_hms(max_runtime)} exceeded.')
+                if log_progress:
+                    print(f'Timeout: max runtime {seconds_to_hms(max_runtime)} exceeded.')
                 break
             
-            batch_count += 1
+            batch_count += 1    
     # Get collected means
     means = {k: v['mean'] for k, v in stats_dict.items()}
     # Round deltas and means
@@ -216,4 +220,84 @@ def estimate_stochastic_stats(
     replication_count = batch_count * batch_size
     runtime = time.time() - start_time
     return (means, deltas, replication_count, runtime)
+
+
+def estimate_stochastic_stats_fixed_size(
+    process, args=(), total_samples=1000,
+    max_runtime=60.0, # seconds
+    batch_size=8, confidence_level=0.95, log_progress=True
+):
+    """
+    Estimate means and error margins of a stochastic dictionary-valued process
+    using a fixed number of replications (batched for performance).
+
+    Args:
+        process (Callable): Function that returns a dict of float values.
+        args (Tuple): Arguments to pass to the process.
+        total_samples (int): Total number of replications to run.
+        batch_size (int): Number of processes per batch.
+        confidence_level (float): Confidence level for margin of error.
+        log_progress (bool): Whether to print progress.
+
+    Returns:
+        dict: Means for each key.
+        dict: Margin of error for each key.
+        int: Total replications.
+        float: Runtime in seconds.
+    """
+    total_batch_count = int(np.ceil(total_samples / batch_size))
+    start_time = time.time()
+    results = []
+
+    # Process batches
+    with multiprocessing.Pool() as pool:
+        for i in range(total_batch_count):
+            if log_progress:
+                print(f'Processing batch {i+1}/{total_batch_count}...', end='\r')
+            batch = pool.starmap(process, repeat(args, batch_size))
+            results.extend(batch)
+            # End early if runtime excceeded
+            if time.time() - start_time > max_runtime:
+                if log_progress:
+                    print(f'Timeout: max runtime {seconds_to_hms(max_runtime)} exceeded.')
+                break
+
+    # Convert list of dicts to dict of lists
+    keys = results[0].keys()
+    data = {k: np.array([d[k] for d in results]) for k in keys}
+    
+    n = len(results)
+    alpha = 1 - confidence_level
+    t_score = stats.t.ppf(1 - alpha / 2, n - 1)
+
+    # Calculate means and deltas
+    means = {k: float(np.mean(values)) for k, values in data.items()}
+    deltas = {k: float(t_score * np.std(values, ddof=1) / np.sqrt(n)) for k, values in data.items()}
+
+    # Round means and deltas
+    for k in means:
+        # Just round mean if delta not found
+        if deltas[k] == float('inf'):
+            means[k] = round_to_sig_figs(means[k], 5)
+            continue
+        # Round delta based on sig figs
+        if deltas[k] < 100:
+            deltas[k] = round_to_sig_figs(deltas[k], 2)
+        else:
+            deltas[k] = round(deltas[k])
+        # Round mean to precision of delta
+        delta_str = str(deltas[k])
+        if '.' in delta_str:
+            precision = len(delta_str.split('.')[-1])
+        else:
+            precision = 0
+        means[k] = round(means[k], precision)
+    
+    runtime = time.time() - start_time
+    if log_progress:
+        print(f'\nFinal results after {n} replications:')
+        for k in sorted(means):
+            print(f'  {k}: {means[k]:.5f} ± {deltas[k]:.5f}')
+
+    return means, deltas, n, runtime
 

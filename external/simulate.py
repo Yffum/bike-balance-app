@@ -9,7 +9,7 @@ import bisect
 
 import numpy as np
 
-from tools import estimate_stochastic_mean, estimate_stochastic_stats
+from tools import estimate_stochastic_mean, estimate_stochastic_stats, estimate_stochastic_stats_fixed_size
         
 # Unless otherwise indicated:
 # - "station" refers to station index
@@ -73,7 +73,7 @@ CONFIDENCE_LEVEL = USER_PARAMS['confidence_level']
 PARALLEL_BATCH_SIZE = USER_PARAMS['parallel_batch_size']
 BATCH_MODE = USER_PARAMS['batch_mode']  # 'precision_based' or 'fixed_sample_size'
 # - Fixed sample size
-BATCH_SIZE = USER_PARAMS['batch_size']  # Number of simulation replications
+FIXED_SAMPLE_SIZE = USER_PARAMS['batch_size']  # Number of simulation replications
 # - Precision based
 MIN_SAMPLE_SIZE = USER_PARAMS['min_sample_size']
 RELATIVE_MARGIN_OF_ERROR = USER_PARAMS['relative_margin_of_error']
@@ -1201,7 +1201,7 @@ def record_batch_precision_results(results):
         f"Confidence Level: {USER_PARAMS['confidence_level']}\n" +
         f"Parallel Batch Size: {USER_PARAMS['parallel_batch_size']}\n" +
         # Precision parameters
-        f"Min Sample size: {USER_PARAMS['min_sample_size']} runs\n" +
+        f"Min Sample Size: {USER_PARAMS['min_sample_size']} runs\n" +
         "\nResults\n" +
         '(Expected values for a single run)\n' +
         f"Total Reward: {means['reward']} ± {deltas['reward']}\n" +
@@ -1224,8 +1224,60 @@ def record_batch_precision_results(results):
     print(filepath)
     
     
-def record_batch_fixed_results():
-    pass
+def record_batch_fixed_results(results):
+    filepath = generate_results_filepath()
+    means, deltas, replication_count, runtime = results
+    # Determine punctuality
+    punc_str = 'Perfect'
+    time_left = means['time_left']
+    if time_left > 0:
+        punc_str = f"{time_left} ± {deltas['time_left']} minutes early"
+    if time_left < 0:
+        punc_str = f"{abs(time_left)} ± {deltas['time_left']} minutes late"
+    # Determine if max time exceeded
+    time_exceeded_str = ''
+    if runtime > USER_PARAMS['max_runtime'] and replication_count < USER_PARAMS['batch_size']:
+        time_exceeded_str = 'Warning: Max runtime exceeded. Target sample size not reached.\n'
+    report = (
+        f"{filepath}\n" +
+        "\nBatch Simulation\n" +
+        f"Replication Count: {replication_count}\n" +
+        f"Total Runtime: {runtime:.6f} seconds\n" +
+        time_exceeded_str +
+        "\nParameters\n" +
+        # Run parameters
+        f"Agent Mode: {USER_PARAMS['agent_mode'].capitalize()}\n" +
+        f"Start Station: {USER_PARAMS['start_station']}\n" +
+        f"End Station: {USER_PARAMS['end_station']}\n" +
+        f"Excursion Time: {USER_PARAMS['excursion_time']} hours\n" +
+        f"Warmup Time: {USER_PARAMS['warmup_time']} hours\n" +
+        f"Empty Station Bias: {USER_PARAMS['empty_bias']}\n" +
+        f"Full Station Bias: {USER_PARAMS['full_bias']}\n" +
+        # Batch parameters
+        f"Confidence Level: {USER_PARAMS['confidence_level']}\n" +
+        f"Parallel Batch Size: {USER_PARAMS['parallel_batch_size']}\n" +
+        # Fixed parameter
+        f"Sample Size: {USER_PARAMS['batch_size']} runs\n" +
+        "\nResults\n" +
+        '(Expected values for a single run)\n' +
+        f"Total Reward: {means['reward']} ± {deltas['reward']}\n" +
+        f"Punctuality: {punc_str}\n" +
+        f"Bikes Rented: {means['bike_count']} ± {deltas['bike_count']}\n" +
+        f"Total Distance Biked: {means['walk_time']} ± {deltas['walk_time']} km\n" +
+        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']}\n" +
+        f"Total Time Walking: {means['walk_time']} ± {deltas['walk_time']} hours\n" +
+        f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
+        f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
+    )
+    print(report)
+    results = {
+        'data' : results,  # Raw sim results
+        'user_parms' : USER_PARAMS,  # User params
+        'report' : report,  # Text for frontend
+    }
+    with open(filepath, 'w') as file:
+        json.dump(results, file, indent=2)
+    print(filepath)
 
     
 def main():    
@@ -1239,6 +1291,7 @@ def main():
         
     elif SIM_MODE == 'batch':
         logger.setLevel(BATCH_LOG_LEVEL)
+        
         if BATCH_MODE == 'precision_based':
             results = estimate_stochastic_stats(
                 process=simulate_bike_share, 
@@ -1252,8 +1305,18 @@ def main():
                 log_progress=PRINT_BATCH_PROGRESS
             )
             record_batch_precision_results(results)
+            
         elif BATCH_MODE == 'fixed_sample_size':
-            simulate_batch(BATCH_SIZE)
+            results = estimate_stochastic_stats_fixed_size(
+                process=simulate_bike_share,
+                args=(True, True),
+                total_samples=FIXED_SAMPLE_SIZE,
+                max_runtime=MAX_RUNTIME,
+                batch_size=PARALLEL_BATCH_SIZE,
+                confidence_level=CONFIDENCE_LEVEL,
+                log_progress=PRINT_BATCH_PROGRESS
+            )
+            record_batch_fixed_results(results)
 
     file_handler.close()
     logging.shutdown()

@@ -13,6 +13,8 @@
 - [ ] When results loaded, duplicate map markers and keep separate list of results markers that are shown and hidden when the results tab is revealed/hidden.
 - [ ] Results tab has a load button, and automatically loads after simulations
 
+- [x] Write a python script that takes the results and generates a rich text output for godot
+- [ ] Add station validation to basic agent (maybe add sim parameter? rental strategy: [greedy, cooperative/fair])
   
 # Search Algo 
 - [ ] Agent search node reward value should diminish with time (or maybe node depth?)

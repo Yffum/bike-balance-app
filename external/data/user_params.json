@@ -1,6 +1,6 @@
 {
   "absolute_margin_of_error": 0.1,
-  "agent_mode": "basic",
+  "agent_mode": "smart",
   "batch_mode": "precision_based",
   "batch_size": 300,
   "confidence_level": 0.99,
@@ -12,9 +12,9 @@
   "min_sample_size": 300,
   "parallel_batch_size": 12,
   "relative_margin_of_error": 0.01,
-  "seed": 1866017951,
-  "sim_mode": "batch",
+  "seed": 3158495187,
+  "sim_mode": "single_run",
   "start_station": 99,
-  "use_static_seed": false,
+  "use_static_seed": true,
   "warmup_time": 0.0
 }

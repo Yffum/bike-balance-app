@@ -185,15 +185,8 @@ def estimate_stochastic_stats(
                 break
             if time.time() - start_time > max_runtime:
                 print(f'Timeout: max runtime {seconds_to_hms(max_runtime)} exceeded.')
-            
-            stop_replications = (
-                # Margin of errors are within bounds
-                (n > min_samples and all_deltas_within_bounds())
-                # Or timeout
-                or time.time() - start_time >= max_runtime   
-            )
-            if stop_replications:
                 break
+            
             batch_count += 1
     # Get collected means
     means = {k: v['mean'] for k, v in stats_dict.items()}
@@ -220,5 +213,7 @@ def estimate_stochastic_stats(
         for k, mean in means.items():
             moe = deltas[k]
             print(f'  {k}: {mean} ± {moe}')
-    return means, deltas
+    replication_count = batch_count * batch_size
+    runtime = time.time() - start_time
+    return (means, deltas, replication_count, runtime)
 

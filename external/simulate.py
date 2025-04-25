@@ -15,7 +15,7 @@ from tools import estimate_stochastic_mean, estimate_stochastic_stats
 # - "station" refers to station index
 # - "time" refers to simulated time measured in hours
 
-# Establish data directory
+# Establish data directory for dev builds
 if os.path.exists('external'):
     BASE_PATH = 'external/'
 else:
@@ -53,32 +53,32 @@ ERROR = '\U0001F534 '
 #---------------- LOAD USER PARAMETERS -----------------
 USER_PARAMS_FILEPATH = BASE_PATH + 'data/user_params.json'
 with open(USER_PARAMS_FILEPATH, 'r') as file:
-    user_params = json.load(file)
+    USER_PARAMS = json.load(file)
     
 #----------- Agent Parameters -----------
-START_STATION = user_params['start_station']  # Agent start station index
-FINAL_STATION = user_params['end_station']  # Agent final station index
-EXCURSION_TIME = user_params['excursion_time']  # Length of excursion in hours
-AGENT_INTELLIGENCE = user_params['agent_mode']  # 'basic', 'smart'
+START_STATION = USER_PARAMS['start_station']  # Agent start station index
+FINAL_STATION = USER_PARAMS['end_station']  # Agent final station index
+EXCURSION_TIME = USER_PARAMS['excursion_time']  # Length of excursion in hours
+AGENT_INTELLIGENCE = USER_PARAMS['agent_mode']  # 'basic', 'smart'
 #------------ Sim Parameters ------------
-EMPTY_BIAS = user_params['empty_bias']  # Bias towards emptying stations (0-1)
-FULL_BIAS = user_params['full_bias']  # Bias towards filling stations (0-1)
-WARM_UP_TIME = user_params['warmup_time']  # The number of hours that the simulation runs before starting the agent
-SIM_MODE = user_params['sim_mode']  # 'single_run' or 'batch'
+EMPTY_BIAS = USER_PARAMS['empty_bias']  # Bias towards emptying stations (0-1)
+FULL_BIAS = USER_PARAMS['full_bias']  # Bias towards filling stations (0-1)
+WARM_UP_TIME = USER_PARAMS['warmup_time']  # The number of hours that the simulation runs before starting the agent
+SIM_MODE = USER_PARAMS['sim_mode']  # 'single_run' or 'batch'
 # Single Run
-USE_STATIC_SEED = user_params['use_static_seed']
-SEED = user_params['seed']  # Unsigned 32 bit int
+USE_STATIC_SEED = USER_PARAMS['use_static_seed']
+SEED = USER_PARAMS['seed']  # Unsigned 32 bit int
 # Batch
-CONFIDENCE_LEVEL = user_params['confidence_level']
-PARALLEL_BATCH_SIZE = user_params['parallel_batch_size']
-BATCH_MODE = user_params['batch_mode']  # 'precision_based' or 'fixed_sample_size'
+CONFIDENCE_LEVEL = USER_PARAMS['confidence_level']
+PARALLEL_BATCH_SIZE = USER_PARAMS['parallel_batch_size']
+BATCH_MODE = USER_PARAMS['batch_mode']  # 'precision_based' or 'fixed_sample_size'
 # - Fixed sample size
-BATCH_SIZE = user_params['batch_size']  # Number of simulation replications
+BATCH_SIZE = USER_PARAMS['batch_size']  # Number of simulation replications
 # - Precision based
-MIN_SAMPLE_SIZE = user_params['min_sample_size']
-RELATIVE_MARGIN_OF_ERROR = user_params['relative_margin_of_error']
-ABSOLUTE_MARGIN_OF_ERROR = user_params['absolute_margin_of_error']
-MAX_RUNTIME = user_params['max_runtime']
+MIN_SAMPLE_SIZE = USER_PARAMS['min_sample_size']
+RELATIVE_MARGIN_OF_ERROR = USER_PARAMS['relative_margin_of_error']
+ABSOLUTE_MARGIN_OF_ERROR = USER_PARAMS['absolute_margin_of_error']
+MAX_RUNTIME = USER_PARAMS['max_runtime']
 
 
 #--------------- BIKE SYSTEM PARAMETERS ----------------
@@ -159,6 +159,11 @@ def get_incentives_with_cost():
     
 # Subtract cost from incentives 
 INCENTIVES = get_incentives_with_cost()
+
+# Load bike distances
+BIKE_DISTANCES_FILEPATH = BASE_PATH + 'data/bike_distances.json'
+with open(BIKE_DISTANCES_FILEPATH, 'r') as file:
+    BIKE_DISTANCES = json.load(file)
 
 #============================================================================================
 
@@ -817,12 +822,18 @@ def log_incentivized_stations(incentives: list) -> None:
     logger.info(f'Rent:    {rent_stations}\nReturn:  {return_stations}')
 
 
-def simulate_bike_share(return_full_stats=False) -> float | dict:
+def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> float | dict:
     """ Simulates a single excursion of an agent rebalancing bikes in a bike share system,
     and returns a dictionary of stats including rewards earned and trips taken. 
+
+    In the returned stats, time_left and wait_time are in minutes, real_time_duration
+    is in seconds, and everything else is in hours.
     Args:
         return_full_stats (bool): Returns the mean reward if False. Returns a dict of stats
             if True.
+        batch_stats_only (bool): Returns only stats for batch runs if True. Returns all
+            stats if False (unless return_full_stats is False, in which case this arg
+            has no effect).
     """
     # Track simulation time
     real_start_time = time.perf_counter()
@@ -849,6 +860,7 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
     total_walk_time = 0
     total_bike_time = 0
     total_wait_time = 0
+    total_bike_distance = 0
     #----------------------------- Start Simulation ----------------------------------
     logger.info(f'---------- Starting Excursion -----------')
     logger.info(f'Warmup time: {WARM_UP_TIME} hours\nStart time: {format_time(START_TIME)} \nExcursion time: {agent.end_time - START_TIME} hours\n')
@@ -975,8 +987,7 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
             # total_walk_distance += distance
         elif agent.mode == 'bike':
             total_bike_time += trip_duration
-            # distance = BIKE_DISTANCES[agent.station][end_station]
-            # total_bike_distance =+ distance
+            total_bike_distance += BIKE_DISTANCES[agent.station][end_station]
         actions.append({
             'end_station' : end_station,
             'agent_mode' : agent.mode,
@@ -1026,23 +1037,25 @@ def simulate_bike_share(return_full_stats=False) -> float | dict:
     # Return stats if prompted to
     if return_full_stats:
         data = dict()
-        # values
-        data['excursion_time'] = current_time - START_TIME
-        data['real_time_duration'] = real_time_duration
+        # Time left is in minutes, and if it's negative the agent ended late
+        data['time_left'] = 60 * ((START_TIME + EXCURSION_TIME) - current_time)
         data['bike_count'] = bike_trip_count
-        data['walk_count'] = walk_trip_count
-        data['wait_count'] = wait_count
+        # Bike distance is in km
+        data['bike_distance'] = 1000 * total_bike_distance 
         data['bike_time'] = total_bike_time
         data['walk_time'] = total_walk_time
-        data['wait_time'] = total_wait_time
+        # Wait time is in minutes
+        data['wait_time'] = 60 * total_wait_time
         data['reward'] = agent.reward
         data['future_system_fail_count'] = future_system_fail_count
-        # data['bike_distance] = total_bike_distance
-        # data['walk_distance] = total_walk_distance
-        # containers (lists/dicts)
-        data['final_bike_counts'] = bike_counts
-        data['final_incentives'] = incentives
-        data['actions'] = actions
+        # Following stats not included for batch
+        if not batch_stats_only:
+            data['real_time_duration'] = real_time_duration
+            data['final_bike_counts'] = bike_counts
+            data['final_incentives'] = incentives
+            data['actions'] = actions
+            data['walk_count'] = walk_trip_count
+            data['wait_count'] = wait_count 
         return data
     # Return agent's total excursion reward by default
     return agent.reward
@@ -1112,33 +1125,42 @@ def record_single_run_results(data: dict):
             if action['return_reward'] > 0:
                 trip_str += f"\n\tReturn Reward: + {action['return_reward']}"
         time += action['duration']
+    # Determine punctuality
+    punc_str = 'Perfect'
+    time_left = round(data['time_left'], 2)
+    if time_left > 0:
+        punc_str = f'{time_left:.2f} minutes early'
+    if time_left < 0:
+        punc_str = f'{abs(time_left):.2f} minutes late'
     #------------ Report for frontend -----------
     report = (
-    f"{filepath}\n" +
-    "\nSingle Run Simulation\n" +
-    f"{seed_str}\n" +
-    f"Real runtime: {data['real_time_duration']:.6f} seconds\n" +
-    "\nParameters\n" +
-    f"Agent Mode: {user_params['agent_mode'].capitalize()}\n" +
-    f"Start Station: {user_params['start_station']}\n" +
-    f"End Station: {user_params['end_station']}\n" +
-    f"Excursion Time: {user_params['excursion_time']} hours\n" +
-    f"Warmup Time: {user_params['warmup_time']} hours\n" +
-    f"Empty Station Bias: {user_params['empty_bias']}\n" +
-    f"Full Station Bias: {user_params['full_bias']}\n" +
-    "\nResults\n" +
-    f"Total Reward: {data['reward']}\n" +
-    f"Bikes Rented: {data['bike_count']}\n" +
-    f"Total Time Biking: {data['bike_time']:.2f} hours\n" +
-    f"Total Time Walking: {data['walk_time']:.2f} hours\n" +
-    f"Total Time Waiting: {data['wait_time']*60:.2f} minutes\n" +
-    f"Expected Future Failures: {data['future_system_fail_count']:.2f}\n" +
-    f"\nAgent Actions {trip_str}"
+        f"{filepath}\n" +
+        "\nSingle Run Simulation\n" +
+        f"{seed_str}\n" +
+        f"Runtime: {data['real_time_duration']:.6f} seconds\n" +
+        "\nParameters\n" +
+        f"Agent Mode: {USER_PARAMS['agent_mode'].capitalize()}\n" +
+        f"Start Station: {USER_PARAMS['start_station']}\n" +
+        f"End Station: {USER_PARAMS['end_station']}\n" +
+        f"Excursion Time: {USER_PARAMS['excursion_time']} hours\n" +
+        f"Warmup Time: {USER_PARAMS['warmup_time']} hours\n" +
+        f"Empty Station Bias: {USER_PARAMS['empty_bias']}\n" +
+        f"Full Station Bias: {USER_PARAMS['full_bias']}\n" +
+        "\nResults\n" +
+        f"Total Reward: {data['reward']}\n" +
+        f"Punctuality: {punc_str}\n" +
+        f"Bikes Rented: {data['bike_count']}\n" +
+        f"Total Distance Biked: {data['bike_distance']:.2f} km\n" +
+        f"Total Time Biking: {data['bike_time']:.2f} hours\n" +
+        f"Total Time Walking: {data['walk_time']:.2f} hours\n" +
+        f"Total Time Waiting: {data['wait_time']:.2f} minutes\n" +
+        f"Expected Future Failures: {data['future_system_fail_count']:.2f}\n" +
+        f"\nAgent Actions {trip_str}"
     )
     print(report)
     results = {
         'data' : data,  # Raw sim results
-        'user_parms' : user_params,  # User params
+        'user_parms' : USER_PARAMS,  # User params
         'report' : report,  # Text for frontend
     }
     with open(filepath, 'w') as file:
@@ -1146,13 +1168,62 @@ def record_single_run_results(data: dict):
     print(filepath)
 
 
-def record_batch_precision_results():
+def record_batch_precision_results(results):
     filepath = generate_results_filepath()
-    report = f"""{filepath}\n
-    Batch Simulation
-    """
-
-
+    means, deltas, replication_count, runtime = results
+    # Determine punctuality
+    punc_str = 'Perfect'
+    time_left = means['time_left']
+    if time_left > 0:
+        punc_str = f"{time_left} ± {deltas['time_left']} minutes early"
+    if time_left < 0:
+        punc_str = f"{abs(time_left)} ± {deltas['time_left']} minutes late"
+    # Determine if max time exceeded
+    time_exceeded_str = ''
+    if runtime > USER_PARAMS['max_runtime']:
+        time_exceeded_str = 'Warning: Max runtime exceeded. Target precision for result estimations not reached.\n'
+    report = (
+        f"{filepath}\n" +
+        "\nBatch Simulation\n" +
+        f"Replication Count: {replication_count}\n" +
+        f"Total Runtime: {runtime:.6f} seconds\n" +
+        time_exceeded_str +
+        "\nParameters\n" +
+        # Run parameters
+        f"Agent Mode: {USER_PARAMS['agent_mode'].capitalize()}\n" +
+        f"Start Station: {USER_PARAMS['start_station']}\n" +
+        f"End Station: {USER_PARAMS['end_station']}\n" +
+        f"Excursion Time: {USER_PARAMS['excursion_time']} hours\n" +
+        f"Warmup Time: {USER_PARAMS['warmup_time']} hours\n" +
+        f"Empty Station Bias: {USER_PARAMS['empty_bias']}\n" +
+        f"Full Station Bias: {USER_PARAMS['full_bias']}\n" +
+        # Batch parameters
+        f"Confidence Level: {USER_PARAMS['confidence_level']}\n" +
+        f"Parallel Batch Size: {USER_PARAMS['parallel_batch_size']}\n" +
+        # Precision parameters
+        f"Min Sample size: {USER_PARAMS['min_sample_size']} runs\n" +
+        "\nResults\n" +
+        '(Expected values for a single run)\n' +
+        f"Total Reward: {means['reward']} ± {deltas['reward']}\n" +
+        f"Punctuality: {punc_str}\n" +
+        f"Bikes Rented: {means['bike_count']} ± {deltas['bike_count']}\n" +
+        f"Total Distance Biked: {means['walk_time']} ± {deltas['walk_time']} km\n" +
+        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']}\n" +
+        f"Total Time Walking: {means['walk_time']} ± {deltas['walk_time']} hours\n" +
+        f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
+        f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
+    )
+    print(report)
+    results = {
+        'data' : results,  # Raw sim results
+        'user_parms' : USER_PARAMS,  # User params
+        'report' : report,  # Text for frontend
+    }
+    with open(filepath, 'w') as file:
+        json.dump(results, file, indent=2)
+    print(filepath)
+    
+    
 def record_batch_fixed_results():
     pass
 
@@ -1169,9 +1240,9 @@ def main():
     elif SIM_MODE == 'batch':
         logger.setLevel(BATCH_LOG_LEVEL)
         if BATCH_MODE == 'precision_based':
-            estimate_stochastic_stats(
+            results = estimate_stochastic_stats(
                 process=simulate_bike_share, 
-                args=(True,),
+                args=(True, True),
                 min_samples=MIN_SAMPLE_SIZE,
                 max_runtime=MAX_RUNTIME,
                 relative_margin_of_error=RELATIVE_MARGIN_OF_ERROR,
@@ -1180,19 +1251,9 @@ def main():
                 batch_size=PARALLEL_BATCH_SIZE,
                 log_progress=PRINT_BATCH_PROGRESS
             )
+            record_batch_precision_results(results)
         elif BATCH_MODE == 'fixed_sample_size':
             simulate_batch(BATCH_SIZE)
-    
-    # Estimate reward only 
-    if False:
-        estimate_stochastic_mean(
-            process=simulate_bike_share, 
-            args=(), 
-            margin_of_error=MARGIN_OF_ERROR, 
-            confidence_level=CONFIDENCE_LEVEL, 
-            batch_size=PARALLEL_BATCH_SIZE,
-            log_progress=PRINT_BATCH_PROGRESS
-        )
 
     file_handler.close()
     logging.shutdown()

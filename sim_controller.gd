@@ -24,6 +24,9 @@ func _notification(what):
 
 
 func _ready():
+	# Set intreface scale
+	get_tree().root.content_scale_factor = 1.0
+	
 	thread = Thread.new()
 
 

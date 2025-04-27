@@ -14,7 +14,7 @@
   "relative_margin_of_error": 0.05,
   "seed": 3158495187,
   "sim_mode": "batch",
-  "start_station": 99,
-  "use_static_seed": true,
+  "start_station": 97,
+  "use_static_seed": false,
   "warmup_time": 0.0
 }

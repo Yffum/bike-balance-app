@@ -459,6 +459,25 @@ value = 8.0
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
+[node name="MaxRuntime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MaxRuntime"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Max Runtime"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MaxRuntime"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.5
+step = 0.1
+value = 0.5
+suffix = "min"
+custom_arrow_step = 0.5
+select_all_on_focus = true
+
 [node name="BatchMode" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
 layout_mode = 2
 alignment = 1
@@ -585,25 +604,6 @@ value = 0.1
 custom_arrow_step = 1.0
 select_all_on_focus = true
 
-[node name="MaxRuntime" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MaxRuntime"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Maximum runtime"
-
-[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MaxRuntime"]
-layout_mode = 2
-size_flags_horizontal = 3
-min_value = 0.5
-step = 0.1
-value = 0.5
-suffix = "min"
-custom_arrow_step = 0.5
-select_all_on_focus = true
-
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 7
@@ -616,7 +616,7 @@ custom_minimum_size = Vector2(100, 20)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.813258, 0.813258, 0.813258, 1)
 theme_override_font_sizes/font_size = 14
-text = "Replications will stop once max runtime reached, or margin of error is below bound (relative or absolute) for every statitistic. Lower runtime by increasing margin of error and/or decreasing confidence level."
+text = "Replications will stop once max runtime is reached, or margin of error is below a given bound (relative or absolute) for every statitistic. Lower runtime by increasing margin of error and/or decreasing confidence level."
 autowrap_mode = 2
 
 [node name="Log" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
@@ -1046,7 +1046,7 @@ batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSpli
 min_sample_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MinSampleSize/SpinBox")
 relative_margin_of_error = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/RelativeDelta/SpinBox")
 absolute_margin_of_error = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/AbsoluteDelta/SpinBox")
-max_runtime = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer/MaxRuntime/SpinBox")
+max_runtime = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MaxRuntime/SpinBox")
 station_spinbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox")
 no_station_selected = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/NoMapSelected")
 station_content = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent")

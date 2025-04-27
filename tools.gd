@@ -1,6 +1,7 @@
 extends Node
 
 var MAX_LOG_COUNT = 20  # Max number of log files before pruning
+var MAX_RESULTS_COUNT = 20 # Max number of results jsons before pruning
 
 #----------------- Internal Paths ------------------
 var INTERNAL_DATA_PATH = ProjectSettings.globalize_path('res://data')
@@ -13,6 +14,7 @@ var STATION_IDS_PATH = INTERNAL_DATA_PATH.path_join('station_ids.json')
 var EXTERNAL_DIR : String
 var EXTERNAL_DATA_PATH : String
 var LOGS_PATH : String
+var RESULTS_PATH : String
 var USER_PARAMS_PATH : String
 var SIM_PARAMS_PATH : String
 var INCENTIVES_PATH : String
@@ -35,6 +37,7 @@ func _set_external_paths():
 		
 	EXTERNAL_DATA_PATH = EXTERNAL_DIR.path_join('data')
 	LOGS_PATH = EXTERNAL_DIR.path_join('logs')
+	RESULTS_PATH = EXTERNAL_DIR.path_join('results')
 	USER_PARAMS_PATH = EXTERNAL_DATA_PATH.path_join('user_params.json')
 	SIM_PARAMS_PATH = EXTERNAL_DATA_PATH.path_join('sim_params.json')
 	INCENTIVES_PATH = EXTERNAL_DATA_PATH.path_join('incentives.json')

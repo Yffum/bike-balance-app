@@ -15,55 +15,19 @@
 
 - [x] Write a python script that takes the results and generates a rich text output for godot
 - [ ] Add station validation to basic agent (maybe add sim parameter? rental strategy: [selfish, cooperative/fair])
+
+- [ ] Add station agnostic batch setting that randomly sets input start/end stations
   
+Results tab
+-> show station results, hide station info (or just hide switch buttons)
+-> change map markers 
+
+
 # Search Algo 
 - [ ] Agent search node reward value should diminish with time (or maybe node depth?)
 - [ ] Search branches that end early should be considered less valuable (right now they arent because its just reward rate)
 
 ### Station
-- [ ] Change marker size with zoom
-- [ ] Add button
+- [x] Change marker size with zoom
+- [x] Add button
 
-Station States
-- Selected/Unselected
-  - Use outlined sprite
-  - Or use a shader to outline the sprite
-- Start/End/Intermediate
-  - Green/Red/Gray
-  - Half/half for start-end combo
-  - try checkered for end
-
-Station Panel
-- Station index
-  - type in automatically highlights and centers the corresponding station
-  - pressing the station marker automatically opens the station panel
-- Stats
-  - Rental rate
-  - Return rate
-  - Starting bike count
-  - Capacity
-
-
-Parameters Panel
-- Agent Parameters
-- Bike Share Parameters
-
-Simulation Panel
-- Empty station bias
-- Full station bias
-- Warmup time
-- Mode
-  - Single Run
-    - Use static seed
-  - Batch
-    - Parallel batch size # Try the number of cores in your CPU times 2.
-    - Confidence level
-    - Batch mode
-      - Fixed Sample Size
-        - Sample size
-      - Precision Based
-        - Minimum samples # Due to the high variance of samples, decreasing minimum samples may produce innaccurate estimates
-        - Relative margin of error
-        - Raw margin of error 
-        - Maximum total runtime (0.5 min)
-        - # Replications will stop once max runtime reached, or margin of error is below bound (relative or raw) for every stat. Lower runtime by increasing margin of error and/or decreasing confidence level.

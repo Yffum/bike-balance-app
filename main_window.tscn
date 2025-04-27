@@ -191,7 +191,6 @@ layout_mode = 2
 current_tab = 0
 clip_tabs = false
 drag_to_rearrange_enabled = true
-tabs_rearrange_group = 0
 
 [node name="Agent" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 layout_mode = 2

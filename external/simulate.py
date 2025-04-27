@@ -6,6 +6,7 @@ import time
 import os
 from queue import PriorityQueue
 import bisect
+import sys
 
 import numpy as np
 
@@ -21,6 +22,11 @@ if os.path.exists('external'):
 else:
     BASE_PATH = ''
 
+# Check if called from app
+USING_APP = False
+if len(sys.argv) == 2 and sys.argv[1] == '--frontend':
+    USING_APP = True
+    
 #=============================== STATIC PARAMETERS ===========================================
 
 #-------------------- CONFIGURATION --------------------
@@ -171,12 +177,12 @@ with open(BIKE_DISTANCES_FILEPATH, 'r') as file:
 # Levels: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
 SINGLE_RUN_LOG_LEVEL = logging.INFO
 BATCH_LOG_LEVEL = logging.ERROR
-PRINT_BATCH_PROGRESS = True
+PRINT_BATCH_PROGRESS = False
 # Time range for debug log (HH)
 DEBUG_START_TIME = 17 + 20/60
 DEBUG_END_TIME = 17 + 30/60
 
-WRITE_LOG_FILE = True
+WRITE_LOG_FILE = False
 
 def generate_log_filepath(seed):
     """ Generates a log filepath in the format data/YYMMDD_HHMM_s<seed>.log """
@@ -206,7 +212,6 @@ def generate_log_filepath(seed):
     return os.path.join(log_dir, filename)
 
 LOG_FILEPATH = generate_log_filepath(SEED)
-print(LOG_FILEPATH, end='')
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -1102,7 +1107,7 @@ def generate_results_filepath(seed=None):
     return os.path.join(results_dir, filename)
 
 
-def record_single_run_results(data: dict):
+def record_single_run_results(data: dict) -> str:
     filepath = generate_results_filepath(SEED)
     # Set seed string for report
     if USE_STATIC_SEED:
@@ -1157,7 +1162,6 @@ def record_single_run_results(data: dict):
         f"Expected Future Failures: {data['future_system_fail_count']:.2f}\n" +
         f"\nAgent Actions {trip_str}"
     )
-    print(report)
     results = {
         'data' : data,  # Raw sim results
         'user_parms' : USER_PARAMS,  # User params
@@ -1165,10 +1169,9 @@ def record_single_run_results(data: dict):
     }
     with open(filepath, 'w') as file:
         json.dump(results, file, indent=2)
-    print(filepath)
+    return filepath
 
-
-def record_batch_precision_results(results):
+def record_batch_precision_results(results) -> str:
     filepath = generate_results_filepath()
     means, deltas, replication_count, runtime = results
     # Determine punctuality
@@ -1184,7 +1187,7 @@ def record_batch_precision_results(results):
         time_exceeded_str = 'Warning: Max runtime exceeded. Target precision for result estimations not reached.\n'
     report = (
         f"{filepath}\n" +
-        "\nBatch Simulation\n" +
+        "\nBatch Simulation (precision-based)\n" +
         f"Replication Count: {replication_count}\n" +
         f"Total Runtime: {runtime:.6f} seconds\n" +
         time_exceeded_str +
@@ -1208,12 +1211,11 @@ def record_batch_precision_results(results):
         f"Punctuality: {punc_str}\n" +
         f"Bikes Rented: {means['bike_count']} ± {deltas['bike_count']}\n" +
         f"Total Distance Biked: {means['walk_time']} ± {deltas['walk_time']} km\n" +
-        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']}\n" +
+        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']} hours\n" +
         f"Total Time Walking: {means['walk_time']} ± {deltas['walk_time']} hours\n" +
         f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
         f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
     )
-    print(report)
     results = {
         'data' : results,  # Raw sim results
         'user_parms' : USER_PARAMS,  # User params
@@ -1221,10 +1223,10 @@ def record_batch_precision_results(results):
     }
     with open(filepath, 'w') as file:
         json.dump(results, file, indent=2)
-    print(filepath)
+    return filepath
     
     
-def record_batch_fixed_results(results):
+def record_batch_fixed_results(results) -> str:
     filepath = generate_results_filepath()
     means, deltas, replication_count, runtime = results
     # Determine punctuality
@@ -1240,7 +1242,7 @@ def record_batch_fixed_results(results):
         time_exceeded_str = 'Warning: Max runtime exceeded. Target sample size not reached.\n'
     report = (
         f"{filepath}\n" +
-        "\nBatch Simulation\n" +
+        "\nBatch Simulation (fixed sample size)\n" +
         f"Replication Count: {replication_count}\n" +
         f"Total Runtime: {runtime:.6f} seconds\n" +
         time_exceeded_str +
@@ -1256,20 +1258,17 @@ def record_batch_fixed_results(results):
         # Batch parameters
         f"Confidence Level: {USER_PARAMS['confidence_level']}\n" +
         f"Parallel Batch Size: {USER_PARAMS['parallel_batch_size']}\n" +
-        # Fixed parameter
-        f"Sample Size: {USER_PARAMS['batch_size']} runs\n" +
         "\nResults\n" +
         '(Expected values for a single run)\n' +
         f"Total Reward: {means['reward']} ± {deltas['reward']}\n" +
         f"Punctuality: {punc_str}\n" +
         f"Bikes Rented: {means['bike_count']} ± {deltas['bike_count']}\n" +
         f"Total Distance Biked: {means['walk_time']} ± {deltas['walk_time']} km\n" +
-        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']}\n" +
+        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']} hours\n" +
         f"Total Time Walking: {means['walk_time']} ± {deltas['walk_time']} hours\n" +
         f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
         f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
     )
-    print(report)
     results = {
         'data' : results,  # Raw sim results
         'user_parms' : USER_PARAMS,  # User params
@@ -1277,17 +1276,20 @@ def record_batch_fixed_results(results):
     }
     with open(filepath, 'w') as file:
         json.dump(results, file, indent=2)
-    print(filepath)
+    return filepath
 
     
 def main():    
+    results_filepath = ''
     
-    print()
+    if USING_APP:
+        global PRINT_BATCH_PROGRESS
+        PRINT_BATCH_PROGRESS = False
     
     if SIM_MODE == 'single_run':
         logger.setLevel(SINGLE_RUN_LOG_LEVEL)
         results = simulate_bike_share(True)
-        record_single_run_results(results)
+        results_filepath = record_single_run_results(results)
         
     elif SIM_MODE == 'batch':
         logger.setLevel(BATCH_LOG_LEVEL)
@@ -1304,7 +1306,7 @@ def main():
                 batch_size=PARALLEL_BATCH_SIZE,
                 log_progress=PRINT_BATCH_PROGRESS
             )
-            record_batch_precision_results(results)
+            results_filepath = record_batch_precision_results(results)
             
         elif BATCH_MODE == 'fixed_sample_size':
             results = estimate_stochastic_stats_fixed_size(
@@ -1316,11 +1318,12 @@ def main():
                 confidence_level=CONFIDENCE_LEVEL,
                 log_progress=PRINT_BATCH_PROGRESS
             )
-            record_batch_fixed_results(results)
+            results_filepath = record_batch_fixed_results(results)
 
-    file_handler.close()
+    if USING_APP:
+        print(results_filepath, end='')
+    
     logging.shutdown()
     
-
 if __name__ == "__main__":
     main()

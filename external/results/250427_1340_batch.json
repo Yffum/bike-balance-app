@@ -1,0 +1,47 @@
+{
+  "data": [
+    {
+      "time_left": 1.309,
+      "bike_count": 37.35,
+      "bike_distance": 18916622.0,
+      "bike_time": 1.2723,
+      "walk_time": 2.7042,
+      "wait_time": 0.102,
+      "reward": 17.7,
+      "future_system_fail_count": 113.34
+    },
+    {
+      "time_left": 0.068,
+      "bike_count": 0.23,
+      "bike_distance": 60215,
+      "bike_time": 0.0039,
+      "walk_time": 0.0041,
+      "wait_time": 0.053,
+      "reward": 0.2,
+      "future_system_fail_count": 0.57
+    },
+    108,
+    13.567415714263916
+  ],
+  "user_parms": {
+    "absolute_margin_of_error": 0.1,
+    "agent_mode": "smart",
+    "batch_mode": "precision_based",
+    "batch_size": 400,
+    "confidence_level": 0.4,
+    "empty_bias": 0.0,
+    "end_station": 110,
+    "excursion_time": 4.0,
+    "full_bias": 0.0,
+    "max_runtime": 30.0,
+    "min_sample_size": 100,
+    "parallel_batch_size": 12,
+    "relative_margin_of_error": 0.1,
+    "seed": 3158495187,
+    "sim_mode": "batch",
+    "start_station": 97,
+    "use_static_seed": false,
+    "warmup_time": 0.0
+  },
+  "report": "external\\results\\250427_1340_batch.json\n\nBatch Simulation\nReplication Count: 108\nTotal Runtime: 13.567416 seconds\n\nParameters\nAgent Mode: Smart\nStart Station: 97\nEnd Station: 110\nExcursion Time: 4.0 hours\nWarmup Time: 0.0 hours\nEmpty Station Bias: 0.0\nFull Station Bias: 0.0\nConfidence Level: 0.4\nParallel Batch Size: 12\nMin Sample Size: 100 runs\n\nResults\n(Expected values for a single run)\nTotal Reward: 17.7 \u00b1 0.2\nPunctuality: 1.309 \u00b1 0.068 minutes early\nBikes Rented: 37.35 \u00b1 0.23\nTotal Distance Biked: 2.7042 \u00b1 0.0041 km\nTotal Time Biking: 1.2723 \u00b1 0.0039\nTotal Time Walking: 2.7042 \u00b1 0.0041 hours\nTotal Time Waiting: 0.102 \u00b1 0.053 minutes\nExpected Future Failures: 113.34 \u00b1 0.57\n"
+}

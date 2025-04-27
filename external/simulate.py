@@ -43,6 +43,8 @@ INCENTIVE_COST = 0.1    # The number of failures that must be mitigated to warra
                         # incentivizing a station
 INCENTIVE_PRECISION = 2     # The number of decimal places to round incentives to
 INCENTIVE_UPDATE_INTERVAL = 0.25    # The period of time in hours between incentives updates
+BIKE_TIME_DISTRIBUTION_SIGMA = 0.12
+WALK_TIME_DISTRIBUTION_SIGMA = 0.12
 
 #----------------------- TESTING -----------------------
 HARD_STOP_TIME = 0  # Stop simulation after this many hours. If 0, don't stop until finished.
@@ -947,12 +949,14 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
         if agent.mode == 'bike':
             bike_trip_count += 1
             avg_trip_duration = BIKE_TIMES[agent.station][end_station]
+            sigma = BIKE_TIME_DISTRIBUTION_SIGMA
         elif agent.mode == 'walk':
             walk_trip_count += 1
             avg_trip_duration = WALK_TIMES[agent.station][end_station]
-        #trip_duration = np.random.exponential(avg_trip_duration) # ToDo: use better distribution
+            sigma = WALK_TIME_DISTRIBUTION_SIGMA
         # ToDo testing
-        trip_duration = avg_trip_duration
+        #trip_duration = avg_trip_duration
+        trip_duration = np.random.lognormal(np.log(avg_trip_duration), sigma) 
         #---------------- Get incentives / Update bike counts -------------
         # Get time of last incentive update before trip ends
         end_time = current_time + trip_duration
@@ -1066,25 +1070,6 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
     return agent.reward
 
 
-def simulate_batch(batch_size: int) -> dict:
-    """ Runs a batch of bike share simulations and returns stats """
-    # Iterate through batch
-    batch_data = None
-    for i in range(batch_size):
-        run_data = simulate_bike_share()
-        # Create dict based on simulation data if first run
-        if batch_data == None:
-            batch_data = {key: [] for key in run_data}
-        # Add run data to dict
-        for key in run_data.keys():
-            batch_data[key].append(run_data[key])
-        logger.error(f'\rRunning simulation batch: {i+1}/{batch_size} complete')
-    # Analyze batch data
-    logger.error(f'\n------- Batch Complete ({batch_size} runs) --------')
-    logger.error(f'Agent Intelligence: {AGENT_INTELLIGENCE}')
-    log_data_stats(batch_data)
-
-
 def generate_results_filepath(seed=None):
     """ Generates and returns resutls filepath in the format 'results/YYMMDD_HHMM_s<seed>.json' """
     results_dir = os.path.join(BASE_PATH[:-1], 'results')
@@ -1162,6 +1147,7 @@ def record_single_run_results(data: dict) -> str:
         f"Expected Future Failures: {data['future_system_fail_count']:.2f}\n" +
         f"\nAgent Actions {trip_str}"
     )
+    # Save results
     results = {
         'data' : data,  # Raw sim results
         'user_parms' : USER_PARAMS,  # User params
@@ -1170,6 +1156,7 @@ def record_single_run_results(data: dict) -> str:
     with open(filepath, 'w') as file:
         json.dump(results, file, indent=2)
     return filepath
+
 
 def record_batch_precision_results(results) -> str:
     filepath = generate_results_filepath()
@@ -1216,6 +1203,11 @@ def record_batch_precision_results(results) -> str:
         f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
         f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
     )
+    # Convert infinite deltas to null
+    for key in results[1]:
+        if results[1][key] == float('inf'):
+            results [1][key] = None
+    # Save results
     results = {
         'data' : results,  # Raw sim results
         'user_parms' : USER_PARAMS,  # User params
@@ -1269,6 +1261,11 @@ def record_batch_fixed_results(results) -> str:
         f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
         f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
     )
+    # Convert infinite deltas to null
+    for key in results[1]:
+        if results[1][key] == float('inf'):
+            results [1][key] = None
+    # Save results
     results = {
         'data' : results,  # Raw sim results
         'user_parms' : USER_PARAMS,  # User params
@@ -1285,6 +1282,7 @@ def main():
     if USING_APP:
         global PRINT_BATCH_PROGRESS
         PRINT_BATCH_PROGRESS = False
+        logging.disable()
     
     if SIM_MODE == 'single_run':
         logger.setLevel(SINGLE_RUN_LOG_LEVEL)

@@ -17,6 +17,11 @@
 - [ ] Add station validation to basic agent (maybe add sim parameter? rental strategy: [selfish, cooperative/fair])
 
 - [ ] Add station agnostic batch setting that randomly sets input start/end stations
+
+
+- [ ] Refine results tab
+- [ ] Add station results
+- [ ] Add map results
   
 Results tab
 -> show station results, hide station info (or just hide switch buttons)

@@ -31,6 +31,10 @@ window/quality/use_taa=false
 
 enabled=PackedStringArray("res://addons/tattomoosa.spinner/plugin.cfg")
 
+[gui]
+
+theme/default_theme_scale=1.2
+
 [input]
 
 camera_zoom_in={

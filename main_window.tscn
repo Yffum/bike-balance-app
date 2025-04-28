@@ -48,7 +48,7 @@ grow_vertical = 2
 
 [node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer"]
 layout_mode = 2
-split_offset = 1382
+split_offset = 1317
 
 [node name="MarginLeftPanel" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 clip_contents = true
@@ -71,7 +71,7 @@ script = ExtResource("1_eqarp")
 
 [node name="SubViewport" type="SubViewport" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer"]
 handle_input_locally = false
-size = Vector2i(1362, 951)
+size = Vector2i(1297, 951)
 size_2d_override = Vector2i(1, 1)
 render_target_update_mode = 4
 
@@ -184,7 +184,7 @@ theme_override_constants/margin_bottom = 10
 
 [node name="VSplitContainer" type="VSplitContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel"]
 layout_mode = 2
-split_offset = 481
+split_offset = 531
 
 [node name="SettingsTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
@@ -538,10 +538,10 @@ select_all_on_focus = true
 
 [node name="PrecisionContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 7
-theme_override_constants/margin_top = 7
-theme_override_constants/margin_right = 7
-theme_override_constants/margin_bottom = 7
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
 metadata/_tab_index = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer"]
@@ -600,7 +600,7 @@ size_flags_horizontal = 3
 min_value = 0.001
 step = 0.001
 value = 0.1
-custom_arrow_step = 1.0
+custom_arrow_step = 0.1
 select_all_on_focus = true
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/MarginContainer/TabContainer/PrecisionContainer/VBoxContainer"]
@@ -614,9 +614,9 @@ theme_override_constants/margin_bottom = 7
 custom_minimum_size = Vector2(100, 20)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.813258, 0.813258, 0.813258, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
 text = "Replications will stop once max runtime is reached, or margin of error is below a given bound (relative or absolute) for every statitistic. Lower runtime by increasing margin of error and/or decreasing confidence level."
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="Log" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 visible = false
@@ -635,6 +635,7 @@ theme_override_constants/margin_bottom = 20
 
 [node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log/MarginContainer"]
 layout_mode = 2
+bbcode_enabled = true
 text = "The log of the last simulation run will display here."
 
 [node name="StationTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]

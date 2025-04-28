@@ -43,8 +43,9 @@ INCENTIVE_COST = 0.1    # The number of failures that must be mitigated to warra
                         # incentivizing a station
 INCENTIVE_PRECISION = 2     # The number of decimal places to round incentives to
 INCENTIVE_UPDATE_INTERVAL = 0.25    # The period of time in hours between incentives updates
-BIKE_TIME_DISTRIBUTION_SIGMA = 0.12
-WALK_TIME_DISTRIBUTION_SIGMA = 0.12
+BIKE_TIME_CV = 0.1     # Coefficient of variation for bike time lognormal RV generation
+WALK_TIME_CV = 0.1     # Coefficient of variation for walk time lognormal RV generation
+
 
 #----------------------- TESTING -----------------------
 HARD_STOP_TIME = 0  # Stop simulation after this many hours. If 0, don't stop until finished.
@@ -225,8 +226,6 @@ if WRITE_LOG_FILE:
     file_handler = logging.FileHandler(LOG_FILEPATH, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
-
-### logging.disable()
 
 #============================================================================================
 
@@ -940,23 +939,38 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
         #--------------- Out of time -------------------
         # Agent is out of time, go to final station
         if end_station == END_TRIP:
-            agent.mode = 'walk'  # Hard set agent to walk
-            end_station = agent.final_station
+            # No more trips after this
             has_time_for_trip = False
-            logger.warning(f'\t{WARNING} End excursion')
+            # If already at final station, end excursion immediately
+            if agent.station == agent.final_station:
+                logger.warning(f'\t{WARNING} Agent out of time, excursion ended.')
+                break
+            # Otherwise walk to final station
+            else:
+                agent.mode = 'walk'  # Hard set agent to walk
+                end_station = agent.final_station
+                logger.warning(f'\t{WARNING} Agent out of time, ending excursion.')
         # ----------------------- Process trip ------------------------
         # Generate trip duration
         if agent.mode == 'bike':
             bike_trip_count += 1
-            avg_trip_duration = BIKE_TIMES[agent.station][end_station]
-            sigma = BIKE_TIME_DISTRIBUTION_SIGMA
+            mean = BIKE_TIMES[agent.station][end_station]
+            stdv = BIKE_TIME_CV * mean
         elif agent.mode == 'walk':
             walk_trip_count += 1
-            avg_trip_duration = WALK_TIMES[agent.station][end_station]
-            sigma = WALK_TIME_DISTRIBUTION_SIGMA
-        # ToDo testing
-        #trip_duration = avg_trip_duration
-        trip_duration = np.random.lognormal(np.log(avg_trip_duration), sigma) 
+            mean = WALK_TIMES[agent.station][end_station]
+            stdv = WALK_TIME_CV * mean
+        # Ensure nonzero trip time
+        if mean == 0:
+            logger.error(f'{ERROR} Agent {agent.mode}s from {agent.station} to {end_station}, trip time is 0')
+            trip_duration = 0
+        # Generate lognormal trip duration
+        else:
+            mu = np.log( mean**2 / np.sqrt(mean**2 + stdv**2) )
+            sigma = np.sqrt(np.log(1 + stdv**2 / mean**2))
+            trip_duration = np.random.lognormal(mu, sigma)
+            
+        # ToDo: Could cache mu/sigma for every trip duration
         #---------------- Get incentives / Update bike counts -------------
         # Get time of last incentive update before trip ends
         end_time = current_time + trip_duration
@@ -1050,7 +1064,7 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
         data['time_left'] = 60 * ((START_TIME + EXCURSION_TIME) - current_time)
         data['bike_count'] = bike_trip_count
         # Bike distance is in km
-        data['bike_distance'] = 1000 * total_bike_distance 
+        data['bike_distance'] = total_bike_distance / 1000
         data['bike_time'] = total_bike_time
         data['walk_time'] = total_walk_time
         # Wait time is in minutes
@@ -1070,11 +1084,9 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
     return agent.reward
 
 
-def generate_results_filepath(seed=None):
-    """ Generates and returns resutls filepath in the format 'results/YYMMDD_HHMM_s<seed>.json' """
+def generate_results_filepath(timestamp: str, seed=None):
+    """ Generates and returns results filepath in the format 'results/YYMMDD_HHMM_s<seed>.json' """
     results_dir = os.path.join(BASE_PATH[:-1], 'results')
-    # Generate timestamp
-    timestamp = time.strftime('%y%m%d_%H%M')
     if seed is None:
         seed = 'batch'
     else:
@@ -1093,28 +1105,32 @@ def generate_results_filepath(seed=None):
 
 
 def record_single_run_results(data: dict) -> str:
-    filepath = generate_results_filepath(SEED)
+    timestamp = time.strftime("%y%m%d-%H%M")
+    report_date = time.strftime("%Y-%m-%d")
+    report_time = time.strftime("%H:%M")
+    filepath = generate_results_filepath(timestamp, SEED)
     # Set seed string for report
     if USE_STATIC_SEED:
-        seed_str = f'Static Seed: {SEED}'
+        seed_name_value_pair = ('Static Seed', SEED)
     else:
-        seed_str = f'Randomly Generated Seed: {SEED}'
+        seed_name_value_pair = ('Randomly Generated Seed', SEED)
     # Set trip string for report
     trip_str = ''
-    time = START_TIME
+    agent_time = START_TIME
     for action in data['actions']:
         if action['agent_mode'] == 'wait':
             # Report wait
-            trip_str += f"\n{format_time(time)} > {action['agent_mode'].capitalize()} ({action['duration']*60:.1f} min)"
+            trip_str += f"\n{format_time(agent_time)} > {action['agent_mode'].capitalize()}   ({action['duration']*60:.1f} min)"
         else:
             # Report bike/walk trip
-            trip_str += f"\n{format_time(time)} > {action['agent_mode'].capitalize()} to {action['end_station']} ({action['duration']*60:.1f} min)"
+            trip_str += f"\n{format_time(agent_time)} > {action['agent_mode'].capitalize()} to {action['end_station']}   ({action['duration']*60:.1f} min)"
             # Report rewards
             if action['rent_reward'] > 0:
                 trip_str += f"\n\tRental Reward: + {action['rent_reward']}"
             if action['return_reward'] > 0:
                 trip_str += f"\n\tReturn Reward: + {action['return_reward']}"
-        time += action['duration']
+        trip_str += "\n"
+        agent_time += action['duration']
     # Determine punctuality
     punc_str = 'Perfect'
     time_left = round(data['time_left'], 2)
@@ -1123,35 +1139,68 @@ def record_single_run_results(data: dict) -> str:
     if time_left < 0:
         punc_str = f'{abs(time_left):.2f} minutes late'
     #------------ Report for frontend -----------
-    report = (
-        f"{filepath}\n" +
-        "\nSingle Run Simulation\n" +
-        f"{seed_str}\n" +
-        f"Runtime: {data['real_time_duration']:.6f} seconds\n" +
-        "\nParameters\n" +
-        f"Agent Mode: {USER_PARAMS['agent_mode'].capitalize()}\n" +
-        f"Start Station: {USER_PARAMS['start_station']}\n" +
-        f"End Station: {USER_PARAMS['end_station']}\n" +
-        f"Excursion Time: {USER_PARAMS['excursion_time']} hours\n" +
-        f"Warmup Time: {USER_PARAMS['warmup_time']} hours\n" +
-        f"Empty Station Bias: {USER_PARAMS['empty_bias']}\n" +
-        f"Full Station Bias: {USER_PARAMS['full_bias']}\n" +
-        "\nResults\n" +
-        f"Total Reward: {data['reward']}\n" +
-        f"Punctuality: {punc_str}\n" +
-        f"Bikes Rented: {data['bike_count']}\n" +
-        f"Total Distance Biked: {data['bike_distance']:.2f} km\n" +
-        f"Total Time Biking: {data['bike_time']:.2f} hours\n" +
-        f"Total Time Walking: {data['walk_time']:.2f} hours\n" +
-        f"Total Time Waiting: {data['wait_time']:.2f} minutes\n" +
-        f"Expected Future Failures: {data['future_system_fail_count']:.2f}\n" +
-        f"\nAgent Actions {trip_str}"
-    )
+    # Use BBCode markdown format for Godot rich text label
+    report = ""
+
+    def add_header(header: str, space_above=True, space_below=True):
+        nonlocal report
+        if space_above:
+            report += "\n"
+        report += f"[center]{header}[/center]"
+        if space_below:
+            report += "\n"
+        
+    def add_table(name_value_pairs):
+        # Loop through values to add rows dynamically
+        nonlocal report
+        report += "[table=2]\n"
+        for name, value in name_value_pairs:
+            report += f"[cell]{name}[/cell][cell padding=50,0,0,0]{value}[/cell]\n"
+        report += "[/table]\n"
+    
+    sim_stats = [
+        ("Date", report_date),
+        ("Time", report_time),
+        seed_name_value_pair,
+        ("Runtime", f"{data['real_time_duration']:.5f} seconds")
+    ]
+    parameters = [
+        ("Agent Mode", USER_PARAMS['agent_mode'].capitalize()),
+        ("Start Station", USER_PARAMS['start_station']),
+        ("End Station", USER_PARAMS['end_station']),
+        ("Excursion Time", f"{USER_PARAMS['excursion_time']} hours"),
+        ("Warmup Time", f"{USER_PARAMS['warmup_time']} hours"),
+        ("Empty Station Bias", USER_PARAMS['empty_bias']),
+        ("Full Station Bias", USER_PARAMS['full_bias'])
+    ]
+    results = [
+        ("Total Reward", f"{data['reward']:.2f}"),
+        ("Punctuality", punc_str),
+        ("Bikes Rented", data['bike_count']),
+        ("Total Distance Biked", f"{data['bike_distance']:.2f} km"),
+        ("Total Time Biking", f"{data['bike_time']:.2f} hours"),
+        ("Total Time Walking", f"{data['walk_time']:.2f} hours"),
+        ("Total Time Waiting", f"{data['wait_time']:.2f} minutes"),
+        ("Expected Future Failures", f"{data['future_system_fail_count']:.2f}")
+    ]
+    
+    add_header("Single Run Simulation", space_above=False)
+    report += f"{filepath}\n"
+    add_table(sim_stats)
+    add_header("Parameters")
+    add_table(parameters)
+    add_header("Results")
+    add_table(results)
+    add_header("Agent Actions", space_below=False)
+    report += trip_str
+
     # Save results
     results = {
         'data' : data,  # Raw sim results
+        'date' : report_date,
+        'time' : report_time,
         'user_parms' : USER_PARAMS,  # User params
-        'report' : report,  # Text for frontend
+        'report' : report,  # BBCode for frontend
     }
     with open(filepath, 'w') as file:
         json.dump(results, file, indent=2)
@@ -1279,10 +1328,14 @@ def record_batch_fixed_results(results) -> str:
 def main():    
     results_filepath = ''
     
+    # If script called from frontend
     if USING_APP:
+        # Disable logging
         global PRINT_BATCH_PROGRESS
         PRINT_BATCH_PROGRESS = False
         logging.disable()
+    
+    # Based on mode, simulate bike share and save results to file
     
     if SIM_MODE == 'single_run':
         logger.setLevel(SINGLE_RUN_LOG_LEVEL)
@@ -1318,9 +1371,11 @@ def main():
             )
             results_filepath = record_batch_fixed_results(results)
 
+    # Print results filepath for frontend
     if USING_APP:
         print(results_filepath, end='')
     
+    # Cleanup
     logging.shutdown()
     
 if __name__ == "__main__":

@@ -1,0 +1,47 @@
+{
+  "data": [
+    {
+      "time_left": -2.0,
+      "bike_count": 33.1,
+      "bike_distance": 18.2,
+      "bike_time": 1.231,
+      "walk_time": 2.741,
+      "wait_time": 3.7,
+      "reward": 13.69,
+      "future_system_fail_count": 115.7
+    },
+    {
+      "time_left": 0.4,
+      "bike_count": 1.1,
+      "bike_distance": 0.2,
+      "bike_time": 0.013,
+      "walk_time": 0.014,
+      "wait_time": 0.43,
+      "reward": 0.43,
+      "future_system_fail_count": 1.6
+    },
+    312,
+    4.977503538131714
+  ],
+  "user_parms": {
+    "absolute_margin_of_error": 0.5,
+    "agent_mode": "basic",
+    "batch_mode": "precision_based",
+    "batch_size": 400,
+    "confidence_level": 0.99,
+    "empty_bias": 0.0,
+    "end_station": 100,
+    "excursion_time": 4.0,
+    "full_bias": 0.0,
+    "max_runtime": 30.0,
+    "min_sample_size": 300,
+    "parallel_batch_size": 12,
+    "relative_margin_of_error": 0.1,
+    "seed": 3158495187,
+    "sim_mode": "batch",
+    "start_station": 32,
+    "use_static_seed": false,
+    "warmup_time": 0.0
+  },
+  "report": "\n[center]Batch Simulation (precision-based)[/center]\nexternal\\results\\250428-1332_batch.json\n[table=2]\n[cell]Date[/cell][cell padding=50,0,0,0]2025-04-28[/cell]\n[cell]Time[/cell][cell padding=50,0,0,0]13:32[/cell]\n[cell]Replication Count[/cell][cell padding=50,0,0,0]312[/cell]\n[cell]Total Runtime[/cell][cell padding=50,0,0,0]4.97750 seconds[/cell]\n[/table]\n\n\n[center]Parameters[/center]\n[table=2]\n[cell]Agent Mode[/cell][cell padding=50,0,0,0]Basic[/cell]\n[cell]Start Station[/cell][cell padding=50,0,0,0]32[/cell]\n[cell]End Station[/cell][cell padding=50,0,0,0]100[/cell]\n[cell]Excursion Time[/cell][cell padding=50,0,0,0]4.0 hours[/cell]\n[cell]Warmup Time[/cell][cell padding=50,0,0,0]0.0 hours[/cell]\n[cell]Empty Station Bias[/cell][cell padding=50,0,0,0]0.0[/cell]\n[cell]Full Station Bias[/cell][cell padding=50,0,0,0]0.0[/cell]\n[cell]Confidence Level[/cell][cell padding=50,0,0,0]0.99[/cell]\n[cell]Parallel Batch Size[/cell][cell padding=50,0,0,0]12[/cell]\n[cell]Min Sample Size[/cell][cell padding=50,0,0,0]300 runs[/cell]\n[/table]\n\n[center]Results[/center]\n(Expected values for a single run)\n[table=2]\n[cell]Total Reward[/cell][cell padding=50,0,0,0]13.69 \u00b1 0.43[/cell]\n[cell]Punctuality[/cell][cell padding=50,0,0,0]2.0 \u00b1 0.4 minutes late[/cell]\n[cell]Bikes Rented[/cell][cell padding=50,0,0,0]33.1 \u00b1 1.1[/cell]\n[cell]Total Bike Distance[/cell][cell padding=50,0,0,0]2.741 \u00b1 0.014 km[/cell]\n[cell]Total Bike Time[/cell][cell padding=50,0,0,0]1.231 \u00b1 0.013 hours[/cell]\n[cell]Total Walk Time[/cell][cell padding=50,0,0,0]2.741 \u00b1 0.014 hours[/cell]\n[cell]Total Wait Time[/cell][cell padding=50,0,0,0]3.7 \u00b1 0.43 minutes[/cell]\n[cell]Expected Future Failures[/cell][cell padding=50,0,0,0]115.7 \u00b1 1.6[/cell]\n[/table]\n"
+}

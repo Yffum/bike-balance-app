@@ -1140,31 +1140,14 @@ def record_single_run_results(data: dict) -> str:
         punc_str = f'{abs(time_left):.2f} minutes late'
     #------------ Report for frontend -----------
     # Use BBCode markdown format for Godot rich text label
-    report = ""
 
-    def add_header(header: str, space_above=True, space_below=True):
-        nonlocal report
-        if space_above:
-            report += "\n"
-        report += f"[center]{header}[/center]"
-        if space_below:
-            report += "\n"
-        
-    def add_table(name_value_pairs):
-        # Loop through values to add rows dynamically
-        nonlocal report
-        report += "[table=2]\n"
-        for name, value in name_value_pairs:
-            report += f"[cell]{name}[/cell][cell padding=50,0,0,0]{value}[/cell]\n"
-        report += "[/table]\n"
-    
-    sim_stats = [
+    sim_stat_pairs = [
         ("Date", report_date),
         ("Time", report_time),
         seed_name_value_pair,
         ("Runtime", f"{data['real_time_duration']:.5f} seconds")
     ]
-    parameters = [
+    parameter_pairs = [
         ("Agent Mode", USER_PARAMS['agent_mode'].capitalize()),
         ("Start Station", USER_PARAMS['start_station']),
         ("End Station", USER_PARAMS['end_station']),
@@ -1173,7 +1156,7 @@ def record_single_run_results(data: dict) -> str:
         ("Empty Station Bias", USER_PARAMS['empty_bias']),
         ("Full Station Bias", USER_PARAMS['full_bias'])
     ]
-    results = [
+    result_pairs = [
         ("Total Reward", f"{data['reward']:.2f}"),
         ("Punctuality", punc_str),
         ("Bikes Rented", data['bike_count']),
@@ -1184,15 +1167,17 @@ def record_single_run_results(data: dict) -> str:
         ("Expected Future Failures", f"{data['future_system_fail_count']:.2f}")
     ]
     
-    add_header("Single Run Simulation", space_above=False)
-    report += f"{filepath}\n"
-    add_table(sim_stats)
-    add_header("Parameters")
-    add_table(parameters)
-    add_header("Results")
-    add_table(results)
-    add_header("Agent Actions", space_below=False)
-    report += trip_str
+    report = (
+        get_bbc_header("Single Run Simulation", space_above=False)
+        + f"[center]{filepath}[/center]\n"
+        + get_bbc_table(sim_stat_pairs)
+        + get_bbc_header("Parameters")
+        + get_bbc_table(parameter_pairs)
+        + get_bbc_header("Results")
+        + get_bbc_table(result_pairs)
+        + get_bbc_header("Agent Actions", space_below=False)
+        + trip_str
+    )
 
     # Save results
     results = {
@@ -1208,7 +1193,10 @@ def record_single_run_results(data: dict) -> str:
 
 
 def record_batch_precision_results(results) -> str:
-    filepath = generate_results_filepath()
+    timestamp = time.strftime("%y%m%d-%H%M")
+    report_date = time.strftime("%Y-%m-%d")
+    report_time = time.strftime("%H:%M")
+    filepath = generate_results_filepath(timestamp)
     means, deltas, replication_count, runtime = results
     # Determine punctuality
     punc_str = 'Perfect'
@@ -1220,38 +1208,49 @@ def record_batch_precision_results(results) -> str:
     # Determine if max time exceeded
     time_exceeded_str = ''
     if runtime > USER_PARAMS['max_runtime']:
-        time_exceeded_str = 'Warning: Max runtime exceeded. Target precision for result estimations not reached.\n'
-    report = (
-        f"{filepath}\n" +
-        "\nBatch Simulation (precision-based)\n" +
-        f"Replication Count: {replication_count}\n" +
-        f"Total Runtime: {runtime:.6f} seconds\n" +
-        time_exceeded_str +
-        "\nParameters\n" +
-        # Run parameters
-        f"Agent Mode: {USER_PARAMS['agent_mode'].capitalize()}\n" +
-        f"Start Station: {USER_PARAMS['start_station']}\n" +
-        f"End Station: {USER_PARAMS['end_station']}\n" +
-        f"Excursion Time: {USER_PARAMS['excursion_time']} hours\n" +
-        f"Warmup Time: {USER_PARAMS['warmup_time']} hours\n" +
-        f"Empty Station Bias: {USER_PARAMS['empty_bias']}\n" +
-        f"Full Station Bias: {USER_PARAMS['full_bias']}\n" +
+        time_exceeded_str = '\nWarning: Max runtime exceeded. Target precision for result estimations not reached.\n'
+    
+    sim_stat_pairs = [
+        ("Date", report_date),
+        ("Time", report_time),
+        ("Replication Count", replication_count),
+        ("Total Runtime", f"{runtime:.5f} seconds"),
+    ]
+    parameter_pairs = [
+        ("Agent Mode", USER_PARAMS['agent_mode'].capitalize()),
+        ("Start Station", USER_PARAMS['start_station']),
+        ("End Station", USER_PARAMS['end_station']),
+        ("Excursion Time", f"{USER_PARAMS['excursion_time']} hours"),
+        ("Warmup Time", f"{USER_PARAMS['warmup_time']} hours"),
+        ("Empty Station Bias", USER_PARAMS['empty_bias']),
+        ("Full Station Bias", USER_PARAMS['full_bias']),
         # Batch parameters
-        f"Confidence Level: {USER_PARAMS['confidence_level']}\n" +
-        f"Parallel Batch Size: {USER_PARAMS['parallel_batch_size']}\n" +
-        # Precision parameters
-        f"Min Sample Size: {USER_PARAMS['min_sample_size']} runs\n" +
-        "\nResults\n" +
-        '(Expected values for a single run)\n' +
-        f"Total Reward: {means['reward']} ± {deltas['reward']}\n" +
-        f"Punctuality: {punc_str}\n" +
-        f"Bikes Rented: {means['bike_count']} ± {deltas['bike_count']}\n" +
-        f"Total Distance Biked: {means['walk_time']} ± {deltas['walk_time']} km\n" +
-        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']} hours\n" +
-        f"Total Time Walking: {means['walk_time']} ± {deltas['walk_time']} hours\n" +
-        f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
-        f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
+        ("Confidence Level", USER_PARAMS['confidence_level']),
+        ("Parallel Batch Size", USER_PARAMS['parallel_batch_size']),
+        ("Min Sample Size", f"{USER_PARAMS['min_sample_size']} runs"),
+    ]
+    result_pairs = [
+        ("Total Reward", f"{means['reward']} ± {deltas['reward']}"),
+        ("Punctuality", punc_str),
+        ("Bikes Rented", f"{means['bike_count']} ± {deltas['bike_count']}"),
+        ("Total Bike Distance", f"{means['bike_distance']} ± {deltas['bike_distance']} km"),
+        ("Total Bike Time", f"{means['bike_time']} ± {deltas['bike_time']} hours"),
+        ("Total Walk Time", f"{means['walk_time']} ± {deltas['walk_time']} hours"),
+        ("Total Wait Time", f"{means['wait_time']} ± {deltas['wait_time']} minutes"),
+        ("Expected Future Failures", f"{means['future_system_fail_count']} ± {deltas['future_system_fail_count']}"),
+    ]
+    report = (
+        get_bbc_header("Batch Simulation (precision-based)", space_above=False)
+        + f"[center]{filepath}[/center]\n"
+        + get_bbc_table(sim_stat_pairs)
+        + f"{time_exceeded_str}"  
+        + get_bbc_header("Parameters")
+        + get_bbc_table(parameter_pairs)
+        + get_bbc_header("Results")
+        + f"[center](Expected values for a single run)[/center]\n"
+        + get_bbc_table(result_pairs)
     )
+    
     # Convert infinite deltas to null
     for key in results[1]:
         if results[1][key] == float('inf'):
@@ -1259,6 +1258,8 @@ def record_batch_precision_results(results) -> str:
     # Save results
     results = {
         'data' : results,  # Raw sim results
+        'date' : report_date,
+        'time' : report_time,
         'user_parms' : USER_PARAMS,  # User params
         'report' : report,  # Text for frontend
     }
@@ -1268,7 +1269,10 @@ def record_batch_precision_results(results) -> str:
     
     
 def record_batch_fixed_results(results) -> str:
-    filepath = generate_results_filepath()
+    timestamp = time.strftime("%y%m%d-%H%M")
+    report_date = time.strftime("%Y-%m-%d")
+    report_time = time.strftime("%H:%M")
+    filepath = generate_results_filepath(timestamp)
     means, deltas, replication_count, runtime = results
     # Determine punctuality
     punc_str = 'Perfect'
@@ -1280,36 +1284,48 @@ def record_batch_fixed_results(results) -> str:
     # Determine if max time exceeded
     time_exceeded_str = ''
     if runtime > USER_PARAMS['max_runtime'] and replication_count < USER_PARAMS['batch_size']:
-        time_exceeded_str = 'Warning: Max runtime exceeded. Target sample size not reached.\n'
-    report = (
-        f"{filepath}\n" +
-        "\nBatch Simulation (fixed sample size)\n" +
-        f"Replication Count: {replication_count}\n" +
-        f"Total Runtime: {runtime:.6f} seconds\n" +
-        time_exceeded_str +
-        "\nParameters\n" +
-        # Run parameters
-        f"Agent Mode: {USER_PARAMS['agent_mode'].capitalize()}\n" +
-        f"Start Station: {USER_PARAMS['start_station']}\n" +
-        f"End Station: {USER_PARAMS['end_station']}\n" +
-        f"Excursion Time: {USER_PARAMS['excursion_time']} hours\n" +
-        f"Warmup Time: {USER_PARAMS['warmup_time']} hours\n" +
-        f"Empty Station Bias: {USER_PARAMS['empty_bias']}\n" +
-        f"Full Station Bias: {USER_PARAMS['full_bias']}\n" +
+        time_exceeded_str = '\nWarning: Max runtime exceeded. Target sample size not reached.\n'
+    
+    sim_stat_pairs = [
+        ("Date", report_date),
+        ("Time", report_time),
+        ("Replication Count", replication_count),
+        ("Total Runtime", f"{runtime:.5f} seconds"),
+    ]
+    parameter_pairs = [
+        ("Agent Mode", USER_PARAMS['agent_mode'].capitalize()),
+        ("Start Station", USER_PARAMS['start_station']),
+        ("End Station", USER_PARAMS['end_station']),
+        ("Excursion Time", f"{USER_PARAMS['excursion_time']} hours"),
+        ("Warmup Time", f"{USER_PARAMS['warmup_time']} hours"),
+        ("Empty Station Bias", USER_PARAMS['empty_bias']),
+        ("Full Station Bias", USER_PARAMS['full_bias']),
         # Batch parameters
-        f"Confidence Level: {USER_PARAMS['confidence_level']}\n" +
-        f"Parallel Batch Size: {USER_PARAMS['parallel_batch_size']}\n" +
-        "\nResults\n" +
-        '(Expected values for a single run)\n' +
-        f"Total Reward: {means['reward']} ± {deltas['reward']}\n" +
-        f"Punctuality: {punc_str}\n" +
-        f"Bikes Rented: {means['bike_count']} ± {deltas['bike_count']}\n" +
-        f"Total Distance Biked: {means['walk_time']} ± {deltas['walk_time']} km\n" +
-        f"Total Time Biking: {means['bike_time']} ± {deltas['bike_time']} hours\n" +
-        f"Total Time Walking: {means['walk_time']} ± {deltas['walk_time']} hours\n" +
-        f"Total Time Waiting: {means['wait_time']} ± {deltas['wait_time']} minutes\n" +
-        f"Expected Future Failures: {means['future_system_fail_count']} ± {deltas['future_system_fail_count']}\n"
+        ("Confidence Level", USER_PARAMS['confidence_level']),
+        ("Parallel Batch Size", USER_PARAMS['parallel_batch_size']),
+    ]
+    result_pairs = [
+        ("Total Reward", f"{means['reward']} ± {deltas['reward']}"),
+        ("Punctuality", punc_str),
+        ("Bikes Rented", f"{means['bike_count']} ± {deltas['bike_count']}"),
+        ("Total Bike Distance", f"{means['bike_distance']} ± {deltas['bike_distance']} km"),
+        ("Total Bike Time", f"{means['bike_time']} ± {deltas['bike_time']} hours"),
+        ("Total Walk Time", f"{means['walk_time']} ± {deltas['walk_time']} hours"),
+        ("Total Wait Time", f"{means['wait_time']} ± {deltas['wait_time']} minutes"),
+        ("Expected Future Failures", f"{means['future_system_fail_count']} ± {deltas['future_system_fail_count']}"),
+    ]
+    report = (
+        get_bbc_header("Batch Simulation (fixed sample size)", space_above=False)
+        + f"[center]{filepath}[/center]\n"
+        + get_bbc_table(sim_stat_pairs)
+        + f"{time_exceeded_str}"  
+        + get_bbc_header("Parameters")
+        + get_bbc_table(parameter_pairs)
+        + get_bbc_header("Results")
+        + f"[center](Expected values for a single run)[/center]\n"
+        + get_bbc_table(result_pairs)
     )
+    
     # Convert infinite deltas to null
     for key in results[1]:
         if results[1][key] == float('inf'):
@@ -1317,12 +1333,41 @@ def record_batch_fixed_results(results) -> str:
     # Save results
     results = {
         'data' : results,  # Raw sim results
+        'data' : report_date,
+        'time' : report_time,
         'user_parms' : USER_PARAMS,  # User params
         'report' : report,  # Text for frontend
     }
     with open(filepath, 'w') as file:
         json.dump(results, file, indent=2)
     return filepath
+
+
+def get_bbc_header(header: str, space_above=True, space_below=True) -> str:
+    """ Returns a string for the given header, formatted in BBCode.
+    Args:
+        header (str): the text for the header
+        space_above (bool): if True add leading newline
+        space_below (bool): if True add trailing newline
+    """
+    text = ''
+    if space_above:
+        text += "\n"
+    text += f"[center]{header}[/center]"
+    if space_below:
+        text += "\n"
+    return text
+    
+    
+def get_bbc_table(name_value_pairs) -> str:
+    """ Takes a list of name-value tuples, and returns the string for
+    a two column BBCode table. """
+    text = ''
+    text += "[table=2]\n"
+    for name, value in name_value_pairs:
+        text += f"[cell]{name}[/cell][cell padding=50,0,0,0]{value}[/cell]\n"
+    text += "[/table]\n"
+    return text
 
     
 def main():    

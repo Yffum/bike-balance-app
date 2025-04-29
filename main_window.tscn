@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=19 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -14,6 +14,8 @@
 [ext_resource type="Script" uid="uid://d1hwt2xwxkual" path="res://sim_controller.gd" id="9_5y2nw"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0oce6"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_0oce6"]
 font_size = 32
@@ -71,7 +73,7 @@ script = ExtResource("1_eqarp")
 
 [node name="SubViewport" type="SubViewport" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer"]
 handle_input_locally = false
-size = Vector2i(1297, 951)
+size = Vector2i(1297, 950)
 size_2d_override = Vector2i(1, 1)
 render_target_update_mode = 4
 
@@ -618,13 +620,13 @@ theme_override_font_sizes/font_size = 16
 text = "Replications will stop once max runtime is reached, or margin of error is below a given bound (relative or absolute) for every statitistic. Lower runtime by increasing margin of error and/or decreasing confidence level."
 autowrap_mode = 3
 
-[node name="Log" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
+[node name="Results" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 visible = false
 layout_mode = 2
 horizontal_scroll_mode = 0
 metadata/_tab_index = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -633,10 +635,15 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log/MarginContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results/MarginContainer"]
 layout_mode = 2
+focus_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0oce6")
 bbcode_enabled = true
-text = "The log of the last simulation run will display here."
+text = "The results of the last simulation run will display here."
+fit_content = true
+context_menu_enabled = true
+selection_enabled = true
 
 [node name="StationTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
@@ -1021,10 +1028,10 @@ script = ExtResource("9_1rr46")
 [node name="SimController" type="Node" parent="." node_paths=PackedStringArray("param_ctrl", "log_label", "run_button", "spinner", "log_tab")]
 script = ExtResource("9_5y2nw")
 param_ctrl = NodePath("../ParamController")
-log_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log/MarginContainer/RichTextLabel")
+log_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results/MarginContainer/RichTextLabel")
 run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton")
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
-log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Log")
+log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
 
 [node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count")]
 script = ExtResource("4_guodr")

@@ -1,5 +1,6 @@
 # Project-specific ignores
 external/logs/*.log
+external/results/*.json
 
 #------------------------------------------------------------
 

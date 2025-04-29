@@ -1120,10 +1120,10 @@ def record_single_run_results(data: dict) -> str:
     for action in data['actions']:
         if action['agent_mode'] == 'wait':
             # Report wait
-            trip_str += f"\n{format_time(agent_time)} > {action['agent_mode'].capitalize()}   ({action['duration']*60:.1f} min)"
+            trip_str += f"\n{format_time(agent_time)}, {action['agent_mode'].capitalize()}   ({action['duration']*60:.1f} min)"
         else:
             # Report bike/walk trip
-            trip_str += f"\n{format_time(agent_time)} > {action['agent_mode'].capitalize()} to {action['end_station']}   ({action['duration']*60:.1f} min)"
+            trip_str += f"\n{format_time(agent_time)}, {action['agent_mode'].capitalize()} to {action['end_station']}   ({action['duration']*60:.1f} min)"
             # Report rewards
             if action['rent_reward'] > 0:
                 trip_str += f"\n\tRental Reward: + {action['rent_reward']}"
@@ -1353,7 +1353,11 @@ def get_bbc_header(header: str, space_above=True, space_below=True) -> str:
     text = ''
     if space_above:
         text += "\n"
-    text += f"[center]{header}[/center]"
+    # Outline to make bold
+    boldness = 1
+    # Font bt is bottom spacing (number of pixels padded below header, not including trailing newline)
+    lower_padding = 5
+    text += f"[center][outline_size={boldness}][outline_color=white][font bt={lower_padding}]{header}[/font][/outline_color][/outline_size][/center]"
     if space_below:
         text += "\n"
     return text

@@ -47,16 +47,26 @@ extends Node
 @export var final_incentive : Label
 @export var agent_rent_count : Label
 @export var agent_return_count : Label
+@export var results_incentive_label : Label
+@export var start_end_station_label : Label
+
+#----------- Panels ----------
+@export var results_tab : Node
+@export var station_results_panel : Node
+@export var start_end_station_switches : Node
 
 var sim_params : Dictionary
 var incentives : Array  # incentives[<station>][<bike_count>]
 var station_names : Array
 var station_ids : Array
+var results_are_loaded := false
+var station_results : Dictionary
 
 signal sim_and_batch_modes_initialized(sim_mode : int, batch_mode : int)
 signal station_selected(station : int)
 signal start_station_set(station : int)
 signal end_station_set(station : int)
+
 
 func _on_tools_external_paths_set():
 	sim_params = Tools.load_json_dict(Tools.SIM_PARAMS_PATH)
@@ -65,7 +75,8 @@ func _on_tools_external_paths_set():
 	station_ids = Tools.load_json_array(Tools.STATION_IDS_PATH)
 	_initialize_user_params()
 	station_spinbox.get_child(0, true).text = 'Select station'
-	
+
+
 func _initialize_user_params():
 	var params = Tools.load_json_dict(Tools.USER_PARAMS_PATH)
 	if params.is_empty():
@@ -77,7 +88,8 @@ func _initialize_user_params():
 	else:
 		_load_user_params(params)
 		print("Parameters loaded from %s" % Tools.USER_PARAMS_PATH)
-		
+
+
 ## Loads parameters to interface
 func _load_user_params(params : Dictionary):
 	#--------- Agent Parameters --------
@@ -122,10 +134,12 @@ func _load_user_params(params : Dictionary):
 	# Set up interface
 	sim_and_batch_modes_initialized.emit(sim_mode.selected, batch_mode.selected)
 
+
 ## Sets parameters to default values
 func reset_user_params():
 	var params = Tools.load_json_dict(Tools.DEFAULT_USER_PARAMS_PATH)
 	_load_user_params(params)
+
 
 ## Saves parameters to file
 func save_user_params():
@@ -168,8 +182,11 @@ func save_user_params():
 	# Save to file
 	Tools.save_json(Tools.USER_PARAMS_PATH, params)
 
+
 ## Sets the station parameters in the UI for the given station
 func set_station_params(station : int):
+	if results_are_loaded:
+		_set_station_results(station)
 	# Set checkbox if station is start
 	if station == start_station.value:
 		is_start_station.button_pressed = true
@@ -202,13 +219,53 @@ func set_station_params(station : int):
 		incentive_str = '(Return)'
 	initial_incentive_type.text = incentive_str
 
+
+## Reveals stations results in the station tab
+func show_station_results():
+	station_results_panel.visible = results_are_loaded
+	start_end_station_switches.visible = false
+
+
+## Hides station results in the station tab
+func hide_station_results():
+	station_results_panel.visible = false
+	start_end_station_switches.visible = true
+
+
+## Set station results in the UI for the given station
+func _set_station_results(station : int):
+	final_bike_count.text = str(int(station_results['final_bike_counts'][station]))
+	final_incentive.text = str(station_results['final_incentives'][station])
+	agent_rent_count.text = str(int(station_results['rent_counts'][station]))
+	agent_return_count.text = str(int(station_results['return_counts'][station]))
+	# Set incentive label
+	if station_results['final_incentives'][station] < 0:
+		results_incentive_label.text = '(Rent)'
+	elif station_results['final_incentives'][station] > 0: 
+		results_incentive_label.text = '(Return)'
+	else:
+		results_incentive_label.text = ''
+	# Set start station label
+	start_end_station_label.visible = true
+	if station == station_results['start_station'] and station == station_results['end_station']:
+		start_end_station_label.text = "(Start/End Station)"
+	elif station == station_results['start_station']:
+		start_end_station_label.text = "(Start Station)"
+	elif station == station_results['end_station']:
+		start_end_station_label.text = "(End Station)"
+	else:
+		start_end_station_label.visible = false
+
+
 func _set_start_station(station : int):
 	start_station.value = station
 	start_station_set.emit(station)
-	
+
+
 func _set_end_station(station: int):
 	end_station.value = station
 	end_station_set.emit(station)
+
 
 ## Update station params when map station selected
 func _on_map_controller_station_selected(station):
@@ -217,11 +274,13 @@ func _on_map_controller_station_selected(station):
 	station_spinbox.value = station
 	set_station_params(station)
 
+
 ## Update station params when spinbox value changed
 func _on_station_spinbox_value_changed(value):
 	no_station_selected.visible = false
 	station_content.visible = true
 	set_station_params(value)
+
 
 ## Activate station panel when spinbox is clicked
 func _on_station_spinbox_gui_input(event):
@@ -239,14 +298,36 @@ func _on_start_station_spinbox_value_changed(value):
 func _on_end_station_spinbox_value_changed(value):
 	_set_end_station(value)
 
+
 ## Set start station to selected station
 func _on_is_start_station_toggled(toggled_on):
 	if toggled_on:
 		is_start_station.disabled = true
 		_set_start_station(station_spinbox.value)
 
+
 ## Set End station to selected station
 func _on_is_end_station_toggled(toggled_on):
 	if toggled_on:
 		is_end_station.disabled = true
 		_set_end_station(station_spinbox.value)
+
+
+func _on_station_results_loaded(results):
+	results_are_loaded = true
+	station_results = results
+	_set_station_results(station_spinbox.value)
+	show_station_results()
+
+
+func _on_batch_results_loaded():
+	results_are_loaded = false
+	show_station_results()
+
+
+func _on_settings_tab_changed(tab):
+	#if results_tab.visible == true:
+	if tab == 2:
+		show_station_results()
+	else:
+		hide_station_results()

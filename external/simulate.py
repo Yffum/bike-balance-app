@@ -1114,9 +1114,12 @@ def record_single_run_results(data: dict) -> str:
         seed_name_value_pair = ('Static Seed', SEED)
     else:
         seed_name_value_pair = ('Randomly Generated Seed', SEED)
-    # Set trip string for report
+    # Set trip string for report, and get station visits
     trip_str = ''
+    rent_counts = [0] * N  # Indexed by station
+    return_counts = [0] * N
     agent_time = START_TIME
+    prev_station = START_STATION
     for action in data['actions']:
         if action['agent_mode'] == 'wait':
             # Report wait
@@ -1129,8 +1132,15 @@ def record_single_run_results(data: dict) -> str:
                 trip_str += f"\n\tRental Reward: + {action['rent_reward']}"
             if action['return_reward'] > 0:
                 trip_str += f"\n\tReturn Reward: + {action['return_reward']}"
+            # Count station visit
+            if action['agent_mode'] == 'bike':
+                rent_counts[prev_station] += 1
+                return_counts[action['end_station']] += 1
         trip_str += "\n"
         agent_time += action['duration']
+        prev_station = action['end_station']
+    data['rent_counts'] = rent_counts
+    data['return_counts'] = return_counts
     # Determine punctuality
     punc_str = 'Perfect'
     time_left = round(data['time_left'], 2)
@@ -1184,7 +1194,7 @@ def record_single_run_results(data: dict) -> str:
         'data' : data,  # Raw sim results
         'date' : report_date,
         'time' : report_time,
-        'user_parms' : USER_PARAMS,  # User params
+        'user_params' : USER_PARAMS,  # User params
         'report' : report,  # BBCode for frontend
     }
     with open(filepath, 'w') as file:
@@ -1260,7 +1270,7 @@ def record_batch_precision_results(results) -> str:
         'data' : results,  # Raw sim results
         'date' : report_date,
         'time' : report_time,
-        'user_parms' : USER_PARAMS,  # User params
+        'user_params' : USER_PARAMS,  # User params
         'report' : report,  # Text for frontend
     }
     with open(filepath, 'w') as file:
@@ -1335,7 +1345,7 @@ def record_batch_fixed_results(results) -> str:
         'data' : results,  # Raw sim results
         'data' : report_date,
         'time' : report_time,
-        'user_parms' : USER_PARAMS,  # User params
+        'user_params' : USER_PARAMS,  # User params
         'report' : report,  # Text for frontend
     }
     with open(filepath, 'w') as file:

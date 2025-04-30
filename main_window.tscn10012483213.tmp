@@ -12,7 +12,6 @@
 [ext_resource type="Script" uid="uid://tphp00oas6w3" path="res://UI/batch_controller.gd" id="8_0oce6"]
 [ext_resource type="Script" uid="uid://bbvq1vxl5x7rc" path="res://settings.gd" id="9_1rr46"]
 [ext_resource type="Script" uid="uid://d1hwt2xwxkual" path="res://sim_controller.gd" id="9_5y2nw"]
-[ext_resource type="LabelSettings" uid="uid://bceklmquggeup" path="res://UI/title_label_settings.tres" id="9_o2qoy"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
 
@@ -20,15 +19,19 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_o2qoy"]
 
+[sub_resource type="LabelSettings" id="LabelSettings_0oce6"]
+font_size = 32
+
 [sub_resource type="Theme" id="Theme_o2qoy"]
-default_font_size = 22
+default_font_size = 20
 LineEdit/styles/normal = null
 
 [sub_resource type="LabelSettings" id="LabelSettings_l06f4"]
 font_size = 24
 font_color = Color(0.784314, 0.784314, 0.784314, 1)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6y3r0"]
+[sub_resource type="LabelSettings" id="LabelSettings_o2qoy"]
+font_size = 20
 
 [node name="MainWindow" type="ColorRect"]
 anchors_preset = 15
@@ -191,6 +194,7 @@ split_offset = 531
 layout_mode = 2
 current_tab = 3
 clip_tabs = false
+drag_to_rearrange_enabled = true
 
 [node name="Agent" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 visible = false
@@ -715,10 +719,10 @@ alignment = 1
 visible = false
 layout_mode = 2
 text = "        Station  "
-label_settings = ExtResource("9_o2qoy")
+label_settings = SubResource("LabelSettings_0oce6")
 
 [node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation"]
-custom_minimum_size = Vector2(190, 0)
+custom_minimum_size = Vector2(185.465, 0)
 layout_mode = 2
 size_flags_vertical = 4
 theme = SubResource("Theme_o2qoy")
@@ -763,166 +767,13 @@ layout_mode = 2
 [node name="StationName" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
 layout_mode = 2
 text = "station_name"
-label_settings = ExtResource("9_o2qoy")
+label_settings = SubResource("LabelSettings_o2qoy")
 horizontal_alignment = 1
 
 [node name="ColorRect" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
 custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(1, 1, 1, 0)
-
-[node name="StationResults" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
-layout_mode = 2
-
-[node name="Results" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults"]
-layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 0
-
-[node name="ColorRect" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results"]
-layout_mode = 2
-color = Color(0.137255, 0.137255, 0.137255, 1)
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results"]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "Station Results"
-horizontal_alignment = 1
-
-[node name="StartEndLabel" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 10
-theme_override_styles/separator = SubResource("StyleBoxEmpty_6y3r0")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Stats" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-
-[node name="EndBikeCount" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/EndBikeCount"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Final Bike Count"
-horizontal_alignment = 2
-
-[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/EndBikeCount"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-text = "null"
-horizontal_alignment = 2
-
-[node name="FinalIncentive" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/FinalIncentive"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Final Incentive"
-horizontal_alignment = 2
-
-[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/FinalIncentive"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-text = "null"
-horizontal_alignment = 2
-
-[node name="AgentRentCount" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentRentCount"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Agent Rental Count"
-horizontal_alignment = 2
-
-[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentRentCount"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-text = "null"
-horizontal_alignment = 2
-
-[node name="AgentReturnCount" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentReturnCount"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Agent Return Count"
-horizontal_alignment = 2
-
-[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentReturnCount"]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-text = "null"
-horizontal_alignment = 2
-
-[node name="Units" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-
-[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2"]
-layout_mode = 2
-text = "bikes"
-
-[node name="IncentiveTypeLabel" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2"]
-layout_mode = 2
-text = "<incentive_type>"
-
-[node name="Label3" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "bikes"
-
-[node name="Label4" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "bikes"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer"]
-visible = false
-layout_mode = 2
-
-[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "Log Filepath: "
-
-[node name="LogFilepath" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "Path not found"
-
-[node name="HSeparator2" type="HSeparator" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults"]
-layout_mode = 2
-theme_override_constants/separation = 10
-theme_override_styles/separator = SubResource("StyleBoxEmpty_6y3r0")
 
 [node name="StationStats" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
 layout_mode = 2
@@ -1089,6 +940,130 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 color = Color(1, 1, 1, 0)
 
+[node name="StationResults" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent"]
+layout_mode = 2
+current_tab = 0
+tabs_visible = false
+
+[node name="Results" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer"]
+layout_mode = 2
+text = "Station Results"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="EndBikeCount" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/EndBikeCount"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Final Bike Count"
+horizontal_alignment = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/EndBikeCount"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "null"
+horizontal_alignment = 2
+
+[node name="FinalIncentive" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/FinalIncentive"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Final Incentive"
+horizontal_alignment = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/FinalIncentive"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "null"
+horizontal_alignment = 2
+
+[node name="AgentRentCount" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/AgentRentCount"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Agent Rental Count"
+horizontal_alignment = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/AgentRentCount"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "null"
+horizontal_alignment = 2
+
+[node name="AgentReturnCount" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/AgentReturnCount"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Agent Return Count"
+horizontal_alignment = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/AgentReturnCount"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "null"
+horizontal_alignment = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Log Filepath: "
+
+[node name="LogFilepath" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Path not found"
+
+[node name="NoResults" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+metadata/_tab_index = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/NoResults"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+text = "Station-specific results of the last run simulation will appear here."
+label_settings = SubResource("LabelSettings_l06f4")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
 [node name="Tools" type="Node" parent="."]
 script = ExtResource("5_bfu0d")
 
@@ -1103,7 +1078,7 @@ run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxCo
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
 log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
 
-[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_incentive_label", "start_end_station_label", "results_tab", "station_results_panel", "start_end_station_switches")]
+[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_tab", "station_results_panel", "start_end_station_switches")]
 script = ExtResource("4_guodr")
 start_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox")
 end_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox")
@@ -1137,12 +1112,10 @@ initial_bike_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPan
 max_bike_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/StartBikeCount/HBoxContainer/Capacity")
 initial_incentive = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer/Initial Incentive/Label2")
 initial_incentive_type = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationStats/HBoxContainer/VBoxContainer2/Label4")
-final_bike_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/EndBikeCount/Label2")
-final_incentive = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/FinalIncentive/Label2")
-agent_rent_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentRentCount/Label2")
-agent_return_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentReturnCount/Label2")
-results_incentive_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/IncentiveTypeLabel")
-start_end_station_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/StartEndLabel")
+final_bike_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/EndBikeCount/Label2")
+final_incentive = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/FinalIncentive/Label2")
+agent_rent_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/AgentRentCount/Label2")
+agent_return_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/AgentReturnCount/Label2")
 results_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
 station_results_panel = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults")
 start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches")

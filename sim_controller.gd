@@ -10,6 +10,8 @@ var python_command_str = 'python3'
 
 var thread : Thread
 
+signal station_results_loaded(results : Dictionary)
+signal station_batch_results_loaded()
 
 func _notification(what):
 	# On application close:
@@ -26,7 +28,6 @@ func _notification(what):
 func _ready():
 	# Set intreface scale
 	get_tree().root.content_scale_factor = 1.0
-	
 	thread = Thread.new()
 
 
@@ -171,6 +172,19 @@ func _handle_sim_end(results_path : String):
 	var results : Dictionary = Tools.load_json_dict(results_path)
 	# Write log text to panel
 	log_label.text = results['report']
+	# Save station results if single run
+	if results['user_params']['sim_mode'] == 'single_run':
+		var station_results := {
+			'final_bike_counts' : results['data']['final_bike_counts'],
+			'final_incentives' : results['data']['final_incentives'],
+			'rent_counts' : results['data']['rent_counts'],
+			'return_counts' : results['data']['return_counts'],
+			'start_station' : results['user_params']['start_station'],
+			'end_station' : results['user_params']['end_station'],
+		}
+		station_results_loaded.emit(station_results)
+	else:
+		station_batch_results_loaded.emit()
 	thread.wait_to_finish()
 	# Enable run button, set spinner
 	run_button.disabled = false

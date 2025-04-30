@@ -46,10 +46,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer"]
 layout_mode = 2
-split_offset = 1317
+split_offset = 1200
 
 [node name="MarginLeftPanel" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 clip_contents = true
@@ -57,48 +61,53 @@ layout_mode = 2
 theme = SubResource("Theme_tyee0")
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_right = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel"]
 layout_mode = 2
 
-[node name="MapContainer" type="SubViewportContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+
+[node name="MapContainer" type="SubViewportContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer"]
 clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
 stretch = true
 script = ExtResource("1_eqarp")
 
-[node name="SubViewport" type="SubViewport" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer"]
+[node name="SubViewport" type="SubViewport" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer"]
 handle_input_locally = false
-size = Vector2i(1297, 950)
+size = Vector2i(1175, 930)
 size_2d_override = Vector2i(1, 1)
 render_target_update_mode = 4
 
-[node name="Camera2D" type="Camera2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport" node_paths=PackedStringArray("map_sprite", "map_controller")]
+[node name="Camera2D" type="Camera2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("map_sprite", "map_controller")]
 script = ExtResource("2_sq7ho")
 map_sprite = NodePath("../MapController/Map")
 map_controller = NodePath("../MapController")
 
-[node name="MapController" type="Node" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport" node_paths=PackedStringArray("markers_container", "camera")]
+[node name="MapController" type="Node" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("markers_container", "camera")]
 script = ExtResource("2_l06f4")
 markers_container = NodePath("Markers")
 camera = NodePath("../Camera2D")
 
-[node name="Map" type="Sprite2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController"]
+[node name="Map" type="Sprite2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController"]
 modulate = Color(0.470076, 0.470076, 0.470076, 1)
 scale = Vector2(2, 2)
 texture = ExtResource("2_tyee0")
 
-[node name="Markers" type="Node" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController"]
+[node name="Markers" type="Node" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController"]
 
 [node name="RunBar" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
+theme_override_constants/margin_left = 30
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
@@ -178,7 +187,7 @@ metadata/_custom_type_script = "uid://q5g8pul385u7"
 [node name="MarginRightPanel" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 layout_mode = 2
 theme = SubResource("Theme_tyee0")
-theme_override_constants/margin_left = 10
+theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
@@ -733,6 +742,11 @@ custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
 color = Color(0.137255, 0.137255, 0.137255, 1)
 
+[node name="ColorRect4" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+color = Color(0.2, 0.2, 0.2, 1)
+
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -1147,9 +1161,9 @@ results_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSpl
 station_results_panel = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults")
 start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches")
 
-[connection signal="mouse_entered" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_entered"]
-[connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]
-[connection signal="station_selected" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController" to="ParamController" method="_on_map_controller_station_selected"]
+[connection signal="mouse_entered" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]
+[connection signal="station_selected" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" to="ParamController" method="_on_map_controller_station_selected"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton" to="SimController" method="_on_run_button_pressed"]
 [connection signal="tab_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" to="ParamController" method="_on_settings_tab_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox" to="ParamController" method="_on_start_station_spinbox_value_changed"]
@@ -1159,14 +1173,14 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_button_pressed"]
 [connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_batch_mode_selected"]
 [connection signal="gui_input" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_gui_input"]
-[connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController" method="_on_station_spinbox_value_changed"]
+[connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_station_spinbox_value_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_value_changed"]
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsStartStation/CheckButton" to="ParamController" method="_on_is_start_station_toggled"]
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsEndStation/CheckButton" to="ParamController" method="_on_is_end_station_toggled"]
 [connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]
 [connection signal="station_batch_results_loaded" from="SimController" to="ParamController" method="_on_batch_results_loaded"]
 [connection signal="station_results_loaded" from="SimController" to="ParamController" method="_on_station_results_loaded"]
-[connection signal="end_station_set" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController" method="_on_end_station_set"]
+[connection signal="end_station_set" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_end_station_set"]
 [connection signal="sim_and_batch_modes_initialized" from="ParamController" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_param_controller_sim_and_batch_modes_initialized"]
-[connection signal="start_station_set" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController" method="_on_start_station_set"]
-[connection signal="station_selected" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MapContainer/SubViewport/MapController" method="_on_param_controller_station_selected"]
+[connection signal="start_station_set" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_start_station_set"]
+[connection signal="station_selected" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_param_controller_station_selected"]

@@ -234,7 +234,9 @@ func hide_station_results():
 
 ## Set station results in the UI for the given station
 func _set_station_results(station : int):
-	final_bike_count.text = str(int(station_results['final_bike_counts'][station]))
+	var capacity := str(int(sim_params['capacities'][station]))
+	var bike_count := str(int(station_results['final_bike_counts'][station]))
+	final_bike_count.text = bike_count + ' / ' + capacity
 	final_incentive.text = str(station_results['final_incentives'][station])
 	agent_rent_count.text = str(int(station_results['rent_counts'][station]))
 	agent_return_count.text = str(int(station_results['return_counts'][station]))

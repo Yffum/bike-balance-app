@@ -7,6 +7,8 @@ import os
 from queue import PriorityQueue
 import bisect
 import sys
+import io
+import re
 
 import numpy as np
 
@@ -187,6 +189,30 @@ DEBUG_END_TIME = 17 + 30/60
 
 WRITE_LOG_FILE = False
 
+# Initialize logger
+logger = logging.getLogger(__name__)
+logger.setLevel(SINGLE_RUN_LOG_LEVEL) 
+# Create string buffer for single run report
+LOG_STREAM = io.StringIO()
+EXCURSION_DELIMITER = '$'  # Marks beginning and end of excursion in log
+
+# If script called from frontend
+if USING_APP:
+    PRINT_BATCH_PROGRESS = False
+    # Use log stream for single run report
+    if SIM_MODE == 'single_run':
+        stream_handler = logging.StreamHandler(LOG_STREAM)
+        stream_handler.setLevel(logging.DEBUG)
+        logger.addHandler(stream_handler)
+    # Disable log for batch
+    else:
+        logging.disable()
+# Script called directly, use console stream
+else:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    logger.addHandler(console_handler)
+    
 def generate_log_filepath(seed):
     """ Generates a log filepath in the format data/YYMMDD_HHMM_s<seed>.log """
     log_dir = os.path.join(BASE_PATH[:-1], 'logs')
@@ -214,19 +240,12 @@ def generate_log_filepath(seed):
 
     return os.path.join(log_dir, filename)
 
-LOG_FILEPATH = generate_log_filepath(SEED)
-
-# Initialize logger
-logger = logging.getLogger(__name__)
-logger.setLevel(SINGLE_RUN_LOG_LEVEL) 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-logger.addHandler(console_handler)
 if WRITE_LOG_FILE:
-    file_handler = logging.FileHandler(LOG_FILEPATH, encoding='utf-8')
+    filepath = generate_log_filepath(SEED)
+    file_handler = logging.FileHandler(filepath, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
-
+        
 #============================================================================================
 
 @dataclass(frozen=True)
@@ -870,6 +889,7 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
     #----------------------------- Start Simulation ----------------------------------
     logger.info(f'---------- Starting Excursion -----------')
     logger.info(f'Warmup time: {WARM_UP_TIME} hours\nStart time: {format_time(START_TIME)} \nExcursion time: {agent.end_time - START_TIME} hours\n')
+    logger.info(EXCURSION_DELIMITER)
     # Each iteration corresponds to one trip (or wait) from the agent
     has_time_for_trip = True
     while has_time_for_trip:
@@ -1047,6 +1067,7 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
     future_system_fail_count = np.sum([FAIL_COUNTS[station][bike_counts[station]] for station in range(N)])
     # Report simulation data
     logger.info(f"> {agent.station} ({format_time(current_time)})")
+    logger.info(EXCURSION_DELIMITER)
     logger.info(f'\n---------- Excursion Complete ----------')
     logger.info(f'End time: {format_time(current_time)}')
     logger.info(f'Final station: {agent.station}')
@@ -1177,6 +1198,18 @@ def record_single_run_results(data: dict) -> str:
         ("Expected Future Failures", f"{data['future_system_fail_count']:.2f}")
     ]
     
+    # Get excursion log with list of actions
+    excursion_str = ''
+    if USING_APP:
+        log_str = LOG_STREAM.getvalue()
+        delim = re.escape(EXCURSION_DELIMITER)
+        pattern = rf"{delim}([^{delim}]+){delim}"
+        match = re.search(pattern, log_str)
+        if match:
+            excursion_str = match.group(1)
+        else:
+            logger.error(f"{ERROR} No excursion delimiter pair ('{EXCURSION_DELIMITER} ... {EXCURSION_DELIMITER}') found in log stream.")
+    
     report = (
         get_bbc_header("Single Run Simulation", space_above=False)
         + f"[center]{filepath}[/center]\n"
@@ -1186,7 +1219,7 @@ def record_single_run_results(data: dict) -> str:
         + get_bbc_header("Results")
         + get_bbc_table(result_pairs)
         + get_bbc_header("Agent Actions", space_below=False)
-        + trip_str
+        + excursion_str
     )
 
     # Save results
@@ -1386,13 +1419,6 @@ def get_bbc_table(name_value_pairs) -> str:
     
 def main():    
     results_filepath = ''
-    
-    # If script called from frontend
-    if USING_APP:
-        # Disable logging
-        global PRINT_BATCH_PROGRESS
-        PRINT_BATCH_PROGRESS = False
-        logging.disable()
     
     # Based on mode, simulate bike share and save results to file
     

@@ -19,9 +19,12 @@
 - [ ] Add station agnostic batch setting that randomly sets input start/end stations
 
 
-- [ ] Refine results tab
-- [ ] Add station results
+- [x] Refine results tab
+- [x] Add station results
 - [ ] Add map results
+
+- [x] set station tab when start/end station changes in agent tab
+- [ ] 
   
 Results tab
 -> show station results, hide station info (or just hide switch buttons)

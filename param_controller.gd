@@ -201,7 +201,6 @@ func set_station_params(station : int):
 	else:
 		is_end_station.button_pressed = false
 		is_end_station.disabled = false
-	
 	var PRECISION = 0.01
 	station_name.text = station_names[station]
 	station_id.text = str(int(station_ids[station]))

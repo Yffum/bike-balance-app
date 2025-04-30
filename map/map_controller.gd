@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 
 const MAP_WIDTH = 1775
 const MAP_HEIGHT = 1594
@@ -22,6 +22,11 @@ var selected_station : int = -1
 var start_station : int = -1
 var end_station : int = -1
 
+# Map paths
+var bike_paths : Array
+var walk_paths : Array
+@export var path_drawer : Node2D
+
 enum marker_sprite_frame {
 		BLANK,
 		START,
@@ -39,7 +44,8 @@ func _ready():
 
 
 func _on_tools_external_paths_set():
-	var bike_paths := Tools.load_json_array(Tools.BIKE_PATHS_FILEPATH)
+	_set_coord_transformation()
+	_initialize_paths()
 
 
 func _process(delta):
@@ -52,6 +58,41 @@ func _process(delta):
 		marker.scale = marker.scale.slerp(marker_scale, 0.9)
 
 
+func _draw():
+	draw_polyline(bike_paths[0][1], Color.RED, 10.0)
+	queue_redraw()
+
+
+func _initialize_paths():
+	bike_paths = Tools.load_json_array(Tools.BIKE_PATHS_FILEPATH)
+	# Convert paths from array of arrays to array of Vector2s
+	_convert_paths(bike_paths)
+	var test_path = bike_paths[0][1]
+	print(test_path)
+	path_drawer._bike_paths = bike_paths
+	path_drawer.queue_redraw()
+
+	#for coord in test_path:
+		#var marker = Marker.instantiate()
+		#marker.position = coord
+		#markers_container.add_child(marker)
+		
+	#for paths in bike_paths:
+		#for path in paths:
+			#print(path)
+			#paths_container.draw_polyline(path, Color.RED, 10.0)
+
+
+## Converts the given lat/lon paths to worldspace vectors, 
+## where path is paths[<start_station>][<end_station>]
+func _convert_paths(paths : Array) -> void:
+	for start_station in range(len(paths)):
+		for end_station in range(len(paths)):
+			for i in range(len(paths[start_station][end_station])):
+				var coords : Array = paths[start_station][end_station][i]
+				paths[start_station][end_station][i] = WGS_to_pos(Vector2(coords[0], coords[1]))
+
+
 func _instance_markers():
 	# Get coords from json
 	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)
@@ -61,6 +102,7 @@ func _instance_markers():
 		coord = Vector2(coord[0], coord[1])
 		var marker = Marker.instantiate()
 		# Set up marker
+		print('marker', WGS_to_pos(coord))
 		marker.position = WGS_to_pos(coord)
 		marker.scale = Vector2(_marker_scale, _marker_scale)
 		marker.set_label(str(i))

@@ -30,6 +30,7 @@ func _ready():
 
 
 func _process(delta):
+	
 	if input_enabled:
 		handle_zoom(delta)
 		if not map_is_smaller_than_viewport:

@@ -13,7 +13,8 @@ config_version=5
 config/name="Bike Balance App"
 run/main_scene="uid://f0rqb58dpr2d"
 config/features=PackedStringArray("4.4", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="uid://dnm5ko31kyb2k"
+config/windows_native_icon="res://icons/bike_bold.ico"
 
 [autoload]
 

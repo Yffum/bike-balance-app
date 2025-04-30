@@ -262,11 +262,13 @@ func _set_station_results(station : int):
 func _set_start_station(station : int):
 	start_station.value = station
 	start_station_set.emit(station)
+	set_station_params(station_spinbox.value)
 
 
 func _set_end_station(station: int):
 	end_station.value = station
 	end_station_set.emit(station)
+	set_station_params(station_spinbox.value)
 
 
 ## Update station params when map station selected

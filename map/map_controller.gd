@@ -32,10 +32,16 @@ enum marker_sprite_frame {
 
 signal station_selected(station : int)
 
+
 func _ready():
 	_set_coord_transformation()
 	_instance_markers()
-	
+
+
+func _on_tools_external_paths_set():
+	var bike_paths := Tools.load_json_array(Tools.BIKE_PATHS_FILEPATH)
+
+
 func _process(delta):
 	var marker_scale = Vector2.ONE / camera.zoom * 0.5
 	marker_scale.x -= 0.1
@@ -44,7 +50,8 @@ func _process(delta):
 	marker_scale.y = marker_scale.x
 	for marker in _markers_list:
 		marker.scale = marker.scale.slerp(marker_scale, 0.9)
-	
+
+
 func _instance_markers():
 	# Get coords from json
 	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)
@@ -66,6 +73,7 @@ func _instance_markers():
 		markers_container.add_child(marker)
 		_markers_list.append(marker)
 
+
 ## Sets up parameters for transforming lat/lon to pos
 func _set_coord_transformation() -> void:
 	var bottom_left_WGS = Vector2(40.6902 , -74.03786)
@@ -83,6 +91,7 @@ func _set_coord_transformation() -> void:
 	_x_scale = x_diff_pos / lon_diff_WGS
 	_y_scale = y_diff_pos / lat_diff_WGS
 
+
 ## Returns the world position corresponding to the given (lat, lon)
 func WGS_to_pos(coord : Vector2) -> Vector2:
 	# Use y coordinates (longitude) for x position
@@ -90,17 +99,21 @@ func WGS_to_pos(coord : Vector2) -> Vector2:
 	var pos_y = _y_scale * (coord.x - _center_WGS_coord.x)
 	return Vector2(pos_x, pos_y)
 
+
 func _on_marker_button_down(station):
 	camera.input_enabled = false
 	_set_selected_station_outline(station)
 	station_selected.emit(station)
-	
+
+
 func _on_marker_button_up():
 	camera.input_enabled = true
-	
+
+
 func _on_station_spinbox_value_changed(value):
 	_set_selected_station_outline(value)
-	
+
+
 func _set_selected_station_outline(station):
 	# Remove outline of previously selected station
 	if selected_station >= 0:
@@ -108,6 +121,7 @@ func _set_selected_station_outline(station):
 	# Add outline to selected station
 	selected_station = station
 	_markers_list[selected_station].outline.visible = true
+
 
 func _on_param_controller_station_selected(station):
 	_set_selected_station_outline(station)
@@ -149,4 +163,3 @@ func _on_end_station_set(station):
 	var new_end_marker = _markers_list[end_station]
 	new_end_marker.set_sprite(frame)
 	new_end_marker.label.visible = false
-	

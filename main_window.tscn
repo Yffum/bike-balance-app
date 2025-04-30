@@ -1176,6 +1176,7 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_value_changed"]
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsStartStation/CheckButton" to="ParamController" method="_on_is_start_station_toggled"]
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsEndStation/CheckButton" to="ParamController" method="_on_is_end_station_toggled"]
+[connection signal="external_paths_set" from="Tools" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_tools_external_paths_set"]
 [connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]
 [connection signal="station_batch_results_loaded" from="SimController" to="ParamController" method="_on_batch_results_loaded"]
 [connection signal="station_results_loaded" from="SimController" to="ParamController" method="_on_station_results_loaded"]

@@ -9,6 +9,8 @@ var DEFAULT_USER_PARAMS_PATH = INTERNAL_DATA_PATH.path_join('default_user_params
 var STATION_COORDS_PATH = INTERNAL_DATA_PATH.path_join('station_coords.json')
 var STATION_NAMES_PATH = INTERNAL_DATA_PATH.path_join('station_names.json')
 var STATION_IDS_PATH = INTERNAL_DATA_PATH.path_join('station_ids.json')
+var BIKE_PATHS_FILEPATH = INTERNAL_DATA_PATH.path_join('bike_paths.json')
+var WALK_PATHS_FILEPATH = INTERNAL_DATA_PATH.path_join('walk_paths.json')
 
 #----------------- External Paths ------------------
 var EXTERNAL_DIR : String

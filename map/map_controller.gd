@@ -26,17 +26,22 @@ var end_station : int = -1
 var bike_paths : Array
 var walk_paths : Array
 @export var path_drawer : Node2D
+var _visited_stations : Dictionary  # (set) Stations visited by agent
+var _results_start_station : int = -1
+var _results_end_station : int = -1
+
 
 enum marker_sprite_frame {
 		BLANK,
 		START,
 		END,
 		START_END,
-		GRAY
+		VISITED
 }
 
 signal station_selected(station : int)
 
+#-------------------------------- Initialization -------------------------------
 
 func _ready():
 	_set_coord_transformation()
@@ -58,29 +63,16 @@ func _process(delta):
 		marker.scale = marker.scale.slerp(marker_scale, 0.9)
 
 
-func _draw():
-	draw_polyline(bike_paths[0][1], Color.RED, 10.0)
-	queue_redraw()
-
-
 func _initialize_paths():
 	bike_paths = Tools.load_json_array(Tools.BIKE_PATHS_FILEPATH)
 	# Convert paths from array of arrays to array of Vector2s
 	_convert_paths(bike_paths)
-	var test_path = bike_paths[0][1]
-	print(test_path)
 	path_drawer._bike_paths = bike_paths
+	
+	### TODO
+	path_drawer._walk_paths = bike_paths
+	
 	path_drawer.queue_redraw()
-
-	#for coord in test_path:
-		#var marker = Marker.instantiate()
-		#marker.position = coord
-		#markers_container.add_child(marker)
-		
-	#for paths in bike_paths:
-		#for path in paths:
-			#print(path)
-			#paths_container.draw_polyline(path, Color.RED, 10.0)
 
 
 ## Converts the given lat/lon paths to worldspace vectors, 
@@ -106,7 +98,7 @@ func _instance_markers():
 		marker.position = WGS_to_pos(coord)
 		marker.scale = Vector2(_marker_scale, _marker_scale)
 		marker.set_label(str(i))
-		marker.station = i
+		marker._station = i
 		# Set z index based on y position so lower markers are in front
 		marker.z_index = int(marker.position.y/10 + 300)
 		# Connect signals
@@ -115,6 +107,7 @@ func _instance_markers():
 		markers_container.add_child(marker)
 		_markers_list.append(marker)
 
+#---------------------------- Position Transform -------------------------------
 
 ## Sets up parameters for transforming lat/lon to pos
 func _set_coord_transformation() -> void:
@@ -142,6 +135,76 @@ func WGS_to_pos(coord : Vector2) -> Vector2:
 	return Vector2(pos_x, pos_y)
 
 
+#------------------------------- Adjust Map ------------------------------------
+
+func _set_selected_station_outline(station):
+	# Remove outline of previously selected station
+	if selected_station >= 0:
+		_markers_list[selected_station].outline.visible = false
+	# Add outline to selected station
+	selected_station = station
+	_markers_list[selected_station].outline.visible = true
+
+
+## Sets the given marker sprite to start station
+func _set_start_station(station):
+	_markers_list[station]
+
+
+func _set_visited_stations(actions : Array) -> void:
+	# Set start/end stations
+	_results_start_station = actions[0]['start_station']
+	_results_end_station = actions[-1]['end_station']
+	# Reselect visited stations based on actions
+	_visited_stations.clear()
+	for action in actions:
+		var station : int = action['end_station']
+		# If not start/end station, set marker sprite to visited
+		if station != _results_start_station and station != _results_end_station:
+			_visited_stations[station] = true
+
+
+## Highlights visited stations, including start/end
+func _show_visited_stations():
+	# Set start end markers to results
+	_markers_list[start_station].unset_start_sprite()
+	_markers_list[end_station].unset_end_sprite()
+	_markers_list[_results_start_station].set_start_sprite()
+	_markers_list[_results_end_station].set_end_sprite()
+	# Highlights visited stations on map
+	for station in _visited_stations:
+		var marker = _markers_list[station]
+		marker.set_sprite(marker_sprite_frame.VISITED)
+
+
+func _hide_visited_stations():
+	# De-highlight visited stations on map
+	for station in _visited_stations:
+		_markers_list[station].set_sprite(marker_sprite_frame.BLANK)
+	# Set start end markers to user params
+	_markers_list[_results_start_station].unset_start_sprite()
+	_markers_list[_results_end_station].unset_end_sprite()
+	_markers_list[start_station].set_start_sprite()
+	_markers_list[end_station].set_end_sprite()
+
+
+func _set_map_results(actions : Array):
+	path_drawer.set_excursion_paths(actions)
+	_set_visited_stations(actions)
+
+
+func _show_map_results():
+	path_drawer.draw_excursion_paths()
+	_show_visited_stations()
+
+
+func _hide_map_results():
+	path_drawer.hide_excursion_paths()
+	_hide_visited_stations()
+
+
+#----------------------------- Signal Responses --------------------------------
+
 func _on_marker_button_down(station):
 	camera.input_enabled = false
 	_set_selected_station_outline(station)
@@ -154,15 +217,6 @@ func _on_marker_button_up():
 
 func _on_station_spinbox_value_changed(value):
 	_set_selected_station_outline(value)
-
-
-func _set_selected_station_outline(station):
-	# Remove outline of previously selected station
-	if selected_station >= 0:
-		_markers_list[selected_station].outline.visible = false
-	# Add outline to selected station
-	selected_station = station
-	_markers_list[selected_station].outline.visible = true
 
 
 func _on_param_controller_station_selected(station):
@@ -205,3 +259,17 @@ func _on_end_station_set(station):
 	var new_end_marker = _markers_list[end_station]
 	new_end_marker.set_sprite(frame)
 	new_end_marker.label.visible = false
+
+
+func _on_path_results_loaded(actions):
+	_set_map_results(actions)
+
+
+func _on_show_results():
+	if _results_start_station >= 0:
+		_show_map_results()
+
+
+func _on_hide_results():
+	if _results_start_station >= 0:
+		_hide_map_results()

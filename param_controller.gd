@@ -66,6 +66,8 @@ signal sim_and_batch_modes_initialized(sim_mode : int, batch_mode : int)
 signal station_selected(station : int)
 signal start_station_set(station : int)
 signal end_station_set(station : int)
+signal show_results()
+signal hide_results()
 
 
 func _on_tools_external_paths_set():
@@ -329,8 +331,10 @@ func _on_batch_results_loaded():
 
 
 func _on_settings_tab_changed(tab):
-	#if results_tab.visible == true:
-	if tab == 2:
+	var RESULTS_TAB := 2
+	if tab == RESULTS_TAB:
 		show_station_results()
+		show_results.emit()
 	else:
 		hide_station_results()
+		hide_results.emit()

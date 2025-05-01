@@ -84,10 +84,9 @@ size = Vector2i(1185, 930)
 size_2d_override = Vector2i(1, 1)
 render_target_update_mode = 4
 
-[node name="Camera2D" type="Camera2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("map_sprite", "map_controller")]
+[node name="Camera2D" type="Camera2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("map_sprite")]
 script = ExtResource("2_sq7ho")
 map_sprite = NodePath("../MapController/Map")
-map_controller = NodePath("")
 
 [node name="MapController" type="Node2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("markers_container", "camera", "path_drawer")]
 z_index = 6
@@ -1179,15 +1178,19 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_button_pressed"]
 [connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_batch_mode_selected"]
 [connection signal="gui_input" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_gui_input"]
-[connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_value_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_station_spinbox_value_changed"]
+[connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_value_changed"]
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsStartStation/CheckButton" to="ParamController" method="_on_is_start_station_toggled"]
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsEndStation/CheckButton" to="ParamController" method="_on_is_end_station_toggled"]
-[connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]
 [connection signal="external_paths_set" from="Tools" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_tools_external_paths_set"]
+[connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]
+[connection signal="path_results_loaded" from="SimController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_path_results_loaded"]
+[connection signal="path_results_loaded" from="SimController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController/PathDrawer" method="_on_path_results_loaded"]
 [connection signal="station_batch_results_loaded" from="SimController" to="ParamController" method="_on_batch_results_loaded"]
 [connection signal="station_results_loaded" from="SimController" to="ParamController" method="_on_station_results_loaded"]
 [connection signal="end_station_set" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_end_station_set"]
+[connection signal="hide_results" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_hide_results"]
+[connection signal="show_results" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_show_results"]
 [connection signal="sim_and_batch_modes_initialized" from="ParamController" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_param_controller_sim_and_batch_modes_initialized"]
 [connection signal="start_station_set" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_start_station_set"]
 [connection signal="station_selected" from="ParamController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_param_controller_station_selected"]

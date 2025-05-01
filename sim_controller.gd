@@ -12,6 +12,8 @@ var thread : Thread
 
 signal station_results_loaded(results : Dictionary)
 signal station_batch_results_loaded()
+signal path_results_loaded(actions)
+signal batch_results_loaded()
 
 func _notification(what):
 	# On application close:
@@ -183,8 +185,12 @@ func _handle_sim_end(results_path : String):
 			'end_station' : results['user_params']['end_station'],
 		}
 		station_results_loaded.emit(station_results)
+		var actions : Array = results['data']['actions']
+		path_results_loaded.emit(actions)
 	else:
 		station_batch_results_loaded.emit()
+		batch_results_loaded.emit()
+	
 	thread.wait_to_finish()
 	# Enable run button, set spinner
 	run_button.disabled = false

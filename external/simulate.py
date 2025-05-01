@@ -947,7 +947,8 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
                 logger.info(f'\t{MISS} No trip found. Wait until {format_time(current_time)}')
                 total_wait_time += wait_time
                 actions.append({
-                    'end_station' : None,
+                    'start_station' : None,
+                    'end_station' : agent.station,
                     'agent_mode' : 'wait',
                     'duration' : wait_time,
                     'rent_reward' : None,
@@ -1032,6 +1033,7 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
             total_bike_time += trip_duration
             total_bike_distance += BIKE_DISTANCES[agent.station][end_station]
         actions.append({
+            'start_station' : agent.station,
             'end_station' : end_station,
             'agent_mode' : agent.mode,
             'duration' : trip_duration,

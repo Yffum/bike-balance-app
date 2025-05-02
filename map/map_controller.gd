@@ -71,13 +71,12 @@ func _process(_delta):
 
 func _initialize_paths():
 	bike_paths = Tools.load_json_array(Tools.BIKE_PATHS_FILEPATH)
+	walk_paths = Tools.load_json_array(Tools.WALK_PATHS_FILEPATH)
 	# Convert paths from array of arrays to array of Vector2s
 	_convert_paths(bike_paths)
+	_convert_paths(walk_paths)
 	path_drawer._bike_paths = bike_paths
-	
-	### TODO
-	path_drawer._walk_paths = bike_paths
-	
+	path_drawer._walk_paths = walk_paths
 	path_drawer.queue_redraw()
 
 

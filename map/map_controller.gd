@@ -19,8 +19,8 @@ var _y_scale : float
 
 # Tracking marker states
 var selected_station : int = -1
-var start_station : int = -1
-var end_station : int = -1
+var _start_station : int = -1
+var _end_station : int = -1
 
 # Map paths
 var bike_paths : Array
@@ -29,7 +29,12 @@ var walk_paths : Array
 var _visited_stations : Dictionary  # (set) Stations visited by agent
 var _results_start_station : int = -1
 var _results_end_station : int = -1
+var _is_showing_results : bool = false
+var _single_run_results_loaded : bool = false
 
+@export var _map_results_overlay : Control
+@export var _single_run_results_overlay : Control
+@export var _batch_results_overlay : Control
 
 enum marker_sprite_frame {
 		BLANK,
@@ -40,6 +45,7 @@ enum marker_sprite_frame {
 }
 
 signal station_selected(station : int)
+
 
 #-------------------------------- Initialization -------------------------------
 
@@ -53,7 +59,7 @@ func _on_tools_external_paths_set():
 	_initialize_paths()
 
 
-func _process(delta):
+func _process(_delta):
 	var marker_scale = Vector2.ONE / camera.zoom * 0.5
 	marker_scale.x -= 0.1
 	marker_scale.x = max(MIN_MARKER_SCALE, marker_scale.x)
@@ -94,7 +100,6 @@ func _instance_markers():
 		coord = Vector2(coord[0], coord[1])
 		var marker = Marker.instantiate()
 		# Set up marker
-		print('marker', WGS_to_pos(coord))
 		marker.position = WGS_to_pos(coord)
 		marker.scale = Vector2(_marker_scale, _marker_scale)
 		marker.set_label(str(i))
@@ -106,6 +111,7 @@ func _instance_markers():
 		marker.marker_button_up.connect(_on_marker_button_up)
 		markers_container.add_child(marker)
 		_markers_list.append(marker)
+
 
 #---------------------------- Position Transform -------------------------------
 
@@ -146,15 +152,18 @@ func _set_selected_station_outline(station):
 	_markers_list[selected_station].outline.visible = true
 
 
-## Sets the given marker sprite to start station
-func _set_start_station(station):
-	_markers_list[station]
-
-
 func _set_visited_stations(actions : Array) -> void:
+	# If showing results, deselect previous start/end result stations
+	if _is_showing_results and _results_start_station >= 0:
+		_hide_visited_stations()
+		#_markers_list[_results_start_station].unset_start_sprite()
+		#_markers_list[_results_end_station].unset_end_sprite()
 	# Set start/end stations
 	_results_start_station = actions[0]['start_station']
 	_results_end_station = actions[-1]['end_station']
+	print('result stations set')
+	print('result_start ', _results_start_station)
+	print('result_end ', _results_end_station)
 	# Reselect visited stations based on actions
 	_visited_stations.clear()
 	for action in actions:
@@ -166,9 +175,14 @@ func _set_visited_stations(actions : Array) -> void:
 
 ## Highlights visited stations, including start/end
 func _show_visited_stations():
+	print('showing visited stations')
+	print('start ', _start_station)
+	print('end ', _end_station)
+	print('result_start ', _results_start_station)
+	print('results_end ', _results_end_station)
 	# Set start end markers to results
-	_markers_list[start_station].unset_start_sprite()
-	_markers_list[end_station].unset_end_sprite()
+	_markers_list[_start_station].unset_start_sprite()
+	_markers_list[_end_station].unset_end_sprite()
 	_markers_list[_results_start_station].set_start_sprite()
 	_markers_list[_results_end_station].set_end_sprite()
 	# Highlights visited stations on map
@@ -178,14 +192,19 @@ func _show_visited_stations():
 
 
 func _hide_visited_stations():
+	print('hiding visited stations')
+	print('start ', _start_station)
+	print('end ', _end_station)
+	print('result_start ', _results_start_station)
+	print('results_end ', _results_end_station)
 	# De-highlight visited stations on map
 	for station in _visited_stations:
 		_markers_list[station].set_sprite(marker_sprite_frame.BLANK)
 	# Set start end markers to user params
 	_markers_list[_results_start_station].unset_start_sprite()
 	_markers_list[_results_end_station].unset_end_sprite()
-	_markers_list[start_station].set_start_sprite()
-	_markers_list[end_station].set_end_sprite()
+	_markers_list[_start_station].set_start_sprite()
+	_markers_list[_end_station].set_end_sprite()
 
 
 func _set_map_results(actions : Array):
@@ -194,13 +213,33 @@ func _set_map_results(actions : Array):
 
 
 func _show_map_results():
-	path_drawer.draw_excursion_paths()
-	_show_visited_stations()
+	# For single run, draw path and show visited stations
+	if _single_run_results_loaded and _results_start_station >= 0:
+		path_drawer.draw_excursion_paths()
+		_show_visited_stations()
+		_single_run_results_overlay.visible = true
+		_batch_results_overlay.visible = false
+	# For batch, hide start/end stations
+	else:
+		path_drawer.hide_excursion_paths()
+		_hide_visited_stations()
+		_markers_list[_start_station].unset_start_sprite()
+		_markers_list[_end_station].unset_end_sprite()
+		_single_run_results_overlay.visible = false
+		_batch_results_overlay.visible = true
 
 
 func _hide_map_results():
-	path_drawer.hide_excursion_paths()
-	_hide_visited_stations()
+	# For single run, hide path and visited stations
+	if _single_run_results_loaded and _results_start_station >= 0:
+		path_drawer.hide_excursion_paths()
+		_hide_visited_stations()
+	# For batch, show start/end stations
+	else:
+		_markers_list[_start_station].set_start_sprite()
+		_markers_list[_end_station].set_end_sprite()
+	_single_run_results_overlay.visible = false
+	_batch_results_overlay.visible = false
 
 
 #----------------------------- Signal Responses --------------------------------
@@ -224,52 +263,51 @@ func _on_param_controller_station_selected(station):
 
 
 func _on_start_station_set(station):
-	# Remove previous start station
-	if start_station >= 0 and start_station != station:
-		var prev_start_marker = _markers_list[start_station]
-		if start_station == end_station:
-			prev_start_marker.set_sprite(marker_sprite_frame.END)
-		else:
-			prev_start_marker.set_sprite(marker_sprite_frame.BLANK)
-			prev_start_marker.label.visible = true
-	# Set new start station
-	start_station = station
-	var frame : int = marker_sprite_frame.START
-	if end_station == start_station:
-		frame = marker_sprite_frame.START_END
-	var new_start_marker = _markers_list[start_station]
-	new_start_marker.set_sprite(frame)
-	new_start_marker.label.visible = false
+	# If showing results, just update start station
+	if _is_showing_results:
+		_start_station = station
+	# Otherwise update markers
+	else:
+		# Remove previous start station
+		if _start_station >= 0:
+			_markers_list[_start_station].unset_start_sprite()
+		# Set new start station
+		_start_station = station
+		_markers_list[_start_station].set_start_sprite()
 
 
 func _on_end_station_set(station):
-	# Remove previous end station
-	if end_station >= 0 and end_station != station:
-		var prev_end_marker = _markers_list[end_station]
-		if start_station == end_station:
-			prev_end_marker.set_sprite(marker_sprite_frame.START)
-		else:
-			prev_end_marker.set_sprite(marker_sprite_frame.BLANK)
-			prev_end_marker.label.visible = true
-	# Set new end station
-	end_station = station
-	var frame : int = marker_sprite_frame.END
-	if end_station == start_station:
-		frame = marker_sprite_frame.START_END
-	var new_end_marker = _markers_list[end_station]
-	new_end_marker.set_sprite(frame)
-	new_end_marker.label.visible = false
+	# If showing results, just update end station
+	if _is_showing_results:
+		_end_station = station
+	# Otherwise update markers
+	else:
+		# Remove previous end station
+		if _end_station >= 0:
+			_markers_list[_end_station].unset_end_sprite()
+		# Set new end station
+		_end_station = station
+		_markers_list[_end_station].set_end_sprite()
 
 
 func _on_path_results_loaded(actions):
+	_single_run_results_loaded = true
 	_set_map_results(actions)
+	_show_map_results()
+
+
+func _on_batch_results_loaded():
+	_single_run_results_loaded = false
+	_show_map_results()
 
 
 func _on_show_results():
-	if _results_start_station >= 0:
-		_show_map_results()
+	_show_map_results()
+	_is_showing_results = true
+	_map_results_overlay.visible = true
 
 
 func _on_hide_results():
-	if _results_start_station >= 0:
-		_hide_map_results()
+	_hide_map_results()
+	_is_showing_results = false
+	_map_results_overlay.visible = false

@@ -88,12 +88,15 @@ render_target_update_mode = 4
 script = ExtResource("2_sq7ho")
 map_sprite = NodePath("../MapController/Map")
 
-[node name="MapController" type="Node2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("markers_container", "camera", "path_drawer")]
+[node name="MapController" type="Node2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport" node_paths=PackedStringArray("markers_container", "camera", "path_drawer", "_map_results_overlay", "_single_run_results_overlay", "_batch_results_overlay")]
 z_index = 6
 script = ExtResource("2_l06f4")
 markers_container = NodePath("Markers")
 camera = NodePath("../Camera2D")
 path_drawer = NodePath("PathDrawer")
+_map_results_overlay = NodePath("../../../ResultsOverlay")
+_single_run_results_overlay = NodePath("../../../ResultsOverlay/SingleRunResultsOverlay")
+_batch_results_overlay = NodePath("../../../ResultsOverlay/BatchResultsOverlay")
 
 [node name="Map" type="Sprite2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController"]
 modulate = Color(0.470076, 0.470076, 0.470076, 1)
@@ -105,6 +108,72 @@ texture = ExtResource("2_tyee0")
 [node name="PathDrawer" type="Node2D" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController"]
 z_index = 4
 script = ExtResource("5_6y3r0")
+
+[node name="ResultsOverlay" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer"]
+visible = false
+z_as_relative = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="BatchResultsOverlay" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/BatchResultsOverlay"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "Map results are displayed here for single run simulations."
+horizontal_alignment = 1
+
+[node name="SingleRunResultsOverlay" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ResultsLabel" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 32
+text = "RESULTS"
+horizontal_alignment = 1
+
+[node name="MapLegend" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BikePath" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay/MapLegend"]
+layout_mode = 2
+theme_override_colors/default_color = Color(1, 0, 0, 1)
+bbcode_enabled = true
+text = "Bike Path  ▀"
+fit_content = true
+
+[node name="WalkPath" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay/MapLegend"]
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 1, 1)
+bbcode_enabled = true
+text = "Walk Path  ▀"
+fit_content = true
+
+[node name="MapColorOverlay" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay"]
+z_as_relative = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+color = Color(0.737255, 0.788235, 1, 0.254902)
 
 [node name="RunBar" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
 layout_mode = 2
@@ -1184,6 +1253,7 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="toggled" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches/IsEndStation/CheckButton" to="ParamController" method="_on_is_end_station_toggled"]
 [connection signal="external_paths_set" from="Tools" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_tools_external_paths_set"]
 [connection signal="external_paths_set" from="Tools" to="ParamController" method="_on_tools_external_paths_set"]
+[connection signal="batch_results_loaded" from="SimController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_batch_results_loaded"]
 [connection signal="path_results_loaded" from="SimController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_path_results_loaded"]
 [connection signal="path_results_loaded" from="SimController" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController/PathDrawer" method="_on_path_results_loaded"]
 [connection signal="station_batch_results_loaded" from="SimController" to="ParamController" method="_on_batch_results_loaded"]

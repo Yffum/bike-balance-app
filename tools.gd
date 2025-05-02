@@ -3,6 +3,10 @@ extends Node
 var MAX_LOG_COUNT = 20  # Max number of log files before pruning
 var MAX_RESULTS_COUNT = 20 # Max number of results jsons before pruning
 
+#------------------ Colors --------------------
+var BIKE_PATH_COLOR = Color(1, 0, 0)
+var WALK_PATH_COLOR = Color(0, 0, 1)
+
 #----------------- Internal Paths ------------------
 var INTERNAL_DATA_PATH = ProjectSettings.globalize_path('res://data')
 var DEFAULT_USER_PARAMS_PATH = INTERNAL_DATA_PATH.path_join('default_user_params.json')

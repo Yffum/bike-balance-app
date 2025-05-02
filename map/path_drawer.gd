@@ -41,10 +41,10 @@ func _draw_trip_paths():
 			continue
 		elif action['agent_mode'] == 'bike':
 			path = _bike_paths[action['start_station']][action['end_station']]
-			color = Color(1.0, 0.0, 0.0)
+			color = Tools.BIKE_PATH_COLOR
 		elif action['agent_mode'] == 'walk':
 			path = _walk_paths[action['start_station']][action['end_station']]
-			color = Color(0.0, 0.0, 1.0)
+			color = Tools.WALK_PATH_COLOR
 		# Draw path for current action
 		draw_polyline(path, color, LINE_WIDTH, true)
 

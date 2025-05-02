@@ -14,6 +14,9 @@ const ZOOM_ON_HOVER_SCALE = 1.15
 @export var button : BaseButton
 @export var anim_sprite : AnimatedSprite2D
 
+## testing
+var _timeout = false
+
 enum _frames {
 		BLANK,
 		START,
@@ -36,6 +39,9 @@ func set_label(text : String):
 
 ## Sets sprite to given frame and adjusts label appropriately
 func set_sprite(frame : int):
+	print(_station, ' SETTING SPRITE ', frame)
+	if _station == 4:
+		pass
 	# Set sprite
 	anim_sprite.frame = frame
 	# Hide label if sprite is textured
@@ -54,6 +60,7 @@ func set_sprite(frame : int):
 
 ## Sets sprite to START, or START_END if it's already END
 func set_start_sprite():
+	print('> setting_start_sprite')
 	if anim_sprite.frame == _frames.BLANK or anim_sprite.frame == _frames.VISITED:
 		set_sprite(_frames.START)
 	elif anim_sprite.frame == _frames.END:
@@ -62,6 +69,7 @@ func set_start_sprite():
 
 ## Sets sprite to BLANK if it's START, or END if it's START_END
 func unset_start_sprite():
+	print('> unsetting_start_sprite')
 	if anim_sprite.frame == _frames.START:
 		set_sprite(_frames.BLANK)
 	elif anim_sprite.frame == _frames.START_END:
@@ -70,6 +78,7 @@ func unset_start_sprite():
 
 ## Sets sprite to END, or START_END if it's already START
 func set_end_sprite():
+	print('> setting_end_sprite')
 	if anim_sprite.frame == _frames.BLANK or anim_sprite.frame == _frames.VISITED:
 		set_sprite(_frames.END)
 	elif anim_sprite.frame == _frames.START:
@@ -78,9 +87,10 @@ func set_end_sprite():
 
 ## Sets sprite to BLANK if it's END, or START if it's START_END
 func unset_end_sprite():
+	print('> unsetting_end_sprite')
 	if anim_sprite.frame == _frames.END:
 		set_sprite(_frames.BLANK)
-	elif anim_sprite.frame == _frames.BLANK:
+	elif anim_sprite.frame == _frames.START_END:
 		set_sprite(_frames.START)
 
 
@@ -105,3 +115,7 @@ func _on_mouse_entered():
 func _on_mouse_exited():
 	if not button.is_pressed():
 		content.scale /= ZOOM_ON_HOVER_SCALE
+
+
+func _on_timer_timeout():
+	_timeout = true

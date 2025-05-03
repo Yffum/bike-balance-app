@@ -15,6 +15,8 @@
 - [ ] Try diminishing reward value with time (or node depth) for smart agent
 - [ ] Search branches that end early should be considered less valuable (some function of the time passed of maybe node depth)
 
+- [ ] Implement new end excursion policy
+
 ## Finalization
 - [ ] Verify default_user_params.json works
 
@@ -22,6 +24,11 @@
 - Add interface for loading and managing (e.g. removing) previous results
 - Sim parameters
   - Rental strategy: [selfish, cooperative/fair]
+- Refine simulation parameter collection
+- Refine simulation accuracy
+  - Simulate other agents
+  - Refine trip duration generation: examine data from single rider instead of group to determine appropriate distribution and distribution parameters for generating trip times
+- Create app for bike angels
 
 # Project Deliverables
 - README.md

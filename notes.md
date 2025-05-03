@@ -1,35 +1,50 @@
+2025-05-02
 
-# ToDo 2025-04-06
+# To Do
 
-- [x] mouse input only over map
-  - idea: parent of map checks if mouse is inside and updates bool in child that dictates whether to listen
+## Frontend
+- [ ] Add cancel button for simulation
+- [ ] Add handling for simulation call fail
+- [ ] Add setting for python name/path e.g. python3
 
-# 2025-04-10
+## Simulation
+- [ ] Add station validation for basic agent
+- [ ] Improve station validation for smart agent
+- [ ] Add station agnostic batch setting
 
-- [ ] handle exit code 1 after calling sim in sim_controller.gd
-	- set spinner to X and write error to log
-- [x] when expanding walk node, check nearest stations as well as nearest stations with negative incentive
+- [ ] Try diminishing reward value with time (or node depth) for smart agent
+- [ ] Search branches that end early should be considered less valuable (some function of the time passed of maybe node depth)
 
-# 2025-04-11
+## Finalization
+- [ ] Verify default_user_params.json works
 
-- [ ] 250411_1642_s281203567.log Fix issue with basic agent waiting instead of ending trip
-- [ ] 250411_1647_s281203567.log Fix issue where smart agent walks instead of ending trip
+## Future Work
+- Add interface for loading and managing (e.g. removing) previous results
+- Sim parameters
+  - Rental strategy: [selfish, cooperative/fair]
 
-- [ ] For smart agent, search highest incentives first when biking/walking for first node, instead of nearest
-- [ ] Add mode to application for finding average reward instead of batch
+# Project Deliverables
+- README.md
+  - Introduction to app
+    - What is the app
+    - Who is it for
+- Wiki
+  - Installation guide
+    - Install through build
+  - Build guide
+  - report.pdf
 
-
-- Idea: try predicting and caching all updated incentives, then only calculate new incentive for stations traveled to/from
-
-- Precalculate and cache every possible incentive for each bike count for each station? 125 stations * ~40 bike counts = 5000 incentives, not bad
---> then have agent search best incentives instead of nearest stations
-
-
-# 2025-04-16
-- [x] If current node reward is more than previous node reward for expand bike node, that means there was a reward for walking i.e. a reward for renting a bike, so look for neutral stations to travel to like when walking
-- [ ] Change wait handling based on ^
-
-# Notes
-
-- One problem with the twin fail count simulations is sometimes adding a single bike doesn't reduce the fail count very much if it's completely empty (but adding multiple bikes reduces it significantly) so it isn't incentivized for returns when it should be.
-  - Analyze incentive data. E.g. min/max/avg incentive for empty/full stations
+## Report
+- Abstract
+- Introduction
+- Background
+  - Related work
+- Problem Statement
+- Objectives
+- System Architecture
+  - Attributions
+- Features
+- Discussion
+- Future Work
+- References
+- Appendices

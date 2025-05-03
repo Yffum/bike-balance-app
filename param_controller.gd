@@ -331,8 +331,18 @@ func _on_batch_results_loaded():
 
 
 func _on_settings_tab_changed(tab):
+	return
 	var RESULTS_TAB := 2
 	if tab == RESULTS_TAB:
+		show_station_results()
+		show_results.emit()
+	else:
+		hide_station_results()
+		hide_results.emit()
+
+
+func _on_results_visibility_changed():
+	if results_tab.visible == true:
 		show_station_results()
 		show_results.emit()
 	else:

@@ -159,6 +159,7 @@ theme_override_colors/default_color = Color(1, 0, 0, 1)
 bbcode_enabled = true
 text = "Bike Path  ▀"
 fit_content = true
+horizontal_alignment = 2
 
 [node name="WalkPath" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay/MapLegend"]
 layout_mode = 2
@@ -166,6 +167,7 @@ theme_override_colors/default_color = Color(0, 0, 1, 1)
 bbcode_enabled = true
 text = "Walk Path  ▀"
 fit_content = true
+horizontal_alignment = 2
 
 [node name="MapColorOverlay" type="ColorRect" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay"]
 z_as_relative = false
@@ -273,6 +275,7 @@ split_offset = 531
 layout_mode = 2
 current_tab = 0
 clip_tabs = false
+drag_to_rearrange_enabled = true
 
 [node name="Agent" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 layout_mode = 2
@@ -769,8 +772,6 @@ ticks_on_borders = true
 layout_mode = 2
 size_flags_vertical = 3
 current_tab = 0
-drag_to_rearrange_enabled = true
-tabs_rearrange_group = 0
 use_hidden_tabs_for_min_size = true
 tab_focus_mode = 0
 
@@ -1246,6 +1247,7 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed/CheckBox" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_check_box_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/Button" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController" method="_on_button_pressed"]
 [connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_batch_mode_selected"]
+[connection signal="visibility_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results" to="ParamController" method="_on_results_visibility_changed"]
 [connection signal="gui_input" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_gui_input"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" method="_on_station_spinbox_value_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/StationSelector/SelectedStation/SpinBox" to="ParamController" method="_on_station_spinbox_value_changed"]

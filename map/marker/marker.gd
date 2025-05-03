@@ -14,9 +14,6 @@ const ZOOM_ON_HOVER_SCALE = 1.15
 @export var button : BaseButton
 @export var anim_sprite : AnimatedSprite2D
 
-## testing
-var _timeout = false
-
 enum _frames {
 		BLANK,
 		START,
@@ -39,9 +36,6 @@ func set_label(text : String):
 
 ## Sets sprite to given frame and adjusts label appropriately
 func set_sprite(frame : int):
-	print(_station, ' SETTING SPRITE ', frame)
-	if _station == 4:
-		pass
 	# Set sprite
 	anim_sprite.frame = frame
 	# Hide label if sprite is textured
@@ -115,7 +109,3 @@ func _on_mouse_entered():
 func _on_mouse_exited():
 	if not button.is_pressed():
 		content.scale /= ZOOM_ON_HOVER_SCALE
-
-
-func _on_timer_timeout():
-	_timeout = true

@@ -3,7 +3,6 @@ external/logs/*.log
 external/results/*.json
 
 #------------------------------------------------------------
-
 # Godot 4+ specific ignores
 .godot/
 
@@ -19,3 +18,6 @@ export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+# tmp files can be deleted
+*.tmp

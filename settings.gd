@@ -1,5 +1,7 @@
 extends Node
 
+@export var _root_node : Node
+
 var log_count : int
 
 func _ready():
@@ -21,3 +23,16 @@ func get_file_count(directory_path: String) -> int:
 	else:
 		print("Failed to open directory.")
 	return file_count
+
+
+## Disable focus for every node in the app
+func disable_all_focus():
+	_disable_focus(_root_node)
+
+
+## Disable focus for given node and all its children
+func _disable_focus(node: Node):
+	if node is Control:
+		node.focus_mode = Control.FOCUS_NONE
+	for child in node.get_children():
+		_disable_focus(child)

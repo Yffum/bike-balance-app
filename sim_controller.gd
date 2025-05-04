@@ -4,11 +4,14 @@ extends Node
 @export var log_label : RichTextLabel
 @export var run_button : Button
 @export var spinner : Spinner
-@export var log_tab : Node
+@export var _results_tab : Container
 @export var _cancel_sim_button : Container
 @export var _sim_feedback_label : Label
 
-var python_command_str = 'python3'
+@export var _python_error_dialog : AcceptDialog
+@export var _python_error_label : Control
+
+@export var _python_interpreter_line_edit : LineEdit
 
 signal station_results_loaded(results : Dictionary)
 signal station_batch_results_loaded()
@@ -18,7 +21,9 @@ signal batch_results_loaded()
 ## True iff python script simulation is running
 var _sim_is_running = false
 ## Access to the process stdin and stdout pipes for python
-var _python_output : FileAccess
+var _python_stdio : FileAccess
+## Access to the python process error output
+var _python_stderr : FileAccess
 ## Python process ID
 var _python_pid : int
 
@@ -26,6 +31,8 @@ var _python_pid : int
 func _notification(what):
 	# On application close:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		# Stop sim if running
+		kill_simulation()
 		# Save parameters
 		param_ctrl.save_user_params()
 		# Prune logs and results
@@ -36,8 +43,8 @@ func _notification(what):
 
 
 func _ready():
-	# Set interface scale
-	get_tree().root.content_scale_factor = 1.0
+	# Set focus to run button
+	run_button.grab_focus()
 
 
 func _process(_delta):
@@ -47,8 +54,26 @@ func _process(_delta):
 		_cancel_sim_button.visible = false
 		# Get results filepath and process results
 		_sim_is_running = false
-		var results_filepath := _python_output.get_as_text()
-		_process_sim_results(results_filepath)
+		# Get results filepath from python
+		var results_filepath := _python_stdio.get_as_text()
+		results_filepath = results_filepath.replace('\\', '/')
+		# Reformat based on external dir (for running in editor vs build)
+		results_filepath = results_filepath.replace('external/', '')
+		results_filepath = Tools.EXTERNAL_DIR.path_join(results_filepath)
+		# Load results
+		var results : Dictionary = Tools.load_json_dict(results_filepath)
+		# If not results, report python error
+		if results.is_empty():
+			_process_sim_failure('Failed to retrieve simulation results')
+			_python_error_dialog.visible = true
+			var command_str := _python_interpreter_line_edit.text
+			_python_error_label.text = (
+				'> ' + command_str + ' ' + Tools.SIM_SCRIPT_PATH + '--frontend'
+				+ '\n\n' + _python_stderr.get_as_text()
+			)
+		# Otherwise, process results
+		else:
+			_process_sim_results(results)
 
 
 ## Returns the content of the given log as a String
@@ -172,15 +197,17 @@ func _delete_oldest_results():
 ## Runs simulation through separate python process and saves process info
 func run_simulation() -> void:
 	var python_script_path := Tools.SIM_SCRIPT_PATH
-	var process_info := OS.execute_with_pipe(python_command_str, [python_script_path, '--frontend'])
+	var command_str := _python_interpreter_line_edit.text
+	var process_info := OS.execute_with_pipe(command_str, [python_script_path, '--frontend'])
 	# Python script successfully launched
-	if process_info:
+	if not process_info.is_empty():
 		print('Python script launched')
 		_python_pid = process_info['pid']
-		_python_output = process_info['stdio']
+		_python_stdio = process_info['stdio']
+		_python_stderr = process_info['stderr']
 		_sim_is_running = true
 	else:
-		print('Failed to launch ' + python_command_str + ' ' + python_script_path)
+		print('Failed to launch ' + command_str + ' ' + python_script_path)
 		_process_sim_failure('Simulation failed to launch')
 
 
@@ -188,6 +215,7 @@ func run_simulation() -> void:
 func cancel_simulation() -> void:
 	# Hide cancel button and kill simulation
 	_cancel_sim_button.visible = false
+	run_button.grab_focus()
 	kill_simulation()
 	# Enable run button
 	run_button.disabled = false
@@ -222,14 +250,7 @@ func _process_sim_failure(feedback_text : String) -> void:
 	_sim_feedback_label.text = feedback_text
 
 
-func _process_sim_results(results_path : String) -> void:
-	results_path = results_path.replace('\\', '/')
-	results_path = results_path.replace('external/', '')
-	results_path = Tools.EXTERNAL_DIR.path_join(results_path)
-	var results : Dictionary = Tools.load_json_dict(results_path)
-	if results.is_empty():
-		_process_sim_failure('Failed to retrieve simulation results')
-		return
+func _process_sim_results(results : Dictionary) -> void:
 	# Write log text to panel
 	log_label.text = results['report']
 	# Save station results if single run
@@ -259,7 +280,7 @@ func _process_sim_results(results_path : String) -> void:
 	# Show feedback
 	_sim_feedback_label.text = 'Simulation complete'
 	# Open log tab
-	log_tab.visible = true
+	_results_tab.visible = true
 
 
 func _on_run_button_pressed():
@@ -277,11 +298,6 @@ func _on_run_button_pressed():
 	_sim_feedback_label.text = ''
 	# Run simulation as separate process
 	run_simulation()
-
-
-func _exit_tree():
-	# Kill simulation when application is closed
-	kill_simulation()
 
 
 func _show_file(filepath : String):

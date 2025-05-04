@@ -11,6 +11,7 @@
 	"max_runtime": 30.0,
 	"min_sample_size": 300.0,
 	"parallel_batch_size": 8.0,
+	"python_interpreter": "python3",
 	"relative_margin_of_error": 0.01,
 	"seed": null,
 	"sim_mode": "single_run",

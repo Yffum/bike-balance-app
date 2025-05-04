@@ -55,7 +55,6 @@ func set_sprite(frame : int):
 
 ## Sets sprite to START, or START_END if it's already END
 func set_start_sprite():
-	print('> setting_start_sprite')
 	if anim_sprite.frame == _frames.BLANK or anim_sprite.frame == _frames.VISITED:
 		set_sprite(_frames.START)
 	elif anim_sprite.frame == _frames.END:
@@ -64,7 +63,6 @@ func set_start_sprite():
 
 ## Sets sprite to BLANK if it's START, or END if it's START_END
 func unset_start_sprite():
-	print('> unsetting_start_sprite')
 	if anim_sprite.frame == _frames.START:
 		set_sprite(_frames.BLANK)
 	elif anim_sprite.frame == _frames.START_END:
@@ -73,7 +71,6 @@ func unset_start_sprite():
 
 ## Sets sprite to END, or START_END if it's already START
 func set_end_sprite():
-	print('> setting_end_sprite')
 	if anim_sprite.frame == _frames.BLANK or anim_sprite.frame == _frames.VISITED:
 		set_sprite(_frames.END)
 	elif anim_sprite.frame == _frames.START:
@@ -82,7 +79,6 @@ func set_end_sprite():
 
 ## Sets sprite to BLANK if it's END, or START if it's START_END
 func unset_end_sprite():
-	print('> unsetting_end_sprite')
 	if anim_sprite.frame == _frames.END:
 		set_sprite(_frames.BLANK)
 	elif anim_sprite.frame == _frames.START_END:

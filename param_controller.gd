@@ -49,6 +49,11 @@ extends Node
 @export var agent_return_count : Label
 @export var results_incentive_label : Label
 @export var start_end_station_label : Label
+# Settings
+@export var _python_interpreter_line_edit : LineEdit
+
+#--------------- Controllers -------------
+@export var _settings_controller : Node
 
 #----------- Panels ----------
 @export var results_tab : Node
@@ -75,25 +80,28 @@ func _on_tools_external_paths_set():
 	incentives = Tools.load_json_array(Tools.INCENTIVES_PATH)
 	station_names = Tools.load_json_array(Tools.STATION_NAMES_PATH)
 	station_ids = Tools.load_json_array(Tools.STATION_IDS_PATH)
-	_initialize_user_params()
+	_initialize_params()
 	station_spinbox.get_child(0, true).text = 'Select station'
 
 
-func _initialize_user_params():
-	var params = Tools.load_json_dict(Tools.USER_PARAMS_PATH)
-	if params.is_empty():
+## Loads user params to interface if available. Otherwise loads default params
+## and saves them as new user params.
+func _initialize_params():
+	var params := Tools.load_json_dict(Tools.USER_PARAMS_PATH)
+	var default_params := Tools.load_json_dict(Tools.DEFAULT_USER_PARAMS_PATH)
+	if params.is_empty() or not params.has_all(default_params.keys()):
 		print("Warning: Unable to load parameters from %s " % Tools.USER_PARAMS_PATH)
 		print("Loading default parameters.")
-		reset_user_params()
+		_load_params(default_params)
 		save_user_params()
 		print("Default parameters saved to %s" % Tools.USER_PARAMS_PATH)
 	else:
-		_load_user_params(params)
+		_load_params(params)
 		print("Parameters loaded from %s" % Tools.USER_PARAMS_PATH)
 
 
 ## Loads parameters to interface
-func _load_user_params(params : Dictionary):
+func _load_params(params : Dictionary):
 	#--------- Agent Parameters --------
 	_set_start_station(params['start_station'])
 	_set_end_station(params['end_station'])
@@ -132,18 +140,16 @@ func _load_user_params(params : Dictionary):
 	relative_margin_of_error.value = params['relative_margin_of_error'] * 100  # factor to percent
 	absolute_margin_of_error.value = params['absolute_margin_of_error']
 	max_runtime.value = params['max_runtime'] / 60.0  # seconds to minutes
+	#---------- Settings ---------
+	_python_interpreter_line_edit.text = params['python_interpreter']
+	#_settings_controller.disable_all_focus()  # WIP
+	
 	
 	# Set up interface
 	sim_and_batch_modes_initialized.emit(sim_mode.selected, batch_mode.selected)
 
 
-## Sets parameters to default values
-func reset_user_params():
-	var params = Tools.load_json_dict(Tools.DEFAULT_USER_PARAMS_PATH)
-	_load_user_params(params)
-
-
-## Saves parameters to file
+## Saves parameters from interface to file
 func save_user_params():
 	var params : Dictionary
 	#--------- Agent Parameters --------
@@ -180,6 +186,8 @@ func save_user_params():
 	params['relative_margin_of_error'] = relative_margin_of_error.value / 100 # percent to factor
 	params['absolute_margin_of_error'] = absolute_margin_of_error.value
 	params['max_runtime'] = max_runtime.value * 60  # minutes to seconds
+	#------------ Settings -----------
+	params['python_interpreter'] = _python_interpreter_line_edit.text
 
 	# Save to file
 	Tools.save_json(Tools.USER_PARAMS_PATH, params)

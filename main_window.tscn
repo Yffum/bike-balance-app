@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=26 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -17,6 +17,13 @@
 [ext_resource type="LabelSettings" uid="uid://bceklmquggeup" path="res://UI/title_label_settings.tres" id="9_o2qoy"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t05ru"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xgncb"]
 content_margin_left = 10.0
@@ -51,9 +58,10 @@ corner_radius_top_right = 30
 corner_radius_bottom_right = 30
 corner_radius_bottom_left = 30
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0oce6"]
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_o2qoy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gj147"]
+bg_color = Color(0.137255, 0.137255, 0.137255, 1)
 
 [sub_resource type="Theme" id="Theme_o2qoy"]
 default_font_size = 22
@@ -211,6 +219,48 @@ size_flags_vertical = 3
 mouse_filter = 2
 color = Color(0.737255, 0.788235, 1, 0.254902)
 
+[node name="ErrorMarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 50
+
+[node name="Panel" type="Panel" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ErrorMarginContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_t05ru")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ErrorMarginContainer/Panel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ErrorMarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Python Error:"
+
+[node name="PythonErrorDialog" type="AcceptDialog" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer"]
+title = "Python Error"
+initial_position = 1
+size = Vector2i(700, 400)
+
+[node name="ScrollContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/PythonErrorDialog"]
+offset_left = 13.0
+offset_top = 13.0
+offset_right = 687.0
+offset_bottom = 334.0
+
+[node name="PythonErrorLabel" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/PythonErrorDialog/ScrollContainer"]
+custom_minimum_size = Vector2(500, 200)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+autowrap_mode = 2
+vertical_alignment = 1
+selection_enabled = true
+
 [node name="RunBar" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
 layout_mode = 2
 
@@ -301,7 +351,6 @@ theme_override_constants/margin_bottom = 25
 
 [node name="CancelSimButton" type="Button" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer"]
 layout_mode = 2
-focus_mode = 0
 theme_override_constants/h_separation = 0
 theme_override_constants/icon_max_width = 40
 theme_override_styles/hover = SubResource("StyleBoxFlat_xgncb")
@@ -757,10 +806,9 @@ theme_override_font_sizes/font_size = 20
 text = "Replications will stop once max runtime is reached, or margin of error is below a given bound (relative or absolute) for every statitistic. Lower runtime by increasing margin of error and/or decreasing confidence level."
 autowrap_mode = 3
 
-[node name="Results" type="ScrollContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
+[node name="Results" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer"]
 visible = false
 layout_mode = 2
-horizontal_scroll_mode = 0
 metadata/_tab_index = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results"]
@@ -775,10 +823,8 @@ theme_override_constants/margin_bottom = 20
 [node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results/MarginContainer"]
 layout_mode = 2
 focus_mode = 2
-theme_override_styles/focus = SubResource("StyleBoxEmpty_0oce6")
 bbcode_enabled = true
 text = "The results of the last simulation run will display here."
-fit_content = true
 context_menu_enabled = true
 selection_enabled = true
 
@@ -801,6 +847,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="InterfaceScale" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/InterfaceScale"]
@@ -821,6 +868,46 @@ step = 0.1
 value = 1.0
 scrollable = false
 ticks_on_borders = true
+
+[node name="PythonInterpreterBox" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/PythonInterpreterBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Python Interpreter"
+
+[node name="PythonInterpreterEdit" type="LineEdit" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/PythonInterpreterBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "python3"
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Panel" type="Panel" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gj147")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PythonInterpreterExplanationLabel" type="RichTextLabel" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/MarginContainer/MarginContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+focus_mode = 2
+text = "E.g. \"python3\", \"python\", \"C:/Users/<user>/AppData/Local/Programs/Python/Python311/python.exe\""
+fit_content = true
+scroll_active = false
+selection_enabled = true
 
 [node name="StationTabContainer" type="TabContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer"]
 layout_mode = 2
@@ -1235,20 +1322,24 @@ color = Color(1, 1, 1, 0)
 [node name="Tools" type="Node" parent="."]
 script = ExtResource("5_bfu0d")
 
-[node name="Settings" type="Node" parent="."]
+[node name="Settings" type="Node" parent="." node_paths=PackedStringArray("_root_node")]
 script = ExtResource("9_1rr46")
+_root_node = NodePath("..")
 
-[node name="SimController" type="Node" parent="." node_paths=PackedStringArray("param_ctrl", "log_label", "run_button", "spinner", "log_tab", "_cancel_sim_button", "_sim_feedback_label")]
+[node name="SimController" type="Node" parent="." node_paths=PackedStringArray("param_ctrl", "log_label", "run_button", "spinner", "_results_tab", "_cancel_sim_button", "_sim_feedback_label", "_python_error_dialog", "_python_error_label", "_python_interpreter_line_edit")]
 script = ExtResource("9_5y2nw")
 param_ctrl = NodePath("../ParamController")
 log_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results/MarginContainer/RichTextLabel")
 run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton")
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
-log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
+_results_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
 _cancel_sim_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer")
 _sim_feedback_label = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/SimFeedbackLabel")
+_python_error_dialog = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/PythonErrorDialog")
+_python_error_label = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/PythonErrorDialog/ScrollContainer/PythonErrorLabel")
+_python_interpreter_line_edit = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/PythonInterpreterBox/PythonInterpreterEdit")
 
-[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_incentive_label", "start_end_station_label", "results_tab", "station_results_panel", "start_end_station_switches")]
+[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_incentive_label", "start_end_station_label", "_python_interpreter_line_edit", "_settings_controller", "results_tab", "station_results_panel", "start_end_station_switches")]
 script = ExtResource("4_guodr")
 start_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox")
 end_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox")
@@ -1288,6 +1379,8 @@ agent_rent_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel
 agent_return_count = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/Stats/AgentReturnCount/Label2")
 results_incentive_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer2/IncentiveTypeLabel")
 start_end_station_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults/Results/VBoxContainer/MarginContainer/VBoxContainer/StartEndLabel")
+_python_interpreter_line_edit = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/PythonInterpreterBox/PythonInterpreterEdit")
+_settings_controller = NodePath("../Settings")
 results_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
 station_results_panel = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StationResults")
 start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/StationTabContainer/Station/ScrollContainer/MarginContainer/StationContent/StartEndStationSwitches")

@@ -18,7 +18,7 @@ config/windows_native_icon="res://icons/bike_bold.ico"
 
 [autoload]
 
-ConfigLoader="*res://config_loader.gd"
+ConfigLoader="res://config_loader.gd"
 Tools="*res://tools.gd"
 Settings="*res://settings.gd"
 

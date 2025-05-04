@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=28 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -10,6 +10,8 @@
 [ext_resource type="Script" uid="uid://itrpmy8ip8ct" path="res://map/path_drawer.gd" id="5_6y3r0"]
 [ext_resource type="Script" uid="uid://dn50ac575shwp" path="res://tools.gd" id="5_bfu0d"]
 [ext_resource type="Script" uid="uid://q5g8pul385u7" path="res://addons/tattomoosa.spinner/spinner.gd" id="5_fc6ls"]
+[ext_resource type="Texture2D" uid="uid://dh0cam30gn446" path="res://UI/zoom-in_path.svg" id="6_aiaes"]
+[ext_resource type="Texture2D" uid="uid://w4vfi8n38quy" path="res://UI/zoom-out_path.svg" id="7_t05ru"]
 [ext_resource type="Texture2D" uid="uid://bgavgrr05vaos" path="res://UI/cross_bold.svg" id="7_xgncb"]
 [ext_resource type="Script" uid="uid://tphp00oas6w3" path="res://UI/batch_controller.gd" id="8_0oce6"]
 [ext_resource type="Script" uid="uid://bbvq1vxl5x7rc" path="res://settings.gd" id="9_1rr46"]
@@ -260,6 +262,37 @@ focus_mode = 2
 autowrap_mode = 2
 vertical_alignment = 1
 selection_enabled = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="HBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+
+[node name="ZoomInButton" type="Button" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+icon = ExtResource("6_aiaes")
+vertical_icon_alignment = 2
+expand_icon = true
+
+[node name="ZoomOutButton" type="Button" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+icon = ExtResource("7_t05ru")
+vertical_icon_alignment = 2
+expand_icon = true
 
 [node name="RunBar" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
 layout_mode = 2
@@ -1388,6 +1421,8 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="mouse_entered" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]
 [connection signal="station_selected" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" to="ParamController" method="_on_map_controller_station_selected"]
+[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MarginContainer/HBoxContainer/ZoomInButton" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_zoom_in_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MarginContainer/HBoxContainer/ZoomOutButton" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_zoom_out_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton" to="SimController" method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer/CancelSimButton" to="SimController" method="_on_cancel_sim_button_pressed"]
 [connection signal="tab_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" to="ParamController" method="_on_settings_tab_changed"]

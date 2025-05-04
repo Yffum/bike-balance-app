@@ -6,7 +6,10 @@ const INITIAL_ZOOM = 0.387431
 const INITIAL_POSITION = Vector2(-1775.0, -1316.514)
 
 @export var zoom_speed : float = 10
+## Zoom factor for mouse scrolling
 @export var zoom_factor : float = 0.1
+## Zoom factor for buttons
+@export var zoom_buttons_factor : float = 0.5
 @export var map_sprite : Sprite2D
 
 var zoom_target : Vector2
@@ -18,7 +21,6 @@ var map_is_smaller_than_viewport : bool
 
 var map_size : Vector2
 
-@export var map_controller : Node
 
 func _ready():
 	zoom = Vector2(INITIAL_ZOOM, INITIAL_ZOOM)
@@ -31,10 +33,10 @@ func _ready():
 
 func _process(delta):
 	
-	if input_enabled:
-		handle_zoom(delta)
-		if not map_is_smaller_than_viewport:
-			handle_pan()
+
+	handle_zoom(delta)
+	if not map_is_smaller_than_viewport and input_enabled:
+		handle_pan()
 	elif is_dragging:
 		if not map_is_smaller_than_viewport:
 			handle_pan()
@@ -44,10 +46,11 @@ func _process(delta):
 	
 
 func handle_zoom(delta: float):
-	if Input.is_action_just_pressed('camera_zoom_in'):
-		zoom_target *= 1 + zoom_factor
-	elif Input.is_action_just_pressed('camera_zoom_out'):
-		zoom_target *= 1 - zoom_factor
+	if input_enabled:
+		if Input.is_action_just_pressed('camera_zoom_in'):
+			zoom_target *= 1 + zoom_factor
+		elif Input.is_action_just_pressed('camera_zoom_out'):
+			zoom_target *= 1 - zoom_factor
 	zoom_target.x = max(MIN_ZOOM, zoom_target.x)
 	zoom_target.x = min(MAX_ZOOM, zoom_target.x)
 	zoom_target.y = zoom_target.x
@@ -58,7 +61,7 @@ func handle_zoom(delta: float):
 	zoom = new_zoom
 	
 	# Zoom at mouse position
-	if not map_is_smaller_than_viewport:
+	if not map_is_smaller_than_viewport and input_enabled:
 		position += zoom_ratio * get_viewport().get_mouse_position() / zoom
 	# Zoom at center
 	else:
@@ -110,3 +113,11 @@ func _on_map_container_mouse_entered():
 
 func _on_map_container_mouse_exited():
 	input_enabled = false
+
+
+func _on_zoom_in_button_pressed():
+	zoom_target *= 1 + zoom_buttons_factor
+
+
+func _on_zoom_out_button_pressed():
+	zoom_target *= 1 - zoom_buttons_factor

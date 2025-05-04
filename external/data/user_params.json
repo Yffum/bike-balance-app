@@ -13,7 +13,7 @@
   "parallel_batch_size": 12,
   "relative_margin_of_error": 0.1,
   "seed": 1837724920,
-  "sim_mode": "batch",
+  "sim_mode": "single_run",
   "start_station": 105,
   "use_static_seed": false,
   "warmup_time": 0.0

@@ -30,6 +30,7 @@ var _textured_frames : Array = [
 ]
 
 
+## Sets the marker label
 func set_label(text : String):
 	label.text = text
 

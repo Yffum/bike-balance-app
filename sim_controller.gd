@@ -5,15 +5,23 @@ extends Node
 @export var run_button : Button
 @export var spinner : Spinner
 @export var log_tab : Node
+@export var _cancel_sim_button : Container
+@export var _sim_feedback_label : Label
 
 var python_command_str = 'python3'
-
-var thread : Thread
 
 signal station_results_loaded(results : Dictionary)
 signal station_batch_results_loaded()
 signal path_results_loaded(actions)
 signal batch_results_loaded()
+
+## True iff python script simulation is running
+var _sim_is_running = false
+## Access to the process stdin and stdout pipes for python
+var _python_output : FileAccess
+## Python process ID
+var _python_pid : int
+
 
 func _notification(what):
 	# On application close:
@@ -30,7 +38,17 @@ func _notification(what):
 func _ready():
 	# Set interface scale
 	get_tree().root.content_scale_factor = 1.0
-	thread = Thread.new()
+
+
+func _process(_delta):
+	# Check if simulation is finished
+	if _sim_is_running and not OS.is_process_running(_python_pid):
+		# Hide cancel button
+		_cancel_sim_button.visible = false
+		# Get results filepath and process results
+		_sim_is_running = false
+		var results_filepath := _python_output.get_as_text()
+		_process_sim_results(results_filepath)
 
 
 ## Returns the content of the given log as a String
@@ -92,7 +110,7 @@ func _delete_oldest_logs():
 		var full_path = Tools.LOGS_PATH.path_join(log_file)
 		if FileAccess.file_exists(full_path):
 			print("Deleting log:", log_file)
-			DirAccess.remove_absolute(full_path)
+			OS.move_to_trash(full_path)
 		else:
 			print("File not found:", full_path)
 
@@ -146,32 +164,72 @@ func _delete_oldest_results():
 		var full_path = Tools.RESULTS_PATH.path_join(results_file)
 		if FileAccess.file_exists(full_path):
 			print("Deleting result:", results_file)
-			DirAccess.remove_absolute(full_path)
+			OS.move_to_trash(full_path)
 		else:
 			print("File not found:", full_path)
 
 
-## Returns the filepath of the log
-func run_simulation() -> String:
-	var python_script_path = Tools.SIM_SCRIPT_PATH
-	var output := []
-	var exit_code := OS.execute(python_command_str, [python_script_path, '--frontend'], output, false, false)
-	var stdout : String = output[0]
-	return stdout
+## Runs simulation through separate python process and saves process info
+func run_simulation() -> void:
+	var python_script_path := Tools.SIM_SCRIPT_PATH
+	var process_info := OS.execute_with_pipe(python_command_str, [python_script_path, '--frontend'])
+	# Python script successfully launched
+	if process_info:
+		print('Python script launched')
+		_python_pid = process_info['pid']
+		_python_output = process_info['stdio']
+		_sim_is_running = true
+	else:
+		print('Failed to launch ' + python_command_str + ' ' + python_script_path)
+		_process_sim_failure('Simulation failed to launch')
 
 
-func _process_simulation():
-	var results_path = run_simulation()
-	call_deferred('_handle_sim_end', results_path)
+## Stops simulation and adjusts interface
+func cancel_simulation() -> void:
+	# Hide cancel button and kill simulation
+	_cancel_sim_button.visible = false
+	kill_simulation()
+	# Enable run button
+	run_button.disabled = false
+	run_button.text = 'Run Simulation'
+	# Set spinner to warning
+	spinner.status = 4  # Warning
+	# Show feedback
+	_sim_feedback_label.text = 'Simulation canceled'
 
 
-func _handle_sim_end(results_path : String):
-	print('results path:', results_path)
+## Stops simulation, or does nothing if simulation isn't running.
+func kill_simulation() -> void:
+	if _sim_is_running:
+		_sim_is_running = false
+		var error := OS.kill(_python_pid)
+		if error == OK:
+			print('Python process killed successfully.')
+		else:
+			print('Failed to kill Python process.')
+
+
+## Updates interface after sim fails to complete
+func _process_sim_failure(feedback_text : String) -> void:
+	# Enable run button
+	run_button.disabled = false
+	run_button.text = 'Run Simulation'
+	# Hide cancel button
+	_cancel_sim_button.visible = false
+	# Set spinner
+	spinner.status = 5  # Error
+	# Show feedback
+	_sim_feedback_label.text = feedback_text
+
+
+func _process_sim_results(results_path : String) -> void:
 	results_path = results_path.replace('\\', '/')
 	results_path = results_path.replace('external/', '')
 	results_path = Tools.EXTERNAL_DIR.path_join(results_path)
-	print('results path:', results_path)
 	var results : Dictionary = Tools.load_json_dict(results_path)
+	if results.is_empty():
+		_process_sim_failure('Simulation failed')
+		return
 	# Write log text to panel
 	log_label.text = results['report']
 	# Save station results if single run
@@ -191,11 +249,15 @@ func _handle_sim_end(results_path : String):
 		station_batch_results_loaded.emit()
 		batch_results_loaded.emit()
 	
-	thread.wait_to_finish()
-	# Enable run button, set spinner
+	# Enable run button
 	run_button.disabled = false
 	run_button.text = 'Run Simulation'
+	# Hide cancel button
+	_cancel_sim_button.visible = false
+	# Set spinner
 	spinner.status = 3  # Success
+	# Show feedback
+	_sim_feedback_label.text = 'Simulation complete'
 	# Open log tab
 	log_tab.visible = true
 
@@ -203,18 +265,28 @@ func _handle_sim_end(results_path : String):
 func _on_run_button_pressed():
 	# Save parameters to file
 	param_ctrl.save_user_params()
-	# Disable run button, start spinner
+	# Disable run button
 	run_button.disabled = true
 	run_button.text = 'Running...'
+	# Show cancel button
+	_cancel_sim_button.visible = true
+	# Start spinner
 	spinner.visible = true
 	spinner.status = 1  # Spinning
-	# Run simulation in thread
-	thread.start(_process_simulation)
+	# Wipe feedback label
+	_sim_feedback_label.text = ''
+	# Run simulation as separate process
+	run_simulation()
 
 
 func _exit_tree():
-	thread.wait_to_finish()	
+	# Kill simulation when application is closed
+	kill_simulation()
 
 
 func _show_file(filepath : String):
 	OS.shell_show_in_file_manager(filepath)
+
+
+func _on_cancel_sim_button_pressed():
+	cancel_simulation()

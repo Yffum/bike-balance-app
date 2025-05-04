@@ -3,8 +3,8 @@
 # To Do
 
 ## Frontend
-- [ ] Add cancel button for simulation
-- [ ] Add handling for simulation call fail
+- [x] Add cancel button for simulation
+- [x] Add handling for simulation call fail
 - [ ] Add setting for python name/path e.g. python3
 
 ## Simulation
@@ -21,7 +21,9 @@
 - [ ] Verify default_user_params.json works
 
 ## Future Work
-- Add interface for loading and managing (e.g. removing) previous results
+- Enhance UI
+  - Use separate thread for results processing to prevent stalling on simulation completion
+  - Add interface for loading and managing (e.g. removing) previous results
 - Sim parameters
   - Rental strategy: [selfish, cooperative/fair]
 - Refine simulation parameter collection
@@ -29,6 +31,7 @@
   - Simulate other agents
   - Refine trip duration generation: examine data from single rider instead of group to determine appropriate distribution and distribution parameters for generating trip times
 - Create app for bike angels
+
 
 # Project Deliverables
 - README.md

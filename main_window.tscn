@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=25 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -10,12 +10,46 @@
 [ext_resource type="Script" uid="uid://itrpmy8ip8ct" path="res://map/path_drawer.gd" id="5_6y3r0"]
 [ext_resource type="Script" uid="uid://dn50ac575shwp" path="res://tools.gd" id="5_bfu0d"]
 [ext_resource type="Script" uid="uid://q5g8pul385u7" path="res://addons/tattomoosa.spinner/spinner.gd" id="5_fc6ls"]
+[ext_resource type="Texture2D" uid="uid://bgavgrr05vaos" path="res://UI/cross_bold.svg" id="7_xgncb"]
 [ext_resource type="Script" uid="uid://tphp00oas6w3" path="res://UI/batch_controller.gd" id="8_0oce6"]
 [ext_resource type="Script" uid="uid://bbvq1vxl5x7rc" path="res://settings.gd" id="9_1rr46"]
 [ext_resource type="Script" uid="uid://d1hwt2xwxkual" path="res://sim_controller.gd" id="9_5y2nw"]
 [ext_resource type="LabelSettings" uid="uid://bceklmquggeup" path="res://UI/title_label_settings.tres" id="9_o2qoy"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xgncb"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.59, 0.0413, 0.0504449, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aiaes"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.27475, 0.0250847, 0.0284519, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m08n5"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.38, 0.0342, 0.0399632, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0oce6"]
 
@@ -195,9 +229,8 @@ text = "Run Simulation"
 
 [node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar"]
 layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 30
+theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 30
 
 [node name="Spinner" type="Range" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2"]
@@ -258,6 +291,27 @@ allow_lesser = false
 script = ExtResource("5_fc6ls")
 spin_revolution_per_second = 1.0
 metadata/_custom_type_script = "uid://q5g8pul385u7"
+
+[node name="CancelSimButtonContainer" type="MarginContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 25
+
+[node name="CancelSimButton" type="Button" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer"]
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/h_separation = 0
+theme_override_constants/icon_max_width = 40
+theme_override_styles/hover = SubResource("StyleBoxFlat_xgncb")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_aiaes")
+theme_override_styles/normal = SubResource("StyleBoxFlat_m08n5")
+text = "Cancel  "
+icon = ExtResource("7_xgncb")
+
+[node name="SimFeedbackLabel" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar"]
+layout_mode = 2
 
 [node name="MarginRightPanel" type="MarginContainer" parent="MarginContainer/HSplitContainer"]
 layout_mode = 2
@@ -1184,13 +1238,15 @@ script = ExtResource("5_bfu0d")
 [node name="Settings" type="Node" parent="."]
 script = ExtResource("9_1rr46")
 
-[node name="SimController" type="Node" parent="." node_paths=PackedStringArray("param_ctrl", "log_label", "run_button", "spinner", "log_tab")]
+[node name="SimController" type="Node" parent="." node_paths=PackedStringArray("param_ctrl", "log_label", "run_button", "spinner", "log_tab", "_cancel_sim_button", "_sim_feedback_label")]
 script = ExtResource("9_5y2nw")
 param_ctrl = NodePath("../ParamController")
 log_label = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results/MarginContainer/RichTextLabel")
 run_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton")
 spinner = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer2/Spinner")
 log_tab = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Results")
+_cancel_sim_button = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer")
+_sim_feedback_label = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/SimFeedbackLabel")
 
 [node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_incentive_label", "start_end_station_label", "results_tab", "station_results_panel", "start_end_station_switches")]
 script = ExtResource("4_guodr")
@@ -1240,6 +1296,7 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="mouse_exited" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_map_container_mouse_exited"]
 [connection signal="station_selected" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/MapController" to="ParamController" method="_on_map_controller_station_selected"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton" to="SimController" method="_on_run_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer/CancelSimButton" to="SimController" method="_on_cancel_sim_button_pressed"]
 [connection signal="tab_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" to="ParamController" method="_on_settings_tab_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox" to="ParamController" method="_on_start_station_spinbox_value_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox" to="ParamController" method="_on_end_station_spinbox_value_changed"]

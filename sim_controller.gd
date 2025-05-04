@@ -228,7 +228,7 @@ func _process_sim_results(results_path : String) -> void:
 	results_path = Tools.EXTERNAL_DIR.path_join(results_path)
 	var results : Dictionary = Tools.load_json_dict(results_path)
 	if results.is_empty():
-		_process_sim_failure('Simulation failed')
+		_process_sim_failure('Failed to retrieve simulation results')
 		return
 	# Write log text to panel
 	log_label.text = results['report']

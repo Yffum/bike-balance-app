@@ -5,7 +5,7 @@
 ## Frontend
 - [x] Add cancel button for simulation
 - [x] Add handling for simulation call fail
-- [ ] Add setting for python name/path e.g. python3
+- [x] Add setting for python name/path e.g. python3
 
 ## Simulation
 - [ ] Add station validation for basic agent
@@ -13,7 +13,7 @@
 - [ ] Add station agnostic batch setting
 
 - [ ] Try diminishing reward value with time (or node depth) for smart agent
-- [ ] Search branches that end early should be considered less valuable (some function of the time passed of maybe node depth)
+- [ ] Search branches that end early should be considered less valuable (some function of the time passed or maybe node depth)
 
 - [ ] Implement new end excursion policy
 

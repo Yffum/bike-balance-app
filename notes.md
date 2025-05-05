@@ -17,6 +17,9 @@
 
 - [ ] Implement new end excursion policy
 
+## Refinement
+- [ ] Issue where smart agent waits when out of time res://external/saved_results/250505-1622_s1251291833.json
+
 ## Finalization
 - [ ] Verify default_user_params.json works
 
@@ -24,6 +27,7 @@
 - Enhance UI
   - Use separate thread for results processing to prevent stalling on simulation completion
   - Add interface for loading and managing (e.g. removing) previous results
+  - Recenter map to station when station selected through station tab
 - Sim parameters
   - Rental strategy: [selfish, cooperative/fair]
 - Refine simulation parameter collection

@@ -12,7 +12,7 @@ import re
 
 import numpy as np
 
-from tools import estimate_stochastic_mean, estimate_stochastic_stats, estimate_stochastic_stats_fixed_size
+from tools import estimate_stochastic_stats, estimate_stochastic_stats_fixed_size
         
 # Unless otherwise indicated:
 # - "station" refers to station index
@@ -33,7 +33,11 @@ if len(sys.argv) == 2 and sys.argv[1] == '--frontend':
 
 #-------------------- CONFIGURATION --------------------
 START_TIME = 16.0  # Time of day (HH) when the simulation begins                                                     
-                                        
+
+# The number of bikes to add/remove when validating a station (higher
+# values are stricter, while 0 means the station is valid if there is
+# no inverse incentive)
+AGENT_VALIDATION_EXTENT = 2 
 AGENT_SEARCH_BRANCH_FACTOR = 4  # The number of nearest stations (with rewards if biking) to
                                 # search when expanding a node
 AGENT_MAX_SEARCH_DEPTH = 4  # The max depth of the agent's search tree
@@ -295,9 +299,9 @@ class Agent:
         if AGENT_INTELLIGENCE == 'smart':
             return self._get_smart_action(bike_counts, incentives, current_time)
         elif AGENT_INTELLIGENCE == 'basic':
-            return self._get_basic_action(incentives, current_time)
+            return self._get_basic_action(bike_counts, incentives, current_time)
 
-    def _get_basic_action(self, incentives: list, current_time: float) -> int:
+    def _get_basic_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
         """" Returns the next station the agent will travel without prediction. """
         # Set nearest stations and trip times based on mode
         if self.mode == 'bike':
@@ -313,6 +317,11 @@ class Agent:
         # Track whether there's time to reach final station
         has_time_to_finish_excursion = False
         for end_station in near_stations[self.station]:
+            # Validate station
+            if not self._validate_station(
+                end_station, bike_counts[end_station], self.mode
+                ):
+                continue
             # Ensure there is enough time to reach final station
             return_time = (
                 current_time 
@@ -459,8 +468,12 @@ class Agent:
                         # Estimate return time after incentive update
                         update_time = np.ceil(root_time / INCENTIVE_UPDATE_INTERVAL) * INCENTIVE_UPDATE_INTERVAL
                         return_time_after_update = update_time + WALK_TIMES[self.station][self.final_station]
-                        #------ Wait for update if there's time -----
-                        if self.end_time >= return_time_after_update:
+                        # Wait for update if there's time and there
+                        # are no incentivized stations
+                        if (
+                            self.end_time > return_time_after_update
+                            and all(x == 0 for x in incentives)
+                        ):
                             return NULL_STATION   
                         #------------ Otherwise end trip ------------
                         else:
@@ -681,7 +694,7 @@ class Agent:
         """
         if mode == 'walk':
             # Remove bike, limited by capacity
-            bike_count = min(bike_count + 1, CAPACITIES[station])
+            bike_count = min(bike_count + AGENT_VALIDATION_EXTENT, CAPACITIES[station])
             # Get incentive
             incentive = INCENTIVES[station][bike_count]
             # Station is not valid if returns are incentivized
@@ -689,7 +702,7 @@ class Agent:
                 return False
         else:  # mode == 'bike'
             # Add bike, limited by capacity
-            bike_count = max(bike_count - 1, 0)
+            bike_count = max(bike_count - AGENT_VALIDATION_EXTENT, 0)
             # Get incentive
             incentive = INCENTIVES[station][bike_count]
             # Station is not valid if rentals are incentivized

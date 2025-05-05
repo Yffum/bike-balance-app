@@ -1,6 +1,6 @@
 {
   "absolute_margin_of_error": 0.1,
-  "agent_mode": "smart",
+  "agent_mode": "basic",
   "batch_mode": "fixed_sample_size",
   "batch_size": 300,
   "confidence_level": 0.95,
@@ -10,12 +10,12 @@
   "full_bias": 0.0,
   "max_runtime": 120.0,
   "min_sample_size": 300,
-  "parallel_batch_size": 8,
-  "python_interpreter": "python",
+  "parallel_batch_size": 12,
+  "python_interpreter": "python3",
   "relative_margin_of_error": 0.1,
-  "seed": 589739284,
-  "sim_mode": "batch",
+  "seed": 2369672934,
+  "sim_mode": "single_run",
   "start_station": 105,
-  "use_static_seed": true,
+  "use_static_seed": false,
   "warmup_time": 0.0
 }

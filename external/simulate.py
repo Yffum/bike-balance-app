@@ -332,7 +332,7 @@ class Agent:
             return_time = (
                 current_time 
                 + trip_times[self.station][end_station]
-                + self._estimate_time_to_end_excursion(bike_counts, end_station)
+                + self._estimate_time_to_end_excursion_precise(bike_counts, end_station)
             )
             if return_time > self.end_time:
                 continue
@@ -378,7 +378,7 @@ class Agent:
                     return_time = (
                         current_time 
                         + AGENT_WAIT_TIME
-                        + self._estimate_time_to_end_excursion(bike_counts, self.station)
+                        + self._estimate_time_to_end_excursion_precise(bike_counts, self.station)
                     )
                     if return_time > self.end_time:
                         self._is_ending = True
@@ -480,7 +480,7 @@ class Agent:
                         #----------------- No best node or trips found ------------
                         # Estimate return time after incentive update
                         update_time = np.ceil(root_time / INCENTIVE_UPDATE_INTERVAL) * INCENTIVE_UPDATE_INTERVAL
-                        return_time_after_update = update_time + self._estimate_time_to_end_excursion(bike_counts, self.station)
+                        return_time_after_update = update_time + self._estimate_time_to_end_excursion(self.station)
                         # Wait for update if there's time and there
                         # are no incentivized stations
                         if (
@@ -541,12 +541,7 @@ class Agent:
             for end_station, incentive in enumerate(incentives):
                 # Validate station
                 walk_time = WALK_TIMES[node.station][end_station]
-                time_from_root = node.time - root_time + walk_time
-                new_bike_counts = [estimate_bike_count(i, count, time_from_root) for i, count in enumerate(root_bike_counts)]
-                new_bike_counts[end_station] -= 1  # Remove bike for station being walked to
-                for station in node.bike_differences:
-                    new_bike_counts[station] += node.bike_differences[station]
-                return_time = node.time + walk_time + self._estimate_time_to_end_excursion(new_bike_counts, end_station)
+                return_time = node.time + walk_time + self._estimate_time_to_end_excursion(end_station)
                 if (
                     # Trip exceeds max walk time
                     walk_time > max_walk_time
@@ -644,12 +639,7 @@ class Agent:
                     continue
                 # Skip station if return time exceeds end time
                 bike_time = BIKE_TIMES[node.station][end_station]
-                time_from_root = node.time - root_time + bike_time
-                new_bike_counts = [estimate_bike_count(i, count, time_from_root) for i, count in enumerate(root_bike_counts)]
-                new_bike_counts[end_station] += 1  # Add bike to station being biked to
-                for station in node.bike_differences:
-                    new_bike_counts[station] += node.bike_differences[station]
-                return_time = node.time + bike_time + self._estimate_time_to_end_excursion(new_bike_counts, end_station)
+                return_time = node.time + bike_time + self._estimate_time_to_end_excursion(end_station)
                 if return_time > self.end_time:
                     continue
                 # Get reward rate for every incentivized stations
@@ -883,7 +873,7 @@ class Agent:
             return WALK_TIMES[current_station][self.final_station]
         return self.final_station
             
-    def _estimate_time_to_end_excursion(self, bike_counts: list, current_station: int, use_rough_estimate=False) -> float:
+    def _estimate_time_to_end_excursion_precise(self, bike_counts: list, current_station: int, use_rough_estimate=False) -> float:
         """ Returns the estimated time it would take to end the excursion.
         Args:
             bike_counts (list): current bike counts indexed by station
@@ -895,7 +885,14 @@ class Agent:
             bike_counts, current_station=current_station, estimate_time_instead=True)
         logger.debug(f'est tim {estimated_time}')
         return estimated_time
-            
+    
+    def _estimate_time_to_end_excursion(self, current_station: int) -> float:
+        """ Returns a rough estimate of the time it would take to end the
+        excursion from the current_station
+        """
+        ESTIMATE_BUFFER = 5/60
+        return BIKE_TIMES[current_station][self.final_station] + ESTIMATE_BUFFER
+    
         
 #---------------------------- Tools ------------------------------------
 
@@ -1642,7 +1639,7 @@ def main():
 
     # Print results filepath for frontend
     if USING_APP:
-        logger.debug(results_filepath, end='')
+        print(results_filepath, end='')
     
     # Cleanup
     logging.shutdown()

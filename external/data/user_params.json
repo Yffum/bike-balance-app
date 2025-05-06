@@ -3,7 +3,7 @@
   "agent_mode": "smart",
   "batch_mode": "fixed_sample_size",
   "batch_size": 300,
-  "confidence_level": 0.95,
+  "confidence_level": 0.99,
   "empty_bias": 0.0,
   "end_station": 105,
   "excursion_time": 4.0,

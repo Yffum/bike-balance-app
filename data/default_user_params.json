@@ -12,6 +12,7 @@
 	"min_sample_size": 300.0,
 	"parallel_batch_size": 8.0,
 	"python_interpreter": "python3",
+	"randomize_stations": false,
 	"relative_margin_of_error": 0.1,
 	"seed": null,
 	"sim_mode": "single_run",

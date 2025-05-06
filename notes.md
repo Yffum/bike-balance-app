@@ -31,11 +31,15 @@
   - Allow selecting station from agent actions list in results
 - Sim parameters
   - Rental strategy: [selfish, cooperative/fair]
+- Sim results
+  - Total walk time
 - Refine simulation parameter collection
 - Refine simulation accuracy
   - Simulate other agents
   - Refine trip duration generation: examine data from single rider instead of group to determine appropriate distribution and distribution parameters for generating trip times
 - Create app for bike angels
+- Expand simulation
+  - Use multiple agents
 
 # Project Deliverables
 - README.md

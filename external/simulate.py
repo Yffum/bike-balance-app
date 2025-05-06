@@ -86,6 +86,7 @@ SEED = USER_PARAMS['seed']  # Unsigned 32 bit int
 # Batch
 CONFIDENCE_LEVEL = USER_PARAMS['confidence_level']
 PARALLEL_BATCH_SIZE = USER_PARAMS['parallel_batch_size']
+RANDOMIZE_STATIONS = USER_PARAMS['randomize_stations'] # If True, randomizes start/end stations
 BATCH_MODE = USER_PARAMS['batch_mode']  # 'precision_based' or 'fixed_sample_size'
 # - Fixed sample size
 FIXED_SAMPLE_SIZE = USER_PARAMS['batch_size']  # Number of simulation replications
@@ -269,10 +270,10 @@ class Node:
     
 class Agent:
     """ The bike rebalancing agent. The agent iteratively takes trips between stations. """
-    def __init__(self):
+    def __init__(self, start_station: int, final_station: int):
         """ An agent iteratively takes trips between stations, alternating between biking and walking. """
-        self.station = START_STATION  # Current station index
-        self.final_station = FINAL_STATION  # The station the agent wants to end at when time is done
+        self.station = start_station  # Current station index
+        self.final_station = final_station  # The station the agent wants to end at when time is done
         self.mode = 'bike'
         self.end_time = START_TIME + EXCURSION_TIME  # Agent should arrive at final station by this time
         self.reward = 0  # Total rewards earned
@@ -1019,7 +1020,7 @@ def log_incentivized_stations(incentives: list) -> None:
 
 #-------------------------- Simulation ---------------------------------
 
-def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> float | dict:
+def simulate_bike_share(return_full_stats=False, batch_stats_only=False, randomize_stations=False) -> float | dict:
     """ Simulates a single excursion of an agent rebalancing bikes in a bike share system,
     and returns a dictionary of stats including rewards earned and trips taken. 
 
@@ -1031,6 +1032,8 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
         batch_stats_only (bool): Returns only stats for batch runs if True. Returns all
             stats if False (unless return_full_stats is False, in which case this arg
             has no effect).
+        randomize_stations (boole): Randomly select start/final stations
+            for agent if True. Otherwise, use user parameters.
     """
     # Track simulation time
     real_start_time = time.perf_counter()
@@ -1048,7 +1051,13 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
     incentives = [INCENTIVES[station][bike_counts[station]] for station in range(N)]
     current_time = START_TIME  # Hour of the day (HH)
     # Initialize agent
-    agent = Agent()
+    if randomize_stations:
+        agent_start_station = np.random.randint(N)
+        agent_end_station = np.random.randint(N)
+    else:
+        agent_start_station = START_STATION
+        agent_end_station = FINAL_STATION
+    agent = Agent(agent_start_station, agent_end_station)
     # Initialize stats (action counts)
     bike_trip_count = 0
     walk_trip_count = 0
@@ -1428,6 +1437,13 @@ def record_batch_precision_results(results) -> str:
     time_exceeded_str = ''
     if runtime > USER_PARAMS['max_runtime']:
         time_exceeded_str = '\nWarning: Max runtime exceeded. Target precision for result estimations not reached.\n'
+    # Get start/end station strings 
+    if RANDOMIZE_STATIONS:
+        start_station_str = 'Random'
+        end_station_str = 'Random'
+    else:
+        start_station_str = USER_PARAMS['start_station']
+        end_station_str = USER_PARAMS['end_station']
     
     sim_stat_pairs = [
         ("Date", report_date),
@@ -1437,8 +1453,8 @@ def record_batch_precision_results(results) -> str:
     ]
     parameter_pairs = [
         ("Agent Mode", USER_PARAMS['agent_mode'].capitalize()),
-        ("Start Station", USER_PARAMS['start_station']),
-        ("End Station", USER_PARAMS['end_station']),
+        ("Start Station", start_station_str),
+        ("End Station", end_station_str),
         ("Excursion Time", f"{USER_PARAMS['excursion_time']} hours"),
         ("Warmup Time", f"{USER_PARAMS['warmup_time']} hours"),
         ("Empty Station Bias", USER_PARAMS['empty_bias']),
@@ -1504,6 +1520,13 @@ def record_batch_fixed_results(results) -> str:
     time_exceeded_str = ''
     if runtime > USER_PARAMS['max_runtime'] and replication_count < USER_PARAMS['batch_size']:
         time_exceeded_str = '\nWarning: Max runtime exceeded. Target sample size not reached.\n'
+    # Get start/end station strings 
+    if RANDOMIZE_STATIONS:
+        start_station_str = 'Random'
+        end_station_str = 'Random'
+    else:
+        start_station_str = USER_PARAMS['start_station']
+        end_station_str = USER_PARAMS['end_station']
     
     sim_stat_pairs = [
         ("Date", report_date),
@@ -1513,8 +1536,8 @@ def record_batch_fixed_results(results) -> str:
     ]
     parameter_pairs = [
         ("Agent Mode", USER_PARAMS['agent_mode'].capitalize()),
-        ("Start Station", USER_PARAMS['start_station']),
-        ("End Station", USER_PARAMS['end_station']),
+        ("Start Station", start_station_str),
+        ("End Station", end_station_str),
         ("Excursion Time", f"{USER_PARAMS['excursion_time']} hours"),
         ("Warmup Time", f"{USER_PARAMS['warmup_time']} hours"),
         ("Empty Station Bias", USER_PARAMS['empty_bias']),
@@ -1614,7 +1637,7 @@ def main():
         if BATCH_MODE == 'precision_based':
             results = estimate_stochastic_stats(
                 process=simulate_bike_share, 
-                args=(True, True),
+                args=(True, True, RANDOMIZE_STATIONS),
                 min_samples=MIN_SAMPLE_SIZE,
                 max_runtime=MAX_RUNTIME,
                 relative_margin_of_error=RELATIVE_MARGIN_OF_ERROR,
@@ -1628,7 +1651,7 @@ def main():
         elif BATCH_MODE == 'fixed_sample_size':
             results = estimate_stochastic_stats_fixed_size(
                 process=simulate_bike_share,
-                args=(True, True),
+                args=(True, True, RANDOMIZE_STATIONS),
                 total_samples=FIXED_SAMPLE_SIZE,
                 max_runtime=MAX_RUNTIME,
                 batch_size=PARALLEL_BATCH_SIZE,

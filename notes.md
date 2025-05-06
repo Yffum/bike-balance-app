@@ -6,6 +6,8 @@
 - [ ] Verify default_user_params.json works
 
 ## Future Work
+- Rigorous Automated Testing
+  - ensure conditions are met such that simulation and agents behave as expected
 - Enhance UI
   - Use separate thread for results processing to prevent stalling on simulation completion
   - Add interface for loading and managing (e.g. removing) previous results

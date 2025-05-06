@@ -218,7 +218,7 @@ else:
     console_handler.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
     
-def generate_log_filepath(seed):
+def generate_log_filepath(seed: int | str) -> str:
     """ Generates a log filepath in the format data/YYMMDD_HHMM_s<seed>.log """
     log_dir = os.path.join(BASE_PATH[:-1], 'logs')
     
@@ -282,7 +282,11 @@ class Agent:
         self._is_ending = False
 
     def update(self, new_station: int, reward_gain: float) -> None:
-        """ Updates the agent's state based on the given trip data. """
+        """ Updates the agent's state based on the given trip data. 
+        Args:
+            new_station (int): The station the agent just traveled to
+            reward_gain (float): The amount of reward gained from the
+                trip the agent just took. """
         # Update station
         self.station = new_station
         # Alternate mode and set rent restriction
@@ -296,7 +300,14 @@ class Agent:
         self.reward += reward_gain    
 
     def get_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
-        """ Returns the next station the agent will travel to. """
+        """ Returns the next station the agent will travel to. 
+        Args:
+            bike_counts (list): A list of current bike counts indexed
+                by station
+            incentives (list): A list of current incentives indexed by
+                station
+            current_time (float): The current time in the simulation.
+        """
         # If ending excursion, find best path home
         if self._is_ending == True:
             return self._get_ending_action(bike_counts)
@@ -305,11 +316,17 @@ class Agent:
             return self._get_smart_action(bike_counts, incentives, current_time)
         elif AGENT_INTELLIGENCE == 'basic':
             test =  self._get_basic_action(bike_counts, incentives, current_time)
-            logger.debug(f'received basic action: {test}')
             return test
 
     def _get_basic_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
-        """" Returns the next station the agent will travel without prediction. """
+        """" Returns the next station the agent will travel without prediction. 
+        Args:
+            bike_counts (list): A list of current bike counts indexed
+                by station
+            incentives (list): A list of current incentives indexed by
+                station
+            current_time (float): The current time in the simulation
+        """
         # Set nearest stations and trip times based on mode
         if self.mode == 'bike':
             near_stations = NEAR_BIKE_STATIONS
@@ -338,9 +355,6 @@ class Agent:
             if return_time > self.end_time:
                 continue
             else:
-                logger.debug(f'>>> has time too finish excursion')
-                logger.debug(f'return time {return_time}')
-                logger.debug(f'station {end_station}')
                 has_time_to_finish_excursion = True
             # Ensure not walking to far away station
             if self.mode == 'walk' and trip_times[self.station][end_station] > AGENT_MAX_WALK_TIME:
@@ -360,7 +374,6 @@ class Agent:
         # If there's no time to finish the excursion, end trip
         if not has_time_to_finish_excursion:
             self._is_ending = True
-            logger.debug(f'>>> basic agent starting _get_ending')
             return self._get_ending_action(bike_counts)
         # No stations found
         if station_queue.empty():
@@ -392,11 +405,17 @@ class Agent:
                 return NULL_STATION
         # Return station with highest incentive per time 
         action = station_queue.get()[1]
-        logger.debug(f'returning basic action {action}')
         return action 
 
     def _get_smart_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
-        """ Returns the next station the agent will travel to using a search tree. """
+        """ Returns the next station the agent will travel to using a search tree. 
+        Args:
+            bike_counts (list): A list of current bike counts indexed
+                by station
+            incentives (list): A list of current incentives indexed by
+                station
+            current_time (float): The current time in the simulation.
+        """
         #---------------------------- Estimate future incentives ---------------------------
         # [(start_time, incentives0), (update1_time, incentives1), ...]
         predicted_incentives = [(current_time, incentives.copy())]
@@ -505,6 +524,18 @@ class Agent:
             return self._get_ending_action(bike_counts)  # Finish excursion       
 
     def _expand_node(self, node: Node, root_bike_counts: list, root_time: float, predicted_incentives: list) -> list:
+        """ Expands the given search node and returns its children.
+        Args:
+            node (Node): The node to expand.
+            root_bike_counts (list): The bike counts of the simulation
+                at the time of the root node of the search tree
+            root_time (float): The simulation time of the root node of
+                the search tree
+            predicted_incentives (list): The incentives predicted at the
+                time of the given node to expand.
+        Returns:
+            list[Node]: The child nodes of the given node.
+        """
         # Get incentive times
         # ToDo: change predicted_incentives to tuple of lists to avoid this step
         incentive_times = [time_incentives_pair[0] for time_incentives_pair in predicted_incentives]
@@ -874,22 +905,23 @@ class Agent:
             return WALK_TIMES[current_station][self.final_station]
         return self.final_station
             
-    def _estimate_time_to_end_excursion_precise(self, bike_counts: list, current_station: int, use_rough_estimate=False) -> float:
+    def _estimate_time_to_end_excursion_precise(self, bike_counts: list, current_station: int) -> float:
         """ Returns the estimated time it would take to end the excursion.
         Args:
             bike_counts (list): current bike counts indexed by station
+            current_station (int): the station from which the agent
+                starts ending its excursion
         """
-        if use_rough_estimate:
-            ROUGH_ESTIMATE_BUFFER = 5/60
-            return BIKE_TIMES[current_station][self.final_station] + ROUGH_ESTIMATE_BUFFER
         estimated_time = self._get_ending_action(
             bike_counts, current_station=current_station, estimate_time_instead=True)
-        logger.debug(f'est tim {estimated_time}')
         return estimated_time
     
     def _estimate_time_to_end_excursion(self, current_station: int) -> float:
         """ Returns a rough estimate of the time it would take to end the
         excursion from the current_station
+        Args:
+            current_station (int): the station from which the agent
+                starts ending its excursion
         """
         ESTIMATE_BUFFER = 2/60
         return BIKE_TIMES[current_station][self.final_station] + ESTIMATE_BUFFER
@@ -907,7 +939,12 @@ def format_time(time: float) -> str:
 
 
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
-    """ Returns a generated list of bike counts for each station after the elapsed time. """
+    """ Returns a generated list of bike counts for each station after the elapsed time.
+    Args:
+        bike_counts (list): The previous bike counts indexed by station
+        elapsed_time (float): The amount of time that has passed since
+            the time of the previous bike counts, bike_counts
+    """
     # Don't modify given list
     counts = list(bike_counts)
     # Time must be non-negative
@@ -939,9 +976,11 @@ def estimate_bike_count(station: int, bike_count: int, time_difference: float, o
     bike count after the time difference (or before, if time_difference < 0).
     This is a deterministic estimation and should not be used for simulation.
     Args:
-        time_difference (float): amount of time in hours after (or before, if
+        station (int): The station to estimate the bike count of
+        bike_count (int): The previous bike count of the station
+        time_difference (float): Amount of time in hours after (or before, if
             time_difference < 0) the station has the given bike_count.
-        overestimate (bool): (experimental) rounds up estimated bike change
+        overestimate (bool): (experimental) Rounds up estimated bike change
             to produce an optimistic estimate for the agent
     """
     # Bike count is unchanged for zero time difference
@@ -997,6 +1036,12 @@ def log_bike_counts(bike_counts: list) -> None:
 
 
 def log_data_stats(data: dict) -> None:
+    """ Logs standard statistics for each variable (key) in the given 
+    dict.
+    Args:
+        data (dict): Each key corresponds to a variable e.g. runtime,
+            and the value is a list of numeric data points 
+    """
     for key in data:
         logger.error(f'{key}:')
         logger.error(f'\tMean: {np.mean(data[key]):.2f}')
@@ -1007,7 +1052,10 @@ def log_data_stats(data: dict) -> None:
 
 
 def log_incentivized_stations(incentives: list) -> None:
-    """ Logs incentivized stations categorized by incentive option (rentals/returns) """
+    """ Logs incentivized stations categorized by incentive option (rentals/returns) 
+    Args:
+        incentives (list): Current incentives indexed by station
+    """
     rent_stations = []
     return_stations = []
     for i, incentive in enumerate(incentives):
@@ -1311,6 +1359,8 @@ def generate_results_filepath(timestamp: str, seed=None):
 
 
 def record_single_run_results(data: dict) -> str:
+    """ Takes the results from simulate_bike_share(True) and generates
+    a results file. """
     timestamp = time.strftime("%y%m%d-%H%M")
     report_date = time.strftime("%Y-%m-%d")
     report_time = time.strftime("%H:%M")
@@ -1421,6 +1471,8 @@ def record_single_run_results(data: dict) -> str:
 
 
 def record_batch_precision_results(results) -> str:
+    """ Takes the results from tools.estimate_stochastic_stats and
+    generates a results file. """
     timestamp = time.strftime("%y%m%d-%H%M")
     report_date = time.strftime("%Y-%m-%d")
     report_time = time.strftime("%H:%M")
@@ -1504,6 +1556,8 @@ def record_batch_precision_results(results) -> str:
     
     
 def record_batch_fixed_results(results) -> str:
+    """ Takes the results from tools.estimate_stochastic_stats_fixed and
+    generates a results file. """
     timestamp = time.strftime("%y%m%d-%H%M")
     report_date = time.strftime("%Y-%m-%d")
     report_time = time.strftime("%H:%M")
@@ -1619,10 +1673,7 @@ def get_bbc_table(name_value_pairs) -> str:
 #---------------------------- Main -------------------------------------
     
 def main():
-    # logger.debug(f'28 walk 27 {WALK_TIMES[28][27]}')
-    # logger.debug(f'28 walk 105 {WALK_TIMES[28][105]}')
-    # return
-    results_filepath = ''
+    results_filepath = '' # Results filepath is printed for frontend
     
     # Based on mode, simulate bike share and save results to file
     

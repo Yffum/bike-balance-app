@@ -68,7 +68,7 @@ func _process(_delta):
 			_python_error_dialog.visible = true
 			var command_str := _python_interpreter_line_edit.text
 			_python_error_label.text = (
-				'> ' + command_str + ' ' + Tools.SIM_SCRIPT_PATH + '--frontend'
+				'> ' + command_str + ' ' + Tools.SIM_SCRIPT_PATH + ' --frontend'
 				+ '\n\n' + _python_stderr.get_as_text()
 			)
 		# Otherwise, process results

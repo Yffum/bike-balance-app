@@ -298,12 +298,14 @@ class Agent:
         """ Returns the next station the agent will travel to. """
         # If ending excursion, find best path home
         if self._is_ending == True:
-            return self._get_ending_action(bike_counts, incentives, current_time)
+            return self._get_ending_action(bike_counts)
         # Use smart action if agent is smart, otherwise use basic action
         elif AGENT_INTELLIGENCE == 'smart':
             return self._get_smart_action(bike_counts, incentives, current_time)
         elif AGENT_INTELLIGENCE == 'basic':
-            return self._get_basic_action(bike_counts, incentives, current_time)
+            test =  self._get_basic_action(bike_counts, incentives, current_time)
+            logger.debug(f'received basic action: {test}')
+            return test
 
     def _get_basic_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
         """" Returns the next station the agent will travel without prediction. """
@@ -329,12 +331,15 @@ class Agent:
             # Ensure there is enough time to reach final station
             return_time = (
                 current_time 
-                + trip_times[self.station][end_station] 
-                + WALK_TIMES[end_station][self.final_station]
+                + trip_times[self.station][end_station]
+                + self._estimate_time_to_end_excursion(bike_counts, end_station)
             )
             if return_time > self.end_time:
                 continue
             else:
+                logger.debug(f'>>> has time too finish excursion')
+                logger.debug(f'return time {return_time}')
+                logger.debug(f'station {end_station}')
                 has_time_to_finish_excursion = True
             # Ensure not walking to far away station
             if self.mode == 'walk' and trip_times[self.station][end_station] > AGENT_MAX_WALK_TIME:
@@ -353,7 +358,9 @@ class Agent:
             station_queue.put((-1 * value, end_station))
         # If there's no time to finish the excursion, end trip
         if not has_time_to_finish_excursion:
-            return END_TRIP
+            self._is_ending = True
+            logger.debug(f'>>> basic agent starting _get_ending')
+            return self._get_ending_action(bike_counts)
         # No stations found
         if station_queue.empty():
             # No valid incentivized walk stations
@@ -371,10 +378,11 @@ class Agent:
                     return_time = (
                         current_time 
                         + AGENT_WAIT_TIME
-                        + WALK_TIMES[self.station][self.final_station]
+                        + self._estimate_time_to_end_excursion(bike_counts, self.station)
                     )
                     if return_time > self.end_time:
-                        return END_TRIP
+                        self._is_ending = True
+                        return self._get_ending_action(bike_counts)
                     # Otherwise wait
                     else:
                         return NULL_STATION
@@ -383,6 +391,7 @@ class Agent:
                 return NULL_STATION
         # Return station with highest incentive per time 
         action = station_queue.get()[1]
+        logger.debug(f'returning basic action {action}')
         return action 
 
     def _get_smart_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
@@ -471,18 +480,19 @@ class Agent:
                         #----------------- No best node or trips found ------------
                         # Estimate return time after incentive update
                         update_time = np.ceil(root_time / INCENTIVE_UPDATE_INTERVAL) * INCENTIVE_UPDATE_INTERVAL
-                        return_time_after_update = update_time + WALK_TIMES[self.station][self.final_station]
+                        return_time_after_update = update_time + self._estimate_time_to_end_excursion(bike_counts, self.station)
                         # Wait for update if there's time and there
                         # are no incentivized stations
                         if (
-                            self.end_time > return_time_after_update
+                            return_time_after_update < self.end_time
                             and all(x == 0 for x in incentives)
                         ):
                             return NULL_STATION   
                         #------------ Otherwise end trip ------------
                         else:
                             logger.debug(f'eta: {format_time(return_time_after_update)}, root time: {format_time(root_time)}')
-                            return END_TRIP
+                            self._is_ending = True
+                            return self._get_ending_action(bike_counts)
         #--------------------- Best node found ------------------------
         if best_node.action != NULL_STATION:
             # Return best action
@@ -490,7 +500,8 @@ class Agent:
         #--------------- No best node, end excursion ------------------
         # If no best node was found, then agent doesn't have time left
         else:
-            return END_TRIP  # Finish excursion       
+            self._is_ending = True
+            return self._get_ending_action(bike_counts)  # Finish excursion       
 
     def _expand_node(self, node: Node, root_bike_counts: list, root_time: float, predicted_incentives: list) -> list:
         # Get incentive times
@@ -530,7 +541,12 @@ class Agent:
             for end_station, incentive in enumerate(incentives):
                 # Validate station
                 walk_time = WALK_TIMES[node.station][end_station]
-                return_time = node.time + walk_time + WALK_TIMES[end_station][self.final_station]
+                time_from_root = node.time - root_time + walk_time
+                new_bike_counts = [estimate_bike_count(i, count, time_from_root) for i, count in enumerate(root_bike_counts)]
+                new_bike_counts[end_station] -= 1  # Remove bike for station being walked to
+                for station in node.bike_differences:
+                    new_bike_counts[station] += node.bike_differences[station]
+                return_time = node.time + walk_time + self._estimate_time_to_end_excursion(new_bike_counts, end_station)
                 if (
                     # Trip exceeds max walk time
                     walk_time > max_walk_time
@@ -541,6 +557,8 @@ class Agent:
                 ):
                     # Skip station
                     continue
+                if end_station == 27:
+                    pass
                 # Get reward rate for every incentivized station
                 if incentive < 0:
                     reward = get_reward(incentive, 'rent')
@@ -621,15 +639,18 @@ class Agent:
             station_reward_rate_pairs = []
             station_travel_time_pairs = []
             for end_station, incentive in enumerate(incentives):
-                # Skip station
+                # Skip same station
+                if end_station == node.station:
+                    continue
+                # Skip station if return time exceeds end time
                 bike_time = BIKE_TIMES[node.station][end_station]
-                return_time = node.time + bike_time + WALK_TIMES[end_station][self.final_station]
-                if (
-                    # Same station
-                    end_station == node.station
-                    # Return time exceeds excursion end time
-                    or return_time > self.end_time
-                ):
+                time_from_root = node.time - root_time + bike_time
+                new_bike_counts = [estimate_bike_count(i, count, time_from_root) for i, count in enumerate(root_bike_counts)]
+                new_bike_counts[end_station] += 1  # Add bike to station being biked to
+                for station in node.bike_differences:
+                    new_bike_counts[station] += node.bike_differences[station]
+                return_time = node.time + bike_time + self._estimate_time_to_end_excursion(new_bike_counts, end_station)
+                if return_time > self.end_time:
                     continue
                 # Get reward rate for every incentivized stations
                 if incentive > 0:
@@ -721,8 +742,7 @@ class Agent:
     def _get_ending_action(
         self, 
         bike_counts: list, 
-        incentives: list, 
-        current_time: float,
+        current_station: int=None,
         estimate_time_instead: bool=False,
         ) -> int | float:
         """ Returns the index of the station the agent should travel to
@@ -741,36 +761,40 @@ class Agent:
                 estimate_time_instead is True, the travel time to end
                 the excursion
         """
+        if not estimate_time_instead:
+            logger.info(f'\t{WARNING} Ending excursion')
+        if current_station == None:
+            current_station = self.station
         # The number of available docks predicted for a station to be
         # considered a valid bike destination
         BIKE_COUNT_BUFFER = 2
         # ToDo: test this case
         # End excursion if at final station
-        if self.station == self.final_station:
+        if current_station == self.final_station:
             if estimate_time_instead:
                 return 0
-            return self.final_station #? END_TRIP 
+            return END_TRIP
         best_action = NULL_STATION  # The action the agent should take
         # Can rent from current station
         if self.can_rent_bike:
             self.mode = 'bike'
             # Validate final station
-            travel_time = BIKE_TIMES[self.station][self.final_station]
+            travel_time = BIKE_TIMES[current_station][self.final_station]
             end_bike_count = estimate_bike_count(
                 self.final_station, bike_counts[self.final_station], travel_time)
             # Bike to final station if there are open docks
             if end_bike_count <= CAPACITIES[self.final_station] - BIKE_COUNT_BUFFER:
                 if estimate_time_instead:
-                    return BIKE_TIMES[self.station][self.final_station]
+                    return BIKE_TIMES[current_station][self.final_station]
                 return self.final_station
             # Can't bike to final station
             # Look for station to bike to that's closer to final station
             for near_station in NEAR_BIKE_STATIONS[self.final_station]:
                 # Stop if all closer stations searched
-                if near_station == self.station:
+                if near_station == current_station:
                     break
                 # Validate station
-                travel_time = BIKE_TIMES[self.station][near_station]
+                travel_time = BIKE_TIMES[current_station][near_station]
                 end_bike_count = estimate_bike_count(
                     near_station, bike_counts[near_station], travel_time)
                 # Bike to closest valid station
@@ -778,28 +802,28 @@ class Agent:
                     if estimate_time_instead:
                         # Time to bike to near station and walk to final
                         return (
-                            BIKE_TIMES[self.station][near_station]
+                            BIKE_TIMES[current_station][near_station]
                             + WALK_TIMES[near_station][self.final_station]
                         )
                     return near_station
             # No valid station found, walk to final station
             self.mode = 'walk'
             if estimate_time_instead:
-                return WALK_TIMES[self.station][self.final_station]
+                return WALK_TIMES[current_station][self.final_station]
             return self.final_station
-            
         # Cannot rent from current station
         else:
             self.mode = 'walk'
+            direct_walk_time = WALK_TIMES[self.station][self.final_station]
             # Find nearest valid station to rent bike from
-            for near_station in NEAR_WALK_STATIONS[self.station]:
+            for near_station in NEAR_WALK_STATIONS[current_station]:
                 # If final station is near, just walk there
                 if near_station == self.final_station:
                     if estimate_time_instead:
-                        return WALK_TIMES[self.station][self.final_station]
+                        return WALK_TIMES[current_station][self.final_station]
                     return self.final_station
                 # Validate station
-                travel_time = WALK_TIMES[self.station][near_station]
+                travel_time = WALK_TIMES[current_station][near_station]
                 end_bike_count = estimate_bike_count(
                     near_station, bike_counts[near_station], travel_time)
                 # Valid station to walk to and rent from found
@@ -811,21 +835,23 @@ class Agent:
                         bike_counts[self.final_station],
                         travel_time + travel_time2
                     )
+                    # If walking directly is faster, do that
+                    if direct_walk_time <= travel_time + travel_time2:
+                        if estimate_time_instead:
+                            return direct_walk_time
+                        return self.final_station
                     # Walk to near station and bike to final station
                     if end_bike_count <= CAPACITIES[self.final_station] - BIKE_COUNT_BUFFER:
                         if estimate_time_instead:
-                            return (
-                                WALK_TIMES[self.station][near_station]
-                                + BIKE_TIMES[near_station][self.final_station]
-                            )
+                            return travel_time + travel_time2
                         return near_station
                     # Can't bike to final station
                     # Check for stations near final station
                     for near_station2 in NEAR_WALK_STATIONS[self.final_station]:
                         # No near station found, just walk to final station
-                        if near_station2 == near_station or near_station2 == self.station:
+                        if near_station2 == near_station or near_station2 == current_station:
                             if estimate_time_instead:
-                                return WALK_TIMES[self.station][self.final_station]
+                                return WALK_TIMES[current_station][self.final_station]
                             return self.final_station
                         # Validate near_station2
                         travel_time2 = BIKE_TIMES[near_station][near_station2]
@@ -842,9 +868,8 @@ class Agent:
                                 + travel_time2
                                 + WALK_TIMES[near_station2][self.final_station]
                             )
-                            direct_walk_time = WALK_TIMES[self.station][self.final_station]
                             # If walking directly is faster, just walk
-                            if total_travel_time >= direct_walk_time:
+                            if direct_walk_time <= total_travel_time:
                                 if estimate_time_instead:
                                     direct_walk_time
                                 return self.final_station
@@ -855,14 +880,24 @@ class Agent:
         # No trip found, just walk to final station
         self.mode = 'walk'
         if estimate_time_instead:
-            return WALK_TIMES[self.station][self.final_station]
+            return WALK_TIMES[current_station][self.final_station]
         return self.final_station
             
-    def _estimate_time_to_end_excursion(self, bike_counts: list) -> float:
-        pass
+    def _estimate_time_to_end_excursion(self, bike_counts: list, current_station: int, use_rough_estimate=False) -> float:
+        """ Returns the estimated time it would take to end the excursion.
+        Args:
+            bike_counts (list): current bike counts indexed by station
+        """
+        if use_rough_estimate:
+            ROUGH_ESTIMATE_BUFFER = 5/60
+            return BIKE_TIMES[current_station][self.final_station] + ROUGH_ESTIMATE_BUFFER
+        estimated_time = self._get_ending_action(
+            bike_counts, current_station=current_station, estimate_time_instead=True)
+        logger.debug(f'est tim {estimated_time}')
+        return estimated_time
             
         
-
+#---------------------------- Tools ------------------------------------
 
 def format_time(time: float) -> str:
     """ Takes a float representing the time of day in hours and returns
@@ -871,35 +906,6 @@ def format_time(time: float) -> str:
     hours = int(time)
     minutes = int((time - hours) * 60)
     return f"{hours:02d}:{minutes:02d}"
-
-
-def get_closest_stations(current_station: int, max_travel_time: float, mode: str) -> list:
-    """ Returns a list of the closest stations to the current station, sorted by travel time
-    for the given mode, and limited by max_travel_time.
-    Args:
-        current_station (int): The start station from which the function finds the closest
-            stations to travel to
-        max_travel_time (float): The stations in the returned list have a travel time at most
-            equal to max_travel_time
-        mode: ('walk', 'bike') The mode of travel from the current_station
-    """
-    # Get list of travel times to each station and list of stations osrted by travel time
-    if mode == 'walk':
-        travel_times = WALK_TIMES[current_station]
-        near_stations = NEAR_WALK_STATIONS
-    elif mode == 'bike':
-        travel_times = BIKE_TIMES[current_station]
-        near_stations = NEAR_BIKE_STATIONS
-    # Binary search for cutoff
-    left, right = 0, len(near_stations)
-    while left < right:
-        mid = (left + right) // 2
-        if travel_times[near_stations[mid]] <= max_travel_time:
-            left = mid + 1
-        else:
-            right = mid
-    # Return nearest stations before time cutoff
-    return near_stations[:left]
 
 
 def generate_bike_counts(bike_counts: list, elapsed_time: float) -> list:
@@ -982,6 +988,8 @@ def get_reward(incentive: float, option: str) -> int:
     return reward
 
 
+#----------------------- Logging Functions -----------------------------
+
 def log_bike_counts(bike_counts: list) -> None:
     """ Logs a list of every station's bike count and capacity. """
     logger.info(f'--- Bike Counts ---')
@@ -1011,6 +1019,8 @@ def log_incentivized_stations(incentives: list) -> None:
             rent_stations.append(i)
     logger.info(f'Rent:    {rent_stations}\nReturn:  {return_stations}')
 
+
+#-------------------------- Simulation ---------------------------------
 
 def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> float | dict:
     """ Simulates a single excursion of an agent rebalancing bikes in a bike share system,
@@ -1271,6 +1281,8 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False) -> floa
     # Return agent's total excursion reward by default
     return agent.reward
 
+
+#------------------------ Record Results -------------------------------
 
 def generate_results_filepath(timestamp: str, seed=None):
     """ Generates and returns results filepath in the format 'results/YYMMDD_HHMM_s<seed>.json' """
@@ -1583,8 +1595,13 @@ def get_bbc_table(name_value_pairs) -> str:
     text += "[/table]\n"
     return text
 
+
+#---------------------------- Main -------------------------------------
     
-def main():    
+def main():
+    # logger.debug(f'28 walk 27 {WALK_TIMES[28][27]}')
+    # logger.debug(f'28 walk 105 {WALK_TIMES[28][105]}')
+    # return
     results_filepath = ''
     
     # Based on mode, simulate bike share and save results to file
@@ -1625,7 +1642,7 @@ def main():
 
     # Print results filepath for frontend
     if USING_APP:
-        print(results_filepath, end='')
+        logger.debug(results_filepath, end='')
     
     # Cleanup
     logging.shutdown()

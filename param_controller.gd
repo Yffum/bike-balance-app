@@ -16,6 +16,7 @@ extends Node
 @export var seed_checkbox : CheckBox
 @export var seed_setter: Node
 # Batch
+@export var randomize_stations : CheckBox
 @export var confidence_level : SpinBox
 @export var parallel_batch_size : SpinBox
 @export var batch_mode : OptionButton
@@ -127,6 +128,7 @@ func _load_params(params : Dictionary):
 	seed_checkbox.button_pressed = params['use_static_seed']
 	seed_setter.visible = params['use_static_seed']
 	# Batch
+	randomize_stations.button_pressed = params['randomize_stations']
 	confidence_level.value = params['confidence_level'] * 100  # factor to percent
 	parallel_batch_size.value = params['parallel_batch_size']
 	if params['batch_mode'] == 'precision_based':
@@ -173,6 +175,7 @@ func save_user_params():
 	params['use_static_seed'] = seed_checkbox.button_pressed
 	params['seed'] = int(seed_text.text)
 	# Batch
+	params['randomize_stations'] = randomize_stations.button_pressed
 	params['confidence_level'] = confidence_level.value / 100 # percent to factor
 	params['parallel_batch_size'] = int(parallel_batch_size.value)
 	if batch_mode.selected == 0:

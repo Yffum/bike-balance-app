@@ -317,8 +317,8 @@ class Agent:
         elif self.mode == 'walk':
             near_stations = NEAR_WALK_STATIONS
             trip_times = WALK_TIMES
-            # Track closest walk station without return incentive
-            nearest_walk_station = None
+        # Track closest walk station without return incentive
+        nearest_walk_station = None
         # Queue stations prioritized by incentive per time
         station_queue = PriorityQueue()
         # Track whether there's time to reach final station
@@ -891,7 +891,7 @@ class Agent:
         """ Returns a rough estimate of the time it would take to end the
         excursion from the current_station
         """
-        ESTIMATE_BUFFER = 5/60
+        ESTIMATE_BUFFER = 2/60
         return BIKE_TIMES[current_station][self.final_station] + ESTIMATE_BUFFER
     
         

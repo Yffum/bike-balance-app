@@ -642,6 +642,19 @@ icon = ExtResource("4_bfu0d")
 visible = false
 layout_mode = 2
 
+[node name="RandomizeStations" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/RandomizeStations"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Randomize Start/End Station"
+
+[node name="CheckBox" type="CheckBox" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/RandomizeStations"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="ConfidenceLevel" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer"]
 layout_mode = 2
 alignment = 1
@@ -751,7 +764,7 @@ text = "Sample size"
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 2.0
-max_value = 5000.0
+max_value = 1e+06
 value = 300.0
 suffix = "runs"
 custom_arrow_step = 1.0
@@ -1372,7 +1385,7 @@ _python_error_dialog = NodePath("../MarginContainer/HSplitContainer/MarginLeftPa
 _python_error_label = NodePath("../MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/PythonErrorDialog/ScrollContainer/PythonErrorLabel")
 _python_interpreter_line_edit = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Settings/MarginContainer/VBoxContainer/PythonInterpreterBox/PythonInterpreterEdit")
 
-[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_incentive_label", "start_end_station_label", "_python_interpreter_line_edit", "_settings_controller", "results_tab", "station_results_panel", "start_end_station_switches")]
+[node name="ParamController" type="Node" parent="." node_paths=PackedStringArray("start_station", "end_station", "excursion_time", "agent_mode", "full_bias", "empty_bias", "warmup_time", "sim_mode", "seed_text", "seed_checkbox", "seed_setter", "randomize_stations", "confidence_level", "parallel_batch_size", "batch_mode", "batch_size", "min_sample_size", "relative_margin_of_error", "absolute_margin_of_error", "max_runtime", "station_spinbox", "no_station_selected", "station_content", "is_start_station", "is_end_station", "station_name", "station_id", "rent_rate", "return_rate", "initial_bike_count", "max_bike_count", "initial_incentive", "initial_incentive_type", "final_bike_count", "final_incentive", "agent_rent_count", "agent_return_count", "results_incentive_label", "start_end_station_label", "_python_interpreter_line_edit", "_settings_controller", "results_tab", "station_results_panel", "start_end_station_switches")]
 script = ExtResource("4_guodr")
 start_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox")
 end_station = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox")
@@ -1385,6 +1398,7 @@ sim_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitC
 seed_text = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed/LineEdit")
 seed_checkbox = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/ToggleSeed/CheckBox")
 seed_setter = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SingleRunContainer/SeedController/SetSeed")
+randomize_stations = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/RandomizeStations/CheckBox")
 confidence_level = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ConfidenceLevel/SpinBox")
 parallel_batch_size = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/ParallelBatchSize/SpinBox")
 batch_mode = NodePath("../MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/BatchContainer/BatchMode/OptionButton")

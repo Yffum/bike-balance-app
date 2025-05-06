@@ -278,6 +278,7 @@ class Agent:
         self.reward = 0  # Total rewards earned
         self.can_rent_bike = True # True if the agent cant rent a bike from the current station
                                   # (becomes False after delivering a bike)
+        self._is_ending = False
 
     def update(self, new_station: int, reward_gain: float) -> None:
         """ Updates the agent's state based on the given trip data. """
@@ -295,8 +296,11 @@ class Agent:
 
     def get_action(self, bike_counts: list, incentives: list, current_time: float) -> int:
         """ Returns the next station the agent will travel to. """
+        # If ending excursion, find best path home
+        if self._is_ending == True:
+            return self._get_ending_action(bike_counts, incentives, current_time)
         # Use smart action if agent is smart, otherwise use basic action
-        if AGENT_INTELLIGENCE == 'smart':
+        elif AGENT_INTELLIGENCE == 'smart':
             return self._get_smart_action(bike_counts, incentives, current_time)
         elif AGENT_INTELLIGENCE == 'basic':
             return self._get_basic_action(bike_counts, incentives, current_time)
@@ -689,6 +693,9 @@ class Agent:
         """ Returns true iff the station is a valid destination. That means going here
         won't fill up or empty the station too much, resulting in failures.
         Args:
+            station (int): the station being traveled to
+            bike_count (int): the bike count of the station at the time
+                it is reached
             mode (str): {'walk', 'bike'} the mode of travel used to reach
                 the given station
         """
@@ -710,7 +717,152 @@ class Agent:
                 return False
         # Station is valid
         return True
+    
+    def _get_ending_action(
+        self, 
+        bike_counts: list, 
+        incentives: list, 
+        current_time: float,
+        estimate_time_instead: bool=False,
+        ) -> int | float:
+        """ Returns the index of the station the agent should travel to
+        when ending the excursion, or if estimate_time_instead is True,
+        it returns the estimated travel time to end the excursion.
+        Args:
+            bike_counts (list): _description_
+            incentives (list): _description_
+            current_time (float): _description_
+            estimate_time_instead (bool, optional): If True, the
+                function returns the estimated travel time to end the
+                excrusion instead of the next station. Defaults to
+                False.
+        Returns:
+            (int | float): the action the agent should take, or if
+                estimate_time_instead is True, the travel time to end
+                the excursion
+        """
+        # The number of available docks predicted for a station to be
+        # considered a valid bike destination
+        BIKE_COUNT_BUFFER = 2
+        # ToDo: test this case
+        # End excursion if at final station
+        if self.station == self.final_station:
+            if estimate_time_instead:
+                return 0
+            return self.final_station #? END_TRIP 
+        best_action = NULL_STATION  # The action the agent should take
+        # Can rent from current station
+        if self.can_rent_bike:
+            self.mode = 'bike'
+            # Validate final station
+            travel_time = BIKE_TIMES[self.station][self.final_station]
+            end_bike_count = estimate_bike_count(
+                self.final_station, bike_counts[self.final_station], travel_time)
+            # Bike to final station if there are open docks
+            if end_bike_count <= CAPACITIES[self.final_station] - BIKE_COUNT_BUFFER:
+                if estimate_time_instead:
+                    return BIKE_TIMES[self.station][self.final_station]
+                return self.final_station
+            # Can't bike to final station
+            # Look for station to bike to that's closer to final station
+            for near_station in NEAR_BIKE_STATIONS[self.final_station]:
+                # Stop if all closer stations searched
+                if near_station == self.station:
+                    break
+                # Validate station
+                travel_time = BIKE_TIMES[self.station][near_station]
+                end_bike_count = estimate_bike_count(
+                    near_station, bike_counts[near_station], travel_time)
+                # Bike to closest valid station
+                if end_bike_count <= CAPACITIES[near_station] - BIKE_COUNT_BUFFER:
+                    if estimate_time_instead:
+                        # Time to bike to near station and walk to final
+                        return (
+                            BIKE_TIMES[self.station][near_station]
+                            + WALK_TIMES[near_station][self.final_station]
+                        )
+                    return near_station
+            # No valid station found, walk to final station
+            self.mode = 'walk'
+            if estimate_time_instead:
+                return WALK_TIMES[self.station][self.final_station]
+            return self.final_station
+            
+        # Cannot rent from current station
+        else:
+            self.mode = 'walk'
+            # Find nearest valid station to rent bike from
+            for near_station in NEAR_WALK_STATIONS[self.station]:
+                # If final station is near, just walk there
+                if near_station == self.final_station:
+                    if estimate_time_instead:
+                        return WALK_TIMES[self.station][self.final_station]
+                    return self.final_station
+                # Validate station
+                travel_time = WALK_TIMES[self.station][near_station]
+                end_bike_count = estimate_bike_count(
+                    near_station, bike_counts[near_station], travel_time)
+                # Valid station to walk to and rent from found
+                if end_bike_count >= 0 + BIKE_COUNT_BUFFER:
+                    # Validate final station
+                    travel_time2 = BIKE_TIMES[near_station][self.final_station]
+                    end_bike_count = estimate_bike_count(
+                        self.final_station,
+                        bike_counts[self.final_station],
+                        travel_time + travel_time2
+                    )
+                    # Walk to near station and bike to final station
+                    if end_bike_count <= CAPACITIES[self.final_station] - BIKE_COUNT_BUFFER:
+                        if estimate_time_instead:
+                            return (
+                                WALK_TIMES[self.station][near_station]
+                                + BIKE_TIMES[near_station][self.final_station]
+                            )
+                        return near_station
+                    # Can't bike to final station
+                    # Check for stations near final station
+                    for near_station2 in NEAR_WALK_STATIONS[self.final_station]:
+                        # No near station found, just walk to final station
+                        if near_station2 == near_station or near_station2 == self.station:
+                            if estimate_time_instead:
+                                return WALK_TIMES[self.station][self.final_station]
+                            return self.final_station
+                        # Validate near_station2
+                        travel_time2 = BIKE_TIMES[near_station][near_station2]
+                        end_bike_count = estimate_bike_count(
+                            near_station2,
+                            bike_counts[near_station2],
+                            travel_time + travel_time2
+                        )
+                        # near_station2 is valid
+                        if end_bike_count <= CAPACITIES[near_station2] - BIKE_COUNT_BUFFER:
+                            # Compare travel time with walking
+                            total_travel_time = (
+                                travel_time
+                                + travel_time2
+                                + WALK_TIMES[near_station2][self.final_station]
+                            )
+                            direct_walk_time = WALK_TIMES[self.station][self.final_station]
+                            # If walking directly is faster, just walk
+                            if total_travel_time >= direct_walk_time:
+                                if estimate_time_instead:
+                                    direct_walk_time
+                                return self.final_station
+                            # Walk to near_station, bike to near_station2, walk to final
+                            if estimate_time_instead:
+                                return total_travel_time
+                            return near_station
+        # No trip found, just walk to final station
+        self.mode = 'walk'
+        if estimate_time_instead:
+            return WALK_TIMES[self.station][self.final_station]
+        return self.final_station
+            
+    def _estimate_time_to_end_excursion(self, bike_counts: list) -> float:
+        pass
+            
         
+
 
 def format_time(time: float) -> str:
     """ Takes a float representing the time of day in hours and returns

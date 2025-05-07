@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=29 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -26,6 +26,13 @@ corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5nw0b"]
+bg_color = Color(0.81, 0.81, 0.81, 0.407843)
+corner_radius_top_left = 7
+expand_margin_left = 9.0
+expand_margin_right = 1.0
+expand_margin_bottom = 1.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xgncb"]
 content_margin_left = 10.0
@@ -293,6 +300,22 @@ size_flags_vertical = 4
 icon = ExtResource("7_t05ru")
 vertical_icon_alignment = 2
 expand_icon = true
+
+[node name="CopyrightPanel" type="Control" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/CopyrightPanel"]
+layout_mode = 0
+offset_left = -185.0
+offset_top = -32.0
+offset_right = -2.0
+offset_bottom = -2.0
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_5nw0b")
+text = "© OpenStreetMap"
 
 [node name="RunBar" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer"]
 layout_mode = 2

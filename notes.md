@@ -33,10 +33,10 @@
   - Introduction to app
     - What is the app
     - Who is it for
-- Wiki
   - Installation guide
     - Install through build
     - Tested on Python 3.12, but should work with Python 3.10 or later
+- Wiki
   - Build guide
   - report.pdf
 

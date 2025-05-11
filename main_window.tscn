@@ -569,6 +569,7 @@ custom_arrow_step = 1.0
 select_all_on_focus = true
 
 [node name="EmptyBias" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -586,6 +587,7 @@ custom_arrow_step = 1.0
 select_all_on_focus = true
 
 [node name="FullBias" type="HBoxContainer" parent="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
 alignment = 1
 

@@ -35,19 +35,12 @@ Note: Bike Balance has only been tested on Windows 11 with Python 3.12, but it s
 
 3. Open `Bike Balance.exe`
 
-For further instructions, reference the 
+For further instructions, reference the [User Manual](address).
 
 
 ## Attributions
-The application is designed and built in Godot 4.4.1 (MIT License © 2007–present contributors).
+Bike Balance is designed and built in Godot 4.4.1 (MIT License © 2007–present contributors).
 
-Icons used in the application are sourced and modified from Glyphs.fyi (MIT © Goran Spasojevic).
+Icons used in Bike Balance are sourced and modified from Glyphs.fyi (MIT © Goran Spasojevic).
 
 Travel times, distances, and paths are collected from OpenRouteService; the map image is from OpenStreetMap (© openrouteservice.org by HeiGIT | Map data © OpenStreetMap contributors).
-
-
-# Wiki
-
-## Report.pdf
-
-## User Manual

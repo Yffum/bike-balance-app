@@ -1351,8 +1351,6 @@ def generate_results_filepath(timestamp: str, seed=None):
     counter = 2 
     # Increment filename if it already exists
     while os.path.exists(os.path.join(results_dir, filename)):
-        if '-' in base_name:
-            base_name = base_name.rsplit('-', 1)[0]  # Remove last -n if exists
         filename = f"{base_name}-{counter}{ext}"
         counter += 1
     return os.path.join(results_dir, filename)

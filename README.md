@@ -1,20 +1,43 @@
 # Bike Balance
+Bike Balance is an offline bike share simulation app. It is a research project that serves as a proof of concept for using search algorithms to optimize the rewards earned by individuals who rebalance bike stations, to the benefit of the bike share system.
 
-Bike Balance is an offline bike share simulation app. Bike Balance is a research project that serves as proof of concept for using search algorithms to optimize the rewards earned by individuals who rebalance bike stations, to the benefit of the bike share system.
+The parameters included in Bike Balance's release are extracted from historical trip data of New York's Citi Bike system in Spring 2016, just before the introduction of the Bike Angels program (which incentivizes riders to rebalance stations). This allows Bike Balance to isolate rebalancers from regular riders for simulation purposes (and it's difficult to find recent records of station bike counts). 
 
+The current release examines two different strategies for a single agent taking trips to rebalance station for a given period of time. The basic greedy strategy always goes to the station that gives the most reward per trip time, while the smart agent uses a predictive Monte Carlo tree search to earn more rewards in the long run.
+
+
+## Features
+The interface allows simulation parameters to be set easily:
+
+![image](screenshots/feature_parameters.png)
+
+For single run simulations, Bike Balance features a map of the bike route taken.
+
+![image](screenshots/feature_single_run.png)
+
+For batch simulations, Bike Balance features a precision-based mode that performs replications until the desired margin of error is met:
+
+![image](screenshots/feature_batch_params.png) ![image](screenshots/batch_results.png)
+
+
+## Requirements
+- Windows 7 or later
+- Python 3.10 or later
+
+Note: Bike Balance has only been tested on Windows 11 with Python 3.12, but it should be compatible with the earlier versions stated.
 
 
 ## How to Install
 
- Tested on Python 3.12, but should work with Python 3.10 or later
+1. Download and unzip the latest release. 
 
-### Requirements
+2. Move folder to desired install location.
+
+3. Open `Bike Balance.exe`
 
 
-## User Manual
+## Attributions
 
-
-### Data
 
 
 

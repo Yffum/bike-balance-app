@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://f0rqb58dpr2d"]
+[gd_scene load_steps=32 format=3 uid="uid://f0rqb58dpr2d"]
 
 [ext_resource type="Script" uid="uid://qfpn8h8vn3bj" path="res://map/map_container.gd" id="1_eqarp"]
 [ext_resource type="Script" uid="uid://bxiuls1cgv2ck" path="res://map/map_controller.gd" id="2_l06f4"]
@@ -19,6 +19,39 @@
 [ext_resource type="LabelSettings" uid="uid://bceklmquggeup" path="res://UI/title_label_settings.tres" id="9_o2qoy"]
 
 [sub_resource type="Theme" id="Theme_tyee0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6od3l"]
+bg_color = Color(0.81, 0.81, 0.81, 0.407843)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 10.0
+expand_margin_top = 5.0
+expand_margin_right = 10.0
+expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_25st7"]
+bg_color = Color(0.98, 0.98, 0.98, 0.556863)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 10.0
+expand_margin_top = 5.0
+expand_margin_right = 10.0
+expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r0vby"]
+bg_color = Color(0.877616, 0.877616, 0.877616, 0.407843)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 10.0
+expand_margin_top = 5.0
+expand_margin_right = 10.0
+expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t05ru"]
 bg_color = Color(0.2, 0.2, 0.2, 1)
@@ -179,8 +212,11 @@ theme_override_constants/margin_bottom = 20
 
 [node name="Label" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/BatchResultsOverlay"]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.113725, 0.113725, 0.113725, 1)
 theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_6od3l")
 text = "Map results are displayed here for single run simulations."
 horizontal_alignment = 1
 
@@ -193,10 +229,20 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
+[node name="Panel" type="Panel" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay"]
+custom_minimum_size = Vector2(139.735, 63.775)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_25st7")
+
 [node name="ResultsLabel" type="Label" parent="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/ResultsOverlay/SingleRunResultsOverlay"]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.113725, 0.113725, 0.113725, 1)
 theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_r0vby")
 text = "RESULTS"
 horizontal_alignment = 1
 
@@ -1464,7 +1510,6 @@ start_end_station_switches = NodePath("../MarginContainer/HSplitContainer/Margin
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MarginContainer/HBoxContainer/ZoomOutButton" to="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/MarginContainer/MapContainer/SubViewport/Camera2D" method="_on_zoom_out_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/MarginContainer/RunButton" to="SimController" method="_on_run_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HSplitContainer/MarginLeftPanel/VBoxContainer/RunBar/CancelSimButtonContainer/CancelSimButton" to="SimController" method="_on_cancel_sim_button_pressed"]
-[connection signal="tab_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer" to="ParamController" method="_on_settings_tab_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/StartStation/SpinBox" to="ParamController" method="_on_start_station_spinbox_value_changed"]
 [connection signal="value_changed" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Agent/MarginContainer/VBoxContainer/EndStation/SpinBox" to="ParamController" method="_on_end_station_spinbox_value_changed"]
 [connection signal="item_selected" from="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation/MarginContainer/VBoxContainer/SimMode/OptionButton" to="MarginContainer/HSplitContainer/MarginRightPanel/VSplitContainer/SettingsTabContainer/Simulation" method="_on_sim_mode_selected"]

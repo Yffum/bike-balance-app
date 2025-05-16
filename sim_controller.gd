@@ -148,9 +148,9 @@ func _delete_oldest_results():
 	if dir == null:
 		push_error("Cannot open directory: %s" % Tools.RESULTS_PATH)
 		return
-	# Create log regex for YYMMDD_HHMM_s<seed> or YYMMDD_HHMM_batch with optional -n suffix
+	# Create log regex for YYMMDD-HHMM_s<seed> or YYMMDD-HHMM_batch with optional -n suffix
 	var regex = RegEx.new()
-	regex.compile("^([0-9]{6}_[0-9]{4})_(s\\d+|batch)(?:-(\\d+))?\\.json$")
+	regex.compile("^([0-9]{6}-[0-9]{4})_(s\\d+|batch)(?:-(\\d+))?\\.json$")
 	# Search logs
 	var results = []
 	dir.list_dir_begin()

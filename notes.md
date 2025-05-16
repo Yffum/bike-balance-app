@@ -1,9 +1,5 @@
 2025-05-02
 
-# To Do
-
-## Finalization
-- [ ] Verify default_user_params.json works
 
 ## Future Work
 - Rigorous Automated Testing
@@ -40,17 +36,3 @@
   - Build guide
   - report.pdf
 
-## Report
-- Abstract
-- Introduction
-- Background
-  - Related work
-- Problem Statement
-- Objectives
-- System Architecture
-  - Attributions
-- Features
-- Discussion
-- Future Work
-- References
-- Appendices

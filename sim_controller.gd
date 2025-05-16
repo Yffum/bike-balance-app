@@ -1,4 +1,5 @@
 extends Node
+## Calls and handles the backend Python simulation
 
 @export var param_ctrl : Node
 @export var log_label : RichTextLabel
@@ -250,6 +251,7 @@ func _process_sim_failure(feedback_text : String) -> void:
 	_sim_feedback_label.text = feedback_text
 
 
+## Opens results tab to display results to the user
 func _process_sim_results(results : Dictionary) -> void:
 	# Write log text to panel
 	log_label.text = results['report']
@@ -282,6 +284,8 @@ func _process_sim_results(results : Dictionary) -> void:
 	# Open log tab
 	_results_tab.visible = true
 
+
+#-------------------------- Signal Responses ---------------------------
 
 func _on_run_button_pressed():
 	# Save parameters to file

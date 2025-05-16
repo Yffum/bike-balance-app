@@ -1,12 +1,16 @@
 extends Node
+## Manages frontend program settings
 
 @export var _root_node : Node
 
 var log_count : int
 
+
 func _ready():
 	log_count = get_file_count(Tools.LOGS_PATH)
 
+
+## Returns the number of files tin the given directory
 func get_file_count(directory_path: String) -> int:
 	var dir = DirAccess.open(directory_path)
 	var file_count = 0

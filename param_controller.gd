@@ -1,4 +1,5 @@
 extends Node
+## Controls the simulation parameters and the interface used to select them
 
 #--------- Agent Parameters --------
 @export var start_station : SpinBox
@@ -87,7 +88,7 @@ func _on_tools_external_paths_set():
 
 ## Loads user params to interface if available. Otherwise loads default params
 ## and saves them as new user params.
-func _initialize_params():
+func _initialize_params() -> void:
 	var params := Tools.load_json_dict(Tools.USER_PARAMS_PATH)
 	var default_params := Tools.load_json_dict(Tools.DEFAULT_USER_PARAMS_PATH)
 	if params.is_empty() or not params.has_all(default_params.keys()):
@@ -102,7 +103,7 @@ func _initialize_params():
 
 
 ## Loads parameters to interface
-func _load_params(params : Dictionary):
+func _load_params(params : Dictionary) -> void:
 	#--------- Agent Parameters --------
 	_set_start_station(params['start_station'])
 	_set_end_station(params['end_station'])
@@ -152,7 +153,7 @@ func _load_params(params : Dictionary):
 
 
 ## Saves parameters from interface to file
-func save_user_params():
+func save_user_params() -> void:
 	var params : Dictionary
 	#--------- Agent Parameters --------
 	params['start_station'] = int(start_station.value)
@@ -197,7 +198,7 @@ func save_user_params():
 
 
 ## Sets the station parameters in the UI for the given station
-func set_station_params(station : int):
+func set_station_params(station : int) -> void:
 	if results_are_loaded:
 		_set_station_results(station)
 	# Set checkbox if station is start
@@ -233,19 +234,19 @@ func set_station_params(station : int):
 
 
 ## Reveals stations results in the station tab
-func show_station_results():
+func show_station_results() -> void:
 	station_results_panel.visible = results_are_loaded
 	start_end_station_switches.visible = false
 
 
 ## Hides station results in the station tab
-func hide_station_results():
+func hide_station_results() -> void:
 	station_results_panel.visible = false
 	start_end_station_switches.visible = true
 
 
 ## Set station results in the UI for the given station
-func _set_station_results(station : int):
+func _set_station_results(station : int) -> void:
 	var capacity := str(int(sim_params['capacities'][station]))
 	var bike_count := str(int(station_results['final_bike_counts'][station]))
 	final_bike_count.text = bike_count + ' / ' + capacity
@@ -271,17 +272,21 @@ func _set_station_results(station : int):
 		start_end_station_label.visible = false
 
 
-func _set_start_station(station : int):
+## Sets the start station parameter
+func _set_start_station(station : int) -> void:
 	start_station.value = station
 	start_station_set.emit(station)
 	set_station_params(station_spinbox.value)
 
 
-func _set_end_station(station: int):
+## Sets the end station parameter
+func _set_end_station(station: int) -> void:
 	end_station.value = station
 	end_station_set.emit(station)
 	set_station_params(station_spinbox.value)
 
+
+#-------------------------- Signal Responses ---------------------------
 
 ## Update station params when map station selected
 func _on_map_controller_station_selected(station):

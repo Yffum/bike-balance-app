@@ -1,4 +1,5 @@
 extends Node
+## Globally accessible tools
 
 var MAX_LOG_COUNT = 20  # Max number of log files before pruning
 var MAX_RESULTS_COUNT = 20 # Max number of results jsons before pruning
@@ -32,8 +33,9 @@ func _ready():
 	_set_external_paths()
 	external_paths_set.emit()
 
-## Uses internal directory if in editor
-func _set_external_paths():
+## Sets global filepaths. Uses internal directory if in editor; uses
+## executable base directory otherwise.
+func _set_external_paths() -> void:
 	# If in editor, use resource paths
 	if OS.has_feature('editor'):
 		EXTERNAL_DIR = ProjectSettings.globalize_path('res://external')
@@ -51,6 +53,7 @@ func _set_external_paths():
 	
 #----------------------- Global Tool Functions ---------------------------
 
+## Returns an array of the JSON file at the given path
 func load_json_array(path: String) -> Array:
 	# Get data
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -70,6 +73,8 @@ func load_json_array(path: String) -> Array:
 		push_error("JSON data is not a Array.")
 		return []
 
+
+## Returns a Dictionary of the JSON file at the given path
 func load_json_dict(path: String) -> Dictionary:
 	# Get data
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -88,7 +93,9 @@ func load_json_dict(path: String) -> Dictionary:
 	else:
 		push_error("JSON data is not a Dictionary.")
 		return {}
-		
+
+
+# Returns a Dictionary or Array of the JSON file at the given path
 func load_json(path: String) -> Variant:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
@@ -97,6 +104,8 @@ func load_json(path: String) -> Variant:
 	var content := file.get_as_text()
 	return JSON.parse_string(content)
 
+
+## Saves the given Dictionary or Array to a JSON file at the given path
 func save_json(path: String, data: Variant) -> void:
 	# Open the file for writing
 	var file = FileAccess.open(path, FileAccess.WRITE)

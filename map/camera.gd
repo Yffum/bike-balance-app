@@ -1,4 +1,5 @@
 extends Camera2D
+## The camera for the station map
 
 const MIN_ZOOM = 0.25
 const MAX_ZOOM = 5
@@ -23,27 +24,34 @@ var map_size : Vector2
 
 
 func _ready():
+	# Set up zoom and position
 	zoom = Vector2(INITIAL_ZOOM, INITIAL_ZOOM)
 	position = INITIAL_POSITION
-	
+	# Get zoom target and map size
 	zoom_target = zoom
 	map_size = map_sprite.texture.get_size() * map_sprite.scale
+	# Clamp position
 	map_is_smaller_than_viewport = clamp_camera_position()
 
 
 func _process(delta):
+	# Zoom camera
 	handle_zoom(delta)
+	# Pan camera
 	if not map_is_smaller_than_viewport and input_enabled:
 		handle_pan()
 	elif is_dragging:
 		if not map_is_smaller_than_viewport:
 			handle_pan()
+	# If zoomed out beyond map borders, clamp position and zoom to center
 	map_is_smaller_than_viewport = clamp_camera_position()
 	if map_is_smaller_than_viewport:
 		is_dragging = false
 	
 
-func handle_zoom(delta: float):
+## Zooms the camera based on input
+func handle_zoom(delta: float) -> void:
+	# Adjust target zoom based on input
 	if input_enabled:
 		if Input.is_action_just_pressed('camera_zoom_in'):
 			zoom_target *= 1 + zoom_factor
@@ -65,28 +73,33 @@ func handle_zoom(delta: float):
 	else:
 		position += zoom_ratio * get_viewport().size / 2 / zoom
 
-func handle_pan():
+
+# Pans the camera based on input
+func handle_pan() -> void:
+	# Begin pan based on input
 	if not is_dragging and Input.is_action_just_pressed('camera_pan'):
 		drag_start_mouse_pos = get_viewport().get_mouse_position()
 		drag_start_camera_pos = position
 		is_dragging = true
+	# Stop pan based on input
 	if is_dragging and Input.is_action_just_released('camera_pan'):
 		is_dragging = false
+	# Pan camera
 	if is_dragging:
 		var move_vector = get_viewport().get_mouse_position() - drag_start_mouse_pos
 		position = position.lerp(drag_start_camera_pos - move_vector / zoom.x, 1)
 
-## Returns false if camera is in bounds and true if it needs to be centered
-func clamp_camera_position():
+
+## If camera is zoomed out beyond the borders of the map, centers camera
+## and returns true. Otherwise, returns false.
+func clamp_camera_position() -> bool:
 	var viewport_size = Vector2(get_parent().size)
 	var min_pos = map_size * -0.5
 	var max_pos = (map_size * 0.5) - viewport_size / zoom
 	var new_pos : Vector2
-	
 	# Clamp new position to viewport bounds
 	new_pos.x = clamp(position.x, min_pos.x, max_pos.x)
 	new_pos.y = clamp(position.y, min_pos.y, max_pos.y)
-	
 	# Move camera to center if map is too zoomed out to be within bounds
 	if (
 		new_pos.x > max_pos.x
@@ -104,6 +117,8 @@ func clamp_camera_position():
 		position = new_pos
 		return false
 
+
+#----------------------- Signal Responses ------------------------------
 
 func _on_map_container_mouse_entered():
 	input_enabled = true

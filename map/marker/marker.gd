@@ -1,4 +1,5 @@
 extends Node2D
+## The map marker used to indicate stations
 
 var _station : int
 
@@ -14,6 +15,7 @@ const ZOOM_ON_HOVER_SCALE = 1.15
 @export var button : BaseButton
 @export var anim_sprite : AnimatedSprite2D
 
+## Map marker sprite frames
 enum _frames {
 		BLANK,
 		START,
@@ -29,14 +31,15 @@ var _textured_frames : Array = [
 	_frames.START_END,
 ]
 
+#----------------------------- Direct Set functions --------------------
 
 ## Sets the marker label
-func set_label(text : String):
+func set_label(text : String) -> void:
 	label.text = text
 
 
 ## Sets sprite to given frame and adjusts label appropriately
-func set_sprite(frame : int):
+func set_sprite(frame : int) -> void:
 	# Set sprite
 	anim_sprite.frame = frame
 	# Hide label if sprite is textured
@@ -54,7 +57,7 @@ func set_sprite(frame : int):
 #------------------------------ Set Sprite/Label -------------------------------
 
 ## Sets sprite to START, or START_END if it's already END
-func set_start_sprite():
+func set_start_sprite() -> void:
 	if anim_sprite.frame == _frames.BLANK or anim_sprite.frame == _frames.VISITED:
 		set_sprite(_frames.START)
 	elif anim_sprite.frame == _frames.END:
@@ -62,7 +65,7 @@ func set_start_sprite():
 
 
 ## Sets sprite to BLANK if it's START, or END if it's START_END
-func unset_start_sprite():
+func unset_start_sprite() -> void:
 	if anim_sprite.frame == _frames.START:
 		set_sprite(_frames.BLANK)
 	elif anim_sprite.frame == _frames.START_END:
@@ -70,7 +73,7 @@ func unset_start_sprite():
 
 
 ## Sets sprite to END, or START_END if it's already START
-func set_end_sprite():
+func set_end_sprite() -> void:
 	if anim_sprite.frame == _frames.BLANK or anim_sprite.frame == _frames.VISITED:
 		set_sprite(_frames.END)
 	elif anim_sprite.frame == _frames.START:
@@ -78,14 +81,14 @@ func set_end_sprite():
 
 
 ## Sets sprite to BLANK if it's END, or START if it's START_END
-func unset_end_sprite():
+func unset_end_sprite() -> void:
 	if anim_sprite.frame == _frames.END:
 		set_sprite(_frames.BLANK)
 	elif anim_sprite.frame == _frames.START_END:
 		set_sprite(_frames.START)
 
 
-#--------------------------- Signal Responses ----------------------------------
+#--------------------------- Signal Responses --------------------------
 
 func _on_button_down():
 	marker_button_down.emit(_station)

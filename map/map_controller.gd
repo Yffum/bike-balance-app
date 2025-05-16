@@ -1,4 +1,5 @@
 extends Node2D
+## Controls the map of stations, and the markers on it.
 
 const MAP_WIDTH = 1775
 const MAP_HEIGHT = 1594
@@ -69,7 +70,8 @@ func _process(_delta):
 		marker.scale = marker.scale.slerp(marker_scale, 0.9)
 
 
-func _initialize_paths():
+## Set up biking and walking paths for drawing to map
+func _initialize_paths() -> void:
 	bike_paths = Tools.load_json_array(Tools.BIKE_PATHS_FILEPATH)
 	walk_paths = Tools.load_json_array(Tools.WALK_PATHS_FILEPATH)
 	# Convert paths from array of arrays to array of Vector2s
@@ -90,7 +92,8 @@ func _convert_paths(paths : Array) -> void:
 				paths[start_station][end_station][i] = WGS_to_pos(Vector2(coords[0], coords[1]))
 
 
-func _instance_markers():
+## Creates markers for every station and adds them to the map
+func _instance_markers() -> void:
 	# Get coords from json
 	var coords = Tools.load_json_array(Tools.STATION_COORDS_PATH)
 	# Iteratively instance markers
@@ -142,6 +145,7 @@ func WGS_to_pos(coord : Vector2) -> Vector2:
 
 #------------------------------- Adjust Map ------------------------------------
 
+## Sets the station outline to the given station
 func _set_selected_station_outline(station):
 	# Remove outline of previously selected station
 	if selected_station >= 0:
@@ -151,6 +155,7 @@ func _set_selected_station_outline(station):
 	_markers_list[selected_station].outline.visible = true
 
 
+## Sets _visited_stations based on the given actions from sim results
 func _set_visited_stations(actions : Array) -> void:
 	# If showing results, deselect previous start/end result stations
 	if _is_showing_results and _results_start_station >= 0:
@@ -190,6 +195,7 @@ func _show_visited_stations():
 		marker.set_sprite(marker_sprite_frame.VISITED)
 
 
+## Hides the visited stations
 func _hide_visited_stations():
 	print('hiding visited stations')
 	print('start ', _start_station)
@@ -206,11 +212,13 @@ func _hide_visited_stations():
 	_markers_list[_end_station].set_end_sprite()
 
 
+## Sets visited stations and paths based on the given actions
 func _set_map_results(actions : Array):
 	path_drawer.set_excursion_paths(actions)
 	_set_visited_stations(actions)
 
 
+## Shows currently loaded map results
 func _show_map_results():
 	# For single run, draw path and show visited stations
 	if _single_run_results_loaded and _results_start_station >= 0:
@@ -228,6 +236,7 @@ func _show_map_results():
 		_batch_results_overlay.visible = true
 
 
+# Hides map results
 func _hide_map_results():
 	# For single run, hide path and visited stations
 	if _single_run_results_loaded and _results_start_station >= 0:

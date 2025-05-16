@@ -29,16 +29,21 @@ Note: Bike Balance has only been tested on Windows 11 with Python 3.12, but it s
 
 ## How to Install
 
-1. Download and unzip the latest release. 
+1. Download the latest release. 
 
-2. Move folder to desired install location.
+2. Unzip and move folder to desired install location.
 
 3. Open `Bike Balance.exe`
 
+For further instructions, reference the 
+
 
 ## Attributions
+The application is designed and built in Godot 4.4.1 (MIT License © 2007–present contributors).
 
+Icons used in the application are sourced and modified from Glyphs.fyi (MIT © Goran Spasojevic).
 
+Travel times, distances, and paths are collected from OpenRouteService; the map image is from OpenStreetMap (© openrouteservice.org by HeiGIT | Map data © OpenStreetMap contributors).
 
 
 # Wiki

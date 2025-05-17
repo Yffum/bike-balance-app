@@ -9,15 +9,15 @@ This release examines two different strategies for a single agent taking trips t
 ## Features
 The interface allows simulation parameters to be set easily:
 
-![image](screenshots/feature_parameters.png)
+![parameters_interface](screenshots/feature_parameters.png)
 
 For single run simulations, Bike Balance features a map of the bike route taken.
 
-![image](screenshots/feature_single_run.png)
+![single_run_results](screenshots/feature_single_run.png)
 
 For batch simulations, Bike Balance features a precision-based mode that performs replications until the desired margin of error is met:
 
-![image](screenshots/feature_batch_params.png) ![image](screenshots/batch_results.png)
+![batch_parameters](screenshots/feature_batch_params.png) ![batch_results](screenshots/batch_results.png)
 
 
 ## Requirements

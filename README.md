@@ -46,9 +46,11 @@ Requires [Godot 4.4.1](https://godotengine.org/download/archive/4.4.1-stable/)
 
 3. Go to Project > Export... in the menu bar.
 
-2. Export the project to the base folder.
+4. Export the project to the base folder.
 
-5. Move the contents of `/external` in the source directory to the base folder.
+5. Move the contents of `external/` in the source directory to the base folder.
+
+Reference [Godot's documentation](https://docs.godotengine.org/en/4.4/tutorials/export/index.html) for more information on exporting projects.
 
 
 ## Attributions

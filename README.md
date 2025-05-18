@@ -37,6 +37,19 @@ Note: Bike Balance has only been tested on Windows 11 with Python 3.12, but it s
 
 For further instructions, reference the [User Manual](https://github.com/Yffum/bike-balance-app/wiki/User-Manual).
 
+## How to Build
+Requires [Godot 4.4.1](https://godotengine.org/download/archive/4.4.1-stable/)
+
+1. Create an empty base folder for the application.
+
+2. Open the source directory in [Godot 4.4.1](https://godotengine.org/download/archive/4.4.1-stable/).
+
+3. Go to Project > Export... in the menu bar.
+
+2. Export the project to the base folder.
+
+5. Move the contents of `/external` in the source directory to the base folder.
+
 
 ## Attributions
 Bike Balance is designed and built in Godot 4.4.1 (MIT License © 2007–present contributors).

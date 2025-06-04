@@ -250,7 +250,20 @@ if WRITE_LOG_FILE:
     file_handler = logging.FileHandler(filepath, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
-        
+
+#----------------------- Set Up Output Directories ---------------------
+path = BASE_PATH + 'results'
+if not os.path.exists(path):
+    logger.info('Results folder not found.')
+    os.makedirs(path)
+    print(f'{path} folder created.')
+path = BASE_PATH + 'logs'
+if not os.path.exists(path):
+    logger.info('Logs folder not found.')
+    os.makedirs(path)
+    print(f'{path} folder created.')
+
+
 #============================================================================================
 
 @dataclass(frozen=True)
@@ -1246,7 +1259,7 @@ def simulate_bike_share(return_full_stats=False, batch_stats_only=False, randomi
             # Remove bike from start station
             bike_counts[agent.station] = max(0, min(CAPACITIES[agent.station], bike_counts[agent.station] - 1))
             # Add bike to end station
-            bike_counts[end_station] = max(0, min(CAPACITIES[end_station], bike_counts[end_station] - 1))
+            bike_counts[end_station] = max(0, min(CAPACITIES[end_station], bike_counts[end_station] + 1))
             # Note: Incentives are locked in once a trip begins, so we use the original incentives.
             # Get reward
             rent_reward = get_reward(incentives[agent.station], option='rent')

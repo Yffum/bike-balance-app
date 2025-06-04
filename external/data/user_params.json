@@ -15,7 +15,7 @@
   "randomize_stations": false,
   "relative_margin_of_error": 0.1,
   "seed": 999237320,
-  "sim_mode": "batch",
+  "sim_mode": "single_run",
   "start_station": 105,
   "use_static_seed": false,
   "warmup_time": 0.0

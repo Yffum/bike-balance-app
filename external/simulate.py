@@ -256,12 +256,12 @@ path = BASE_PATH + 'results'
 if not os.path.exists(path):
     logger.info('Results folder not found.')
     os.makedirs(path)
-    print(f'{path} folder created.')
+    logger.info(f'{path} folder created.')
 path = BASE_PATH + 'logs'
 if not os.path.exists(path):
     logger.info('Logs folder not found.')
     os.makedirs(path)
-    print(f'{path} folder created.')
+    logger.info(f'{path} folder created.')
 
 
 #============================================================================================
